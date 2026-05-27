@@ -19,8 +19,10 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string) {
     // Find any partner teams supporting this category
     const teams = await db.partnerTeam.findMany({
       where: {
-        status: "active" // active partner
-      } as any
+        partner: {
+          status: "active"
+        }
+      }
     });
 
     // Check existing bookings for this date
