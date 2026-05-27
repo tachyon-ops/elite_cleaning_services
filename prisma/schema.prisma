@@ -1,0 +1,252 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. User profile
+model User {
+  id                    String              @id @default(uuid())
+  email                 String              @unique
+  passwordHash          String?
+  role                  String              @default("registered_customer") // super_admin, editor, dispatcher, registered_customer
+  name                  String
+  phone                 String?
+  locale                String              @default("en")
+  gdprMarketingConsent  Boolean             @default(false)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  deletedAt             DateTime?
+
+  bookings              Booking[]
+  recurringSchedules    RecurringSchedule[]
+  quotesCreated         Quote[]             @relation("OpsUserQuotes")
+  reviews               Review[]
+  auditLogs             AuditLog[]
+}
+
+// 2. Guest Verification
+model GuestEmail {
+  email        String    @id
+  otpCode      String?
+  otpExpiresAt DateTime?
+  otpAttempts  Int       @default(0)
+  verifiedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bookings     Booking[]
+}
+
+// 3. Subcontractor Partners
+model Partner {
+  id              String        @id @default(uuid())
+  name            String
+  contactEmail    String
+  contactPhone    String
+  address         String
+  vatNumber       String?
+  insuranceDocUrl String?
+  status          String        @default("active") // active, paused, terminated
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  teams           PartnerTeam[]
+}
+
+// 4. Partner Teams
+model PartnerTeam {
+  id                String              @id @default(uuid())
+  partnerId         String
+  partner           Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name              String
+  workingHours      String              // JSON string, e.g. {"mon": ["08:00", "18:00"]}
+  serviceCategories String              // Serialized array of slug strings
+  region            String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  bookings           Booking[]
+  availabilityBlocks AvailabilityBlock[]
+
+  @@index([partnerId])
+}
+
+// 5. Service Categories
+model ServiceCategory {
+  slug         String            @id
+  name         String
+  vertical     String            // aviation, yacht, commercial, hospitality, special
+  pricingModel String            @default("instant") // instant, quote_on_request
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  offerings    ServiceOffering[]
+  bookings     Booking[]
+  schedules    RecurringSchedule[]
+}
+
+// 6. Service Offerings
+model ServiceOffering {
+  id           String          @id @default(uuid())
+  categorySlug String
+  category     ServiceCategory @relation(fields: [categorySlug], references: [slug], onDelete: Cascade)
+  name         String
+  basePriceChf Decimal
+  unit         String          // per_job, per_hour, per_m2, per_foot
+  description  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([categorySlug])
+}
+
+// 7. Bookings
+model Booking {
+  id                    String           @id @default(uuid())
+  customerId            String?
+  customer              User?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  guestEmail            String?
+  guest                 GuestEmail?      @relation(fields: [guestEmail], references: [email], onDelete: SetNull)
+  vertical              String
+  categorySlug          String?
+  category              ServiceCategory? @relation(fields: [categorySlug], references: [slug], onDelete: SetNull)
+  intake                String           // JSON string of form inputs
+  scheduledAt           DateTime
+  scheduledWindow       String
+  locationAddress       String
+  locationGeo           String?
+  partnerTeamId         String?
+  partnerTeam           PartnerTeam?     @relation(fields: [partnerTeamId], references: [id], onDelete: SetNull)
+  status                String           @default("draft") // booking_status enums
+  totalAmountChf        Decimal
+  depositAmountChf      Decimal
+  stripePaymentIntentId String?
+  stripeSubscriptionId  String?
+  isFirstBooking        Boolean          @default(true)
+  cancellationReason    String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  quote                 Quote?
+  payments              Payment[]
+  review                Review?
+
+  @@index([customerId])
+  @@index([guestEmail])
+  @@index([partnerTeamId])
+}
+
+// 8. Booking Quotes
+model Quote {
+  bookingId    String    @id
+  booking      Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  opsUserId    String?
+  opsUser      User?     @relation("OpsUserQuotes", fields: [opsUserId], references: [id], onDelete: SetNull)
+  amountChf    Decimal
+  validUntil   DateTime
+  sentAt       DateTime?
+  acceptedAt   DateTime?
+  rejectedAt   DateTime?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// 9. Stripe Payments
+model Payment {
+  id                String   @id @default(uuid())
+  bookingId         String
+  booking           Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  stripeChargeId    String
+  amountChf         Decimal
+  status            String   @default("pending") // pending, succeeded, failed, refunded
+  refundedAmountChf Decimal  @default(0.00)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([bookingId])
+}
+
+// 10. Recurring Subscriptions
+model RecurringSchedule {
+  id                   String          @id @default(uuid())
+  customerId           String
+  customer             User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  categorySlug         String
+  category             ServiceCategory @relation(fields: [categorySlug], references: [slug], onDelete: Cascade)
+  frequency            String          // weekly, bi_weekly, monthly, quarterly
+  dayOfWeek            Int             // 0-6
+  timeWindow           String
+  stripeSubscriptionId String
+  status               String          @default("active")
+  nextRunAt            DateTime
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([customerId])
+}
+
+// 11. Availability Blocks
+model AvailabilityBlock {
+  id            String      @id @default(uuid())
+  partnerTeamId String
+  partnerTeam   PartnerTeam @relation(fields: [partnerTeamId], references: [id], onDelete: Cascade)
+  startsAt      DateTime
+  endsAt        DateTime
+  reason        String      @default("capacity")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([partnerTeamId])
+}
+
+// 12. Service Reviews
+model Review {
+  id         String   @id @default(uuid())
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String?
+  public     Boolean  @default(false)
+  customerId String?
+  customer   User?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// 13. Audit Trails
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  actorUser   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  action      String
+  targetTable String
+  targetId    String
+  before      String?  // JSON string
+  after       String?  // JSON string
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([targetTable, targetId])
+}
+
+// 14. GDPR Consents
+model ConsentLog {
+  id          String    @id @default(uuid())
+  userId      String?
+  email       String
+  consentType String
+  granted     Boolean
+  grantedAt   DateTime  @default(now())
+  revokedAt   DateTime?
+  ipAddress   String?
+
+  @@index([email])
+}
