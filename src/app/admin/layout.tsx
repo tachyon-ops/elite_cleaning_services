@@ -32,7 +32,7 @@ export default async function AdminLayout({
           </div>
 
           <nav className="flex-1 flex flex-col gap-2">
-            <Link
+             <Link
               href="/admin"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
@@ -45,10 +45,16 @@ export default async function AdminLayout({
               <BookOpen className="w-4 h-4" /> Bookings & Dispatch
             </Link>
             <Link
-              href="/admin/partners"
+              href="/admin/provider-applications"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <Users className="w-4 h-4" /> Partners
+              <Users className="w-4 h-4" /> Applications Queue
+            </Link>
+            <Link
+              href="/admin/providers"
+              className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+            >
+              <Shield className="w-4 h-4" /> Providers List
             </Link>
           </nav>
 

@@ -42,22 +42,27 @@ export async function checkAndSeedDb() {
       });
     }
 
-    // Create partners
-    const partner1 = await db.partner.create({
+    // Create providers
+    const provider1 = await db.provider.create({
       data: {
         name: "Alpine Cleaning Services AG",
+        slug: "alpine-cleaning-services",
         contactEmail: "contact@alpineclean.ch",
         contactPhone: "+41 44 222 3344",
         address: "Bahnhofstrasse 12, 8001 Zürich",
-        vatNumber: "CHE-123.456.789 MWST",
-        status: "active",
-        notes: "Reliable subcontractor for high-end residential and commercial turnovers."
+        legalEntityType: "ag",
+        uidNumber: "CHE-123.456.789 MWST",
+        bankDetailsVerified: true,
+        stripeConnectAccountId: "acct_mock_alpine123",
+        stripeConnectStatus: "active",
+        onboardingStatus: "active",
+        notes: "Reliable provider for high-end commercial and hospitality clients."
       }
     });
 
-    await db.partnerTeam.create({
+    await db.providerTeam.create({
       data: {
-        partnerId: partner1.id,
+        providerId: provider1.id,
         name: "Zürich North Dispatch Team",
         workingHours: JSON.stringify({ mon: ["08:00", "18:00"], tue: ["08:00", "18:00"], wed: ["08:00", "18:00"], thu: ["08:00", "18:00"], fri: ["08:00", "18:00"] }),
         serviceCategories: JSON.stringify(["commercial", "hospitality"]),
@@ -65,21 +70,47 @@ export async function checkAndSeedDb() {
       }
     });
 
-    const partner2 = await db.partner.create({
+    await db.providerListing.create({
+      data: {
+        providerId: provider1.id,
+        categorySlug: "commercial",
+        serviceRadiusKm: 30,
+        capacityPerDay: 5,
+        leadTimeHours: 12,
+        active: true
+      }
+    });
+    await db.providerListing.create({
+      data: {
+        providerId: provider1.id,
+        categorySlug: "hospitality",
+        serviceRadiusKm: 30,
+        capacityPerDay: 5,
+        leadTimeHours: 12,
+        active: true
+      }
+    });
+
+    const provider2 = await db.provider.create({
       data: {
         name: "Lake Zurich Yacht Detailing GmbH",
+        slug: "lake-zurich-yacht-detailing",
         contactEmail: "ops@yachtdetail.ch",
         contactPhone: "+41 44 555 6677",
         address: "Seestrasse 144, 8810 Horgen",
-        vatNumber: "CHE-987.654.321 MWST",
-        status: "active",
+        legalEntityType: "gmbh",
+        uidNumber: "CHE-987.654.321 MWST",
+        bankDetailsVerified: true,
+        stripeConnectAccountId: "acct_mock_yacht123",
+        stripeConnectStatus: "active",
+        onboardingStatus: "active",
         notes: "Specialist team with marina passes for Lake Zurich harbors."
       }
     });
 
-    await db.partnerTeam.create({
+    await db.providerTeam.create({
       data: {
-        partnerId: partner2.id,
+        providerId: provider2.id,
         name: "Marine Team Alpha",
         workingHours: JSON.stringify({ mon: ["07:00", "19:00"], tue: ["07:00", "19:00"], wed: ["07:00", "19:00"], thu: ["07:00", "19:00"], fri: ["07:00", "19:00"], sat: ["08:00", "16:00"] }),
         serviceCategories: JSON.stringify(["yacht"]),
@@ -87,13 +118,54 @@ export async function checkAndSeedDb() {
       }
     });
 
-    // Create superadmin
+    await db.providerListing.create({
+      data: {
+        providerId: provider2.id,
+        categorySlug: "yacht",
+        serviceRadiusKm: 50,
+        capacityPerDay: 2,
+        leadTimeHours: 24,
+        active: true
+      }
+    });
+
+    // Create applications
+    await db.providerApplication.create({
+      data: {
+        applicantEmail: "partner.apply@quickclean.ch",
+        applicantName: "Jean Quick",
+        companyName: "QuickClean Romandie Sàrl",
+        legalEntityType: "gmbh",
+        verticalsRequested: "commercial,hospitality",
+        region: "Geneva",
+        status: "submitted",
+        applicationData: JSON.stringify({
+          experienceYears: 5,
+          staffCount: 12,
+          motivation: "We want to expand our premium portfolio in Lake Geneva region."
+        })
+      }
+    });
+
+    // Create default superadmin
     await db.user.create({
       data: {
         email: "admin@elite-cleaning.ch",
         name: "Elite Administrator",
         passwordHash: "admin123",
         role: "super_admin",
+        locale: "en"
+      }
+    });
+
+    // Create alpine staff
+    await db.user.create({
+      data: {
+        email: "partner@alpineclean.ch",
+        name: "Alpine Manager",
+        passwordHash: "partner123",
+        role: "provider_staff",
+        providerCompanyId: provider1.id,
         locale: "en"
       }
     });

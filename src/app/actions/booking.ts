@@ -16,11 +16,11 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string) {
       { id: "afternoon", label: "Afternoon (13:00 - 17:00)" }
     ];
 
-    // Find any partner teams supporting this category
-    const teams = await db.partnerTeam.findMany({
+    // Find any provider teams supporting this category
+    const teams = await db.providerTeam.findMany({
       where: {
-        partner: {
-          status: "active"
+        provider: {
+          onboardingStatus: "active"
         }
       }
     });
@@ -209,14 +209,22 @@ export async function createBooking(payload: {
     // Secure price calculation
     const pricing = calculatePrice(categorySlug, intake);
 
-    // Find any partner team in Zurich region supporting this vertical to assign automatically
-    const defaultTeam = await db.partnerTeam.findFirst({
+    // Matching Engine: Find active providers with active listing for this category slug
+    const matchingProviderListing = await db.providerListing.findFirst({
       where: {
-        serviceCategories: {
-          contains: categorySlug
+        categorySlug,
+        active: true,
+        provider: {
+          onboardingStatus: "active"
         }
+      },
+      include: {
+        provider: true
       }
     });
+
+    const hasMatchingProvider = !!matchingProviderListing;
+    const initialStatus = hasMatchingProvider ? "offer_dispatched" : "confirmed";
 
     // Create Booking
     const booking = await db.booking.create({
@@ -228,13 +236,26 @@ export async function createBooking(payload: {
         scheduledAt,
         scheduledWindow,
         locationAddress,
-        status: "confirmed", // set confirmed on paid deposit
+        status: initialStatus,
         totalAmountChf: pricing.total,
         depositAmountChf: pricing.deposit,
-        partnerTeamId: defaultTeam ? defaultTeam.id : null,
+        providerTeamId: null,
         isFirstBooking: true
       }
     });
+
+    // Create offer if match is found
+    if (hasMatchingProvider) {
+      await db.providerOffer.create({
+        data: {
+          bookingId: booking.id,
+          providerId: matchingProviderListing.providerId,
+          offeredAt: new Date(),
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes timeout
+          response: "pending"
+        }
+      });
+    }
 
     // Record Simulated Payment
     await db.payment.create({

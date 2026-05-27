@@ -3,6 +3,13 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clear existing data
+  await prisma.dispute.deleteMany({});
+  await prisma.commissionLedger.deleteMany({});
+  await prisma.payout.deleteMany({});
+  await prisma.providerOffer.deleteMany({});
+  await prisma.providerListing.deleteMany({});
+  await prisma.providerDocument.deleteMany({});
+  await prisma.providerApplication.deleteMany({});
   await prisma.consentLog.deleteMany({});
   await prisma.auditLog.deleteMany({});
   await prisma.review.deleteMany({});
@@ -13,8 +20,8 @@ async function main() {
   await prisma.booking.deleteMany({});
   await prisma.serviceOffering.deleteMany({});
   await prisma.serviceCategory.deleteMany({});
-  await prisma.partnerTeam.deleteMany({});
-  await prisma.partner.deleteMany({});
+  await prisma.providerTeam.deleteMany({});
+  await prisma.provider.deleteMany({});
   await prisma.guestEmail.deleteMany({});
   await prisma.user.deleteMany({});
 
@@ -47,22 +54,27 @@ async function main() {
   }
   console.log('Service offerings created.');
 
-  // 3. Create partners & partner teams
-  const partner1 = await prisma.partner.create({
+  // 3. Create providers & teams
+  const provider1 = await prisma.provider.create({
     data: {
       name: 'Alpine Cleaning Services AG',
+      slug: 'alpine-cleaning-services',
       contactEmail: 'contact@alpineclean.ch',
       contactPhone: '+41 44 222 3344',
       address: 'Bahnhofstrasse 12, 8001 Zürich',
-      vatNumber: 'CHE-123.456.789 MWST',
-      status: 'active',
-      notes: 'Reliable subcontractor for high-end residential and commercial turnovers.'
+      legalEntityType: 'ag',
+      uidNumber: 'CHE-123.456.789 MWST',
+      bankDetailsVerified: true,
+      stripeConnectAccountId: 'acct_mock_alpine123',
+      stripeConnectStatus: 'active',
+      onboardingStatus: 'active',
+      notes: 'Reliable provider for high-end commercial and hospitality clients.'
     }
   });
 
-  const team1 = await prisma.partnerTeam.create({
+  const team1 = await prisma.providerTeam.create({
     data: {
-      partnerId: partner1.id,
+      providerId: provider1.id,
       name: 'Zürich North Dispatch Team',
       workingHours: JSON.stringify({ mon: ['08:00', '18:00'], tue: ['08:00', '18:00'], wed: ['08:00', '18:00'], thu: ['08:00', '18:00'], fri: ['08:00', '18:00'] }),
       serviceCategories: JSON.stringify(['commercial', 'hospitality']),
@@ -70,21 +82,48 @@ async function main() {
     }
   });
 
-  const partner2 = await prisma.partner.create({
+  // Create listings for provider 1
+  await prisma.providerListing.create({
+    data: {
+      providerId: provider1.id,
+      categorySlug: 'commercial',
+      serviceRadiusKm: 30,
+      capacityPerDay: 5,
+      leadTimeHours: 12,
+      active: true
+    }
+  });
+  await prisma.providerListing.create({
+    data: {
+      providerId: provider1.id,
+      categorySlug: 'hospitality',
+      serviceRadiusKm: 30,
+      capacityPerDay: 5,
+      leadTimeHours: 12,
+      active: true
+    }
+  });
+
+  const provider2 = await prisma.provider.create({
     data: {
       name: 'Lake Zurich Yacht Detailing GmbH',
+      slug: 'lake-zurich-yacht-detailing',
       contactEmail: 'ops@yachtdetail.ch',
       contactPhone: '+41 44 555 6677',
       address: 'Seestrasse 144, 8810 Horgen',
-      vatNumber: 'CHE-987.654.321 MWST',
-      status: 'active',
+      legalEntityType: 'gmbh',
+      uidNumber: 'CHE-987.654.321 MWST',
+      bankDetailsVerified: true,
+      stripeConnectAccountId: 'acct_mock_yacht123',
+      stripeConnectStatus: 'active',
+      onboardingStatus: 'active',
       notes: 'Specialist team with marina passes for Lake Zurich harbors.'
     }
   });
 
-  const team2 = await prisma.partnerTeam.create({
+  const team2 = await prisma.providerTeam.create({
     data: {
-      partnerId: partner2.id,
+      providerId: provider2.id,
       name: 'Marine Team Alpha',
       workingHours: JSON.stringify({ mon: ['07:00', '19:00'], tue: ['07:00', '19:00'], wed: ['07:00', '19:00'], thu: ['07:00', '19:00'], fri: ['07:00', '19:00'], sat: ['08:00', '16:00'] }),
       serviceCategories: JSON.stringify(['yacht']),
@@ -92,19 +131,80 @@ async function main() {
     }
   });
 
-  console.log('Partners and teams created.');
+  await prisma.providerListing.create({
+    data: {
+      providerId: provider2.id,
+      categorySlug: 'yacht',
+      serviceRadiusKm: 50,
+      capacityPerDay: 2,
+      leadTimeHours: 24,
+      active: true
+    }
+  });
 
-  // 4. Create default superadmin
+  console.log('Providers, listings and teams created.');
+
+  // 4. Create sample provider applications
+  await prisma.providerApplication.create({
+    data: {
+      applicantEmail: 'partner.apply@quickclean.ch',
+      applicantName: 'Jean Quick',
+      companyName: 'QuickClean Romandie Sàrl',
+      legalEntityType: 'gmbh',
+      verticalsRequested: 'commercial,hospitality',
+      region: 'Geneva',
+      status: 'submitted',
+      applicationData: JSON.stringify({
+        experienceYears: 5,
+        staffCount: 12,
+        motivation: 'We want to expand our premium portfolio in Lake Geneva region.'
+      })
+    }
+  });
+
+  await prisma.providerApplication.create({
+    data: {
+      applicantEmail: 'info@swissaviationcleaners.ch',
+      applicantName: 'Fritz Flieger',
+      companyName: 'Swiss Aviation Cleaners AG',
+      legalEntityType: 'ag',
+      verticalsRequested: 'aviation',
+      region: 'Zürich Airport',
+      status: 'under_review',
+      applicationData: JSON.stringify({
+        experienceYears: 10,
+        staffCount: 8,
+        motivation: 'Already doing hangar cleaning, want to handle light business aircraft.'
+      })
+    }
+  });
+
+  console.log('Provider applications seeded.');
+
+  // 5. Create default superadmin
   await prisma.user.create({
     data: {
       email: 'admin@elite-cleaning.ch',
       name: 'Elite Administrator',
-      passwordHash: 'admin123', // stored plain for local dev convenience
+      passwordHash: 'admin123', // plain for dev convenience
       role: 'super_admin',
       locale: 'en'
     }
   });
-  console.log('Superadmin user created: admin@elite-cleaning.ch / admin123');
+
+  // Create default provider staff login to ease testing
+  await prisma.user.create({
+    data: {
+      email: 'partner@alpineclean.ch',
+      name: 'Alpine Manager',
+      passwordHash: 'partner123',
+      role: 'provider_staff',
+      providerCompanyId: provider1.id,
+      locale: 'en'
+    }
+  });
+
+  console.log('Users created: admin@elite-cleaning.ch (admin123), partner@alpineclean.ch (partner123)');
 }
 
 main()

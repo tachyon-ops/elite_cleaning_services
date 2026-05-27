@@ -12,7 +12,7 @@ model User {
   id                    String              @id @default(uuid())
   email                 String              @unique
   passwordHash          String?
-  role                  String              @default("registered_customer") // super_admin, editor, dispatcher, registered_customer
+  role                  String              @default("registered_customer") // super_admin, provider_ops, editor, dispatcher, registered_customer, provider_staff
   name                  String
   phone                 String?
   locale                String              @default("en")
@@ -20,6 +20,9 @@ model User {
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   deletedAt             DateTime?
+
+  providerCompanyId     String?
+  providerCompany       Provider?           @relation(fields: [providerCompanyId], references: [id], onDelete: SetNull)
 
   bookings              Booking[]
   recurringSchedules    RecurringSchedule[]
@@ -41,31 +44,46 @@ model GuestEmail {
   bookings     Booking[]
 }
 
-// 3. Subcontractor Partners
-model Partner {
-  id              String        @id @default(uuid())
-  name            String
-  contactEmail    String
-  contactPhone    String
-  address         String
-  vatNumber       String?
-  insuranceDocUrl String?
-  status          String        @default("active") // active, paused, terminated
-  notes           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+// 3. Marketplace Providers (formerly Subcontractor Partners)
+model Provider {
+  id                      String        @id @default(uuid())
+  name                    String
+  slug                    String        @unique
+  contactEmail            String
+  contactPhone            String
+  address                 String
+  legalEntityType         String        // einzelfirma, gmbh, ag, other_eu
+  uidNumber               String        // Swiss UID (VAT/business ID)
+  bankDetailsVerified     Boolean       @default(false)
+  stripeConnectAccountId  String?
+  stripeConnectStatus     String        @default("pending") // pending, active, restricted, rejected
+  onboardingStatus        String        @default("applied") // applied, under_review, approved, active, suspended, terminated
+  onboardingCompletedAt   DateTime?
+  commissionOverrideRate  Decimal?      // Optional rate override
+  criminalRecordExtractUrl String?
+  insuranceDocUrl         String?
+  insuranceExpiresAt      DateTime?
+  notes                   String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
-  teams           PartnerTeam[]
+  teams                   ProviderTeam[]
+  staff                   User[]
+  documents               ProviderDocument[]
+  listings                ProviderListing[]
+  offers                  ProviderOffer[]
+  payouts                 Payout[]
+  reviewsSummary          ProviderReview[]
 }
 
-// 4. Partner Teams
-model PartnerTeam {
+// 4. Provider Teams (formerly Partner Teams)
+model ProviderTeam {
   id                String              @id @default(uuid())
-  partnerId         String
-  partner           Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  providerId        String
+  provider          Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
   name              String
   workingHours      String              // JSON string, e.g. {"mon": ["08:00", "18:00"]}
-  serviceCategories String              // Serialized array of slug strings
+  serviceCategories String              // JSON array or comma-separated vertical categories
   region            String
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -73,7 +91,7 @@ model PartnerTeam {
   bookings           Booking[]
   availabilityBlocks AvailabilityBlock[]
 
-  @@index([partnerId])
+  @@index([providerId])
 }
 
 // 5. Service Categories
@@ -121,25 +139,32 @@ model Booking {
   scheduledWindow       String
   locationAddress       String
   locationGeo           String?
-  partnerTeamId         String?
-  partnerTeam           PartnerTeam?     @relation(fields: [partnerTeamId], references: [id], onDelete: SetNull)
-  status                String           @default("draft") // booking_status enums
+  providerTeamId        String?
+  providerTeam          ProviderTeam?    @relation(fields: [providerTeamId], references: [id], onDelete: SetNull)
+  status                String           @default("draft") // draft, intake_submitted, quote_pending, quote_sent, quote_accepted, payment_pending, confirmed, offer_dispatched, offer_accepted, assigned, in_progress, completed, cancelled_by_customer, cancelled_by_ops, cancelled_no_provider
   totalAmountChf        Decimal
   depositAmountChf      Decimal
   stripePaymentIntentId String?
   stripeSubscriptionId  String?
   isFirstBooking        Boolean          @default(true)
   cancellationReason    String?
+  providerOfferId       String?
+  providerPayoutAmountChf Decimal?
+  commissionAmountChf   Decimal?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
   quote                 Quote?
   payments              Payment[]
   review                Review?
+  offers                ProviderOffer[]
+  payouts               Payout[]
+  commissionLedgers     CommissionLedger[]
+  disputes              Dispute[]
 
   @@index([customerId])
   @@index([guestEmail])
-  @@index([partnerTeamId])
+  @@index([providerTeamId])
 }
 
 // 8. Booking Quotes
@@ -194,16 +219,18 @@ model RecurringSchedule {
 
 // 11. Availability Blocks
 model AvailabilityBlock {
-  id            String      @id @default(uuid())
-  partnerTeamId String
-  partnerTeam   PartnerTeam @relation(fields: [partnerTeamId], references: [id], onDelete: Cascade)
+  id            String       @id @default(uuid())
+  providerTeamId String
+  providerTeam  ProviderTeam @relation(fields: [providerTeamId], references: [id], onDelete: Cascade)
   startsAt      DateTime
   endsAt        DateTime
-  reason        String      @default("capacity")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  reason        String       @default("capacity") // capacity, vacation, holiday
+  autoBlocked   Boolean      @default(false)
+  bookingId     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
-  @@index([partnerTeamId])
+  @@index([providerTeamId])
 }
 
 // 12. Service Reviews
@@ -249,4 +276,141 @@ model ConsentLog {
   ipAddress   String?
 
   @@index([email])
+}
+
+// --- NEW V2 MARKETPLACE MODELS ---
+
+// 15. Provider Applications
+model ProviderApplication {
+  id                  String   @id @default(uuid())
+  applicantEmail      String
+  applicantName       String
+  companyName         String
+  legalEntityType     String   // einzelfirma, gmbh, ag, other_eu
+  verticalsRequested  String   // comma-separated or JSON list
+  region              String
+  submittedAt         DateTime @default(now())
+  status              String   @default("submitted") // submitted, under_review, info_requested, approved, rejected
+  reviewerUserId      String?
+  decisionAt          DateTime?
+  decisionNotes       String?
+  applicationData     String   // JSON string of form answers
+}
+
+// 16. Provider Documents
+model ProviderDocument {
+  id                  String   @id @default(uuid())
+  providerId          String
+  provider            Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  docType             String   // insurance, criminal_record, vat_cert, certification, reference
+  fileUrl             String
+  expiresAt           DateTime?
+  verified            Boolean  @default(false)
+  verifiedByUserId    String?
+  verifiedAt          DateTime?
+  uploadedAt          DateTime @default(now())
+
+  @@index([providerId])
+}
+
+// 17. Provider Listings (Capabilities)
+model ProviderListing {
+  id              String   @id @default(uuid())
+  providerId      String
+  provider        Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categorySlug    String
+  customPriceChf  Decimal? // only for quote-on-request verticals
+  serviceRadiusKm Int      @default(50)
+  capacityPerDay  Int      @default(3)
+  leadTimeHours   Int      @default(24)
+  active          Boolean  @default(true)
+
+  @@index([providerId])
+}
+
+// 18. Provider Offers (Matching dispatch system)
+model ProviderOffer {
+  id              String    @id @default(uuid())
+  bookingId       String
+  booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  providerId      String
+  provider        Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  offeredAt       DateTime  @default(now())
+  expiresAt       DateTime
+  response        String    @default("pending") // pending, accepted, declined, timed_out
+  responseAt      DateTime?
+  declineReason   String?
+
+  @@index([bookingId])
+  @@index([providerId])
+}
+
+// 19. Provider Payouts Ledger
+model Payout {
+  id                String    @id @default(uuid())
+  providerId        String
+  provider          Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  bookingId         String?
+  booking           Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  amountChf         Decimal
+  currency          String    @default("CHF")
+  stripeTransferId  String?
+  status            String    @default("scheduled") // scheduled, in_transit, paid, failed, reversed
+  scheduledFor      DateTime
+  paidAt            DateTime?
+  failureReason     String?
+
+  @@index([providerId])
+  @@index([bookingId])
+}
+
+// 20. Commission Ledger
+model CommissionLedger {
+  id                  String   @id @default(uuid())
+  bookingId           String
+  booking             Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  grossAmountChf      Decimal
+  commissionRate      Decimal
+  commissionAmountChf Decimal
+  providerPayoutChf   Decimal
+  calculatedAt        DateTime @default(now())
+  settledAt           DateTime?
+  notes               String?
+
+  @@index([bookingId])
+}
+
+// 21. Provider Performance reviews
+model ProviderReview {
+  id              String   @id @default(uuid())
+  providerId      String
+  provider        Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  periodStart     DateTime
+  periodEnd       DateTime
+  jobsCompleted   Int
+  avgRating       Decimal
+  onTimePct       Decimal
+  cancellationPct Decimal
+  computedAt      DateTime @default(now())
+
+  @@index([providerId])
+}
+
+// 22. Dispute management
+model Dispute {
+  id                    String    @id @default(uuid())
+  bookingId             String
+  booking               Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  openedBy              String    // customer, provider, ops
+  reason                String
+  description           String
+  evidenceUrls          String    // Comma-separated or JSON list
+  status                String    @default("open") // open, in_review, resolved, closed
+  resolution            String?   // refund_full, refund_partial, redo, dismissed
+  resolvedByUserId      String?
+  resolvedAt            DateTime?
+  refundAmountChf       Decimal?
+  payoutAdjustmentChf   Decimal?
+
+  @@index([bookingId])
 }

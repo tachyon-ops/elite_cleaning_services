@@ -51,7 +51,7 @@ export async function getDashboardStats() {
     const activeBookings = await db.booking.count({
       where: {
         status: {
-          in: ["confirmed", "assigned"]
+          in: ["confirmed", "assigned", "offer_dispatched"]
         }
       }
     });
@@ -97,8 +97,8 @@ export async function getBookingsList() {
     const bookings = await db.booking.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        partnerTeam: {
-          include: { partner: true }
+        providerTeam: {
+          include: { provider: true }
         }
       }
     });
@@ -116,7 +116,7 @@ export async function getBookingsList() {
   }
 }
 
-// 6. Assign partner team
+// 6. Assign provider team
 export async function assignPartnerTeam(bookingId: string, teamId: string | null) {
   try {
     if (!(await isAdminAuthenticated())) {
@@ -131,7 +131,7 @@ export async function assignPartnerTeam(bookingId: string, teamId: string | null
     const updated = await db.booking.update({
       where: { id: bookingId },
       data: {
-        partnerTeamId: teamId,
+        providerTeamId: teamId,
         status: teamId ? "assigned" : "confirmed"
       }
     });
@@ -139,11 +139,11 @@ export async function assignPartnerTeam(bookingId: string, teamId: string | null
     // Log administrative audit trail for GDPR compliance
     await db.auditLog.create({
       data: {
-        action: "assign_partner_team",
+        action: "assign_provider_team",
         targetTable: "Booking",
         targetId: bookingId,
-        before: JSON.stringify({ partnerTeamId: bookingBefore.partnerTeamId, status: bookingBefore.status }),
-        after: JSON.stringify({ partnerTeamId: updated.partnerTeamId, status: updated.status }),
+        before: JSON.stringify({ providerTeamId: bookingBefore.providerTeamId, status: bookingBefore.status }),
+        after: JSON.stringify({ providerTeamId: updated.providerTeamId, status: updated.status }),
         actorUserId: "admin_user"
       }
     });
@@ -189,15 +189,15 @@ export async function updateBookingStatus(bookingId: string, status: string) {
   }
 }
 
-// 8. Get partners and teams
+// 8. Get providers and teams
 export async function getPartnersList() {
   try {
     if (!(await isAdminAuthenticated())) {
       throw new Error("Unauthorized");
     }
 
-    const partners = await db.partner.findMany({
-      include: { teams: true }
+    const partners = await db.provider.findMany({
+      include: { teams: true, listings: true }
     });
 
     return { success: true, partners };
@@ -213,9 +213,9 @@ export async function togglePartnerStatus(partnerId: string, status: string) {
       throw new Error("Unauthorized");
     }
 
-    await db.partner.update({
+    await db.provider.update({
       where: { id: partnerId },
-      data: { status }
+      data: { onboardingStatus: status }
     });
 
     return { success: true };
@@ -268,6 +268,119 @@ export async function deleteCustomerDataGDPR(email: string) {
         actorUserId: "admin_user"
       }
     });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// --- NEW V2 ADMIN ACTIONS ---
+
+// 11. List provider applications
+export async function getProviderApplications() {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    const applications = await db.providerApplication.findMany({
+      orderBy: { submittedAt: "desc" }
+    });
+
+    return { success: true, applications };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 12. Review provider application
+export async function reviewApplication(payload: {
+  applicationId: string;
+  status: "approved" | "rejected" | "info_requested";
+  decisionNotes?: string;
+}) {
+  try {
+    const { applicationId, status, decisionNotes } = payload;
+
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    const app = await db.providerApplication.findUnique({
+      where: { id: applicationId }
+    });
+
+    if (!app) {
+      throw new Error("Application not found");
+    }
+
+    // Update Application
+    await db.providerApplication.update({
+      where: { id: applicationId },
+      data: {
+        status,
+        decisionAt: new Date(),
+        decisionNotes
+      }
+    });
+
+    if (status === "approved") {
+      // 1. Create Provider
+      const slug = app.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const provider = await db.provider.create({
+        data: {
+          name: app.companyName,
+          slug,
+          contactEmail: app.applicantEmail,
+          contactPhone: "+41 44 999 8877",
+          address: app.region,
+          legalEntityType: app.legalEntityType,
+          uidNumber: "CHE-000.000.000 MWST",
+          onboardingStatus: "active", // Approved directly for testing simplicity
+          stripeConnectStatus: "pending",
+          bankDetailsVerified: false
+        }
+      });
+
+      // 2. Create Default Team
+      await db.providerTeam.create({
+        data: {
+          providerId: provider.id,
+          name: "Primary Dispatch Team",
+          workingHours: JSON.stringify({ mon: ["08:00", "18:00"], tue: ["08:00", "18:00"], wed: ["08:00", "18:00"], thu: ["08:00", "18:00"], fri: ["08:00", "18:00"] }),
+          serviceCategories: JSON.stringify(app.verticalsRequested.split(",")),
+          region: app.region
+        }
+      });
+
+      // 3. Create listings for each requested category
+      const verticals = app.verticalsRequested.split(",");
+      for (const catSlug of verticals) {
+        await db.providerListing.create({
+          data: {
+            providerId: provider.id,
+            categorySlug: catSlug,
+            serviceRadiusKm: 50,
+            capacityPerDay: 3,
+            leadTimeHours: 24,
+            active: true
+          }
+        });
+      }
+
+      // 4. Create User login credentials
+      await db.user.create({
+        data: {
+          email: app.applicantEmail,
+          name: app.applicantName,
+          passwordHash: "partner123", // default credentials
+          role: "provider_staff",
+          providerCompanyId: provider.id,
+          locale: "en"
+        }
+      });
+    }
 
     return { success: true };
   } catch (error: any) {

@@ -34,7 +34,7 @@ export default function AdminBookingsPage() {
           p.teams.forEach((t: any) => {
             allTeams.push({
               ...t,
-              partnerName: p.name
+              providerName: p.name
             });
           });
         }
@@ -154,16 +154,22 @@ export default function AdminBookingsPage() {
                       </td>
                       <td className="p-4">
                         <select
-                          value={booking.partnerTeamId || ""}
+                          value={booking.providerTeamId || ""}
                           onChange={(e) => handleAssignTeam(booking.id, e.target.value)}
                           className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2 rounded-md focus:border-accent outline-none text-body-xs font-semibold w-full"
                         >
                           <option value="">Unassigned</option>
                           {partners
-                            .filter(t => JSON.parse(t.serviceCategories).includes(booking.categorySlug))
+                            .filter(t => {
+                              try {
+                                return JSON.parse(t.serviceCategories).includes(booking.categorySlug);
+                              } catch {
+                                return false;
+                              }
+                            })
                             .map((t) => (
                               <option key={t.id} value={t.id}>
-                                {t.partnerName} - {t.name}
+                                {t.providerName} - {t.name}
                               </option>
                             ))}
                         </select>
