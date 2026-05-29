@@ -3,6 +3,8 @@ import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Pho
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
 import { db } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 const verticalMeta: Record<string, {
   icon: any;
   subtitle: string;
