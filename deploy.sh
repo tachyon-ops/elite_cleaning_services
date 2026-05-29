@@ -13,8 +13,14 @@ UNCOMMITTED=$(git status --porcelain)
 UNPUSHED=$(git cherry -v 2>/dev/null)
 
 if [ -n "$UNCOMMITTED" ] || [ -n "$UNPUSHED" ]; then
-    echo "Local changes or unpushed commits detected."
-    read -p "Do you want to push changes to origin master first? (y/n) " -n 1 -r
+    if [ -n "$UNCOMMITTED" ]; then
+        echo "Uncommitted local modifications detected."
+    fi
+    if [ -n "$UNPUSHED" ]; then
+        echo "Unpushed commits detected (your local branch is ahead of origin/master)."
+        echo "Since the remote server pulls directly from GitHub, these commits must be pushed first."
+    fi
+    read -p "Do you want to push your local commits to origin master now? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
