@@ -8,14 +8,26 @@ DOMAIN="cleaning.rewilt.com"
 PORT="3003"
 REPO_DIR="/home/editor/web/cleaning.rewilt.com/private/elite_cleaning_services"
 
-echo "=========================================================="
-# Prompt to push local changes
-read -p "Do you want to git push local changes first? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-    echo "Pushing local commits to origin master..."
-    git push origin master
+# Detect if there are uncommitted changes or unpushed commits
+UNCOMMITTED=$(git status --porcelain)
+UNPUSHED=$(git cherry -v 2>/dev/null)
+
+if [ -n "$UNCOMMITTED" ] || [ -n "$UNPUSHED" ]; then
+    echo "Local changes or unpushed commits detected."
+    read -p "Do you want to push changes to origin master first? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        if [ -n "$UNCOMMITTED" ]; then
+            echo "Note: You have uncommitted changes. Only committed changes will be pushed."
+        fi
+        if [ -n "$UNPUSHED" ]; then
+            echo "Pushing local commits to origin master..."
+            git push origin master
+        fi
+    fi
+else
+    echo "Working directory is clean and up-to-date with remote."
 fi
 
 echo "=========================================================="
