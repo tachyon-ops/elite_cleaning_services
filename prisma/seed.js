@@ -29,6 +29,7 @@ async function main() {
 
   // 1. Create default categories
   const categories = [
+    { slug: 'domestic', name: 'Domestic Cleaning', vertical: 'domestic', pricingModel: 'instant', active: true },
     { slug: 'commercial', name: 'Commercial Offices', vertical: 'commercial', pricingModel: 'instant', active: true },
     { slug: 'hospitality', name: 'Hospitality & Turnovers', vertical: 'hospitality', pricingModel: 'instant', active: true },
     { slug: 'aviation', name: 'Aviation Detailing', vertical: 'aviation', pricingModel: 'quote_on_request', active: true },
@@ -43,6 +44,8 @@ async function main() {
 
   // 2. Create service offerings
   const offerings = [
+    { categorySlug: 'domestic', name: 'Standard Home Clean', basePriceChf: 80.00, unit: 'per_job', description: 'Includes bedroom cleaning, living room dusting, floor mopping, kitchen wipe down, and trash emptying.' },
+    { categorySlug: 'domestic', name: 'Deep Home Clean', basePriceChf: 140.00, unit: 'per_job', description: 'Standard clean + carpet cleaning, window interiors, and kitchen deep cleaning.' },
     { categorySlug: 'commercial', name: 'Standard Office Clean', basePriceChf: 150.00, unit: 'per_job', description: 'Includes workspace dusting, floor mopping, kitchen wipe down, and trash emptying.' },
     { categorySlug: 'commercial', name: 'Deep Commercial Clean', basePriceChf: 250.00, unit: 'per_job', description: 'Standard clean + carpet steam clean, window interiors, and disinfection.' },
     { categorySlug: 'hospitality', name: 'Turnover Standard Clean', basePriceChf: 120.00, unit: 'per_job', description: 'Includes sanitization, bed making, basic restocking, and guest prep.' },

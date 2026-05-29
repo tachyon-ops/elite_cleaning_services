@@ -1,30 +1,138 @@
 import Link from "next/link";
-import { Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Phone, Mail, Award, Clock } from "lucide-react";
+import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Phone, Mail, Award, Clock } from "lucide-react";
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
+import { db } from "@/lib/db";
+
+const verticalMeta: Record<string, {
+  icon: any;
+  subtitle: string;
+  title: string;
+  description: string;
+  priceText: string;
+  link: string;
+}> = {
+  domestic: {
+    icon: Sparkles,
+    subtitle: "DOMESTIC",
+    title: "Home & Villa Cleaning",
+    description: "Regular upkeep, deep cleaning, and move-out servicing for premium apartments and villas.",
+    priceText: "FROM CHF 80",
+    link: "/book/domestic",
+  },
+  aviation: {
+    icon: Plane,
+    subtitle: "AVIATION",
+    title: "Private Jets & Helicopters",
+    description: "Exterior wash, deep interior detailing, and cabin restocking in Swiss hangars and FBOs.",
+    priceText: "QUOTE ON REQUEST",
+    link: "/book/aviation",
+  },
+  yacht: {
+    icon: Ship,
+    subtitle: "YACHT & MARINE",
+    title: "Vessels & Yacht Decks",
+    description: "Teak cleaning, interior detail, end-of-season decommissioning, and marina access.",
+    priceText: "QUOTE ON REQUEST",
+    link: "/book/yacht",
+  },
+  commercial: {
+    icon: Building2,
+    subtitle: "COMMERCIAL",
+    title: "Offices & Co-working",
+    description: "Standard cleanups, after-hours deep cleans, and tailored frequencies for office suites.",
+    priceText: "FROM CHF 150",
+    link: "/book/commercial",
+  },
+  hospitality: {
+    icon: Home,
+    subtitle: "HOSPITALITY",
+    title: "Airbnb Turnover & B&Bs",
+    description: "Fast turnover schedules, linen management, and smartlock key handovers.",
+    priceText: "FROM CHF 120",
+    link: "/book/hospitality",
+  },
+  special: {
+    icon: Shield,
+    subtitle: "SPECIAL SERVICES",
+    title: "Biohazard & Post-Incident",
+    description: "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
+    priceText: "PHONE ONLY",
+    link: "/book/special-services",
+  }
+};
 
 export default async function HomePage() {
   await checkAndSeedDb();
+
+  const activeCategories = await db.serviceCategory.findMany({
+    where: { active: true }
+  });
+
+  const displayOrder = ["domestic", "aviation", "yacht", "commercial", "hospitality", "special"];
+
+  const sortedCategories = activeCategories.sort((a: any, b: any) => {
+    const indexA = displayOrder.indexOf(a.slug);
+    const indexB = displayOrder.indexOf(b.slug);
+    const orderA = indexA === -1 ? 999 : indexA;
+    const orderB = indexB === -1 ? 999 : indexB;
+    return orderA - orderB;
+  });
+
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
       {/* 4.6 Navigation Bar */}
-      <header className="h-[80px] bg-bg border-b border-border flex items-center px-6 md:px-16 sticky top-0 z-50">
-        <div className="flex-1 flex items-center">
-          <Link href="/" className="font-display text-display-sm font-bold text-ink tracking-tight flex items-center gap-2">
+      <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-6 md:px-16 sticky top-0 z-50">
+        <div className="flex items-center">
+          <Link href="/" className="font-display text-display-sm font-medium tracking-[0.15em] text-ink flex items-center gap-1.5 select-none">
             <span className="text-accent font-serif font-bold">E</span>LITE
           </Link>
         </div>
-        <nav className="hidden md:flex gap-8 items-center mr-8">
-          <Link href="/aviation" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Aviation</Link>
-          <Link href="/yacht" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Yacht & Marine</Link>
-          <Link href="/commercial" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Commercial</Link>
-          <Link href="/hospitality" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Hospitality</Link>
-          <Link href="/special-services" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Special Services</Link>
-          <Link href="/how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">How It Works</Link>
+        <nav className="hidden md:flex gap-8 items-center">
+          {/* Services Dropdown */}
+          <div className="relative group/dropdown py-2">
+            <button className="flex items-center gap-1.5 text-body-sm font-medium text-ink-muted hover:text-ink transition-colors cursor-pointer">
+              Services
+              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover/dropdown:rotate-180 text-ink-subtle" />
+            </button>
+            <div className="absolute top-[calc(100%-4px)] left-1/2 -translate-x-1/2 pt-3 opacity-0 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:pointer-events-auto transition-all duration-300 ease-out translate-y-2 group-hover/dropdown:translate-y-0 z-50">
+              <div className="bg-bg/95 backdrop-blur-md border border-border/60 rounded-lg shadow-xl p-4 w-72 grid grid-cols-1 gap-1">
+                <span className="text-[10px] text-accent font-semibold tracking-wider px-3 pb-2 uppercase border-b border-border/20 mb-1 block">
+                  Elite Divisions
+                </span>
+                {sortedCategories.map((cat: any) => {
+                  const meta = verticalMeta[cat.slug];
+                  if (!meta) return null;
+                  const IconComponent = meta.icon;
+                  return (
+                    <Link
+                      key={cat.slug}
+                      href={meta.link || `/book/${cat.slug}`}
+                      className="flex items-center gap-3.5 px-3 py-2 rounded-md hover:bg-accent-soft/45 transition-colors group/item"
+                    >
+                      <div className="h-8 w-8 bg-accent-soft text-accent rounded-sm flex items-center justify-center border border-accent/10 group-hover/item:border-accent/25 transition-colors shrink-0">
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-body-sm font-semibold text-ink group-hover/item:text-accent transition-colors">
+                          {meta.title}
+                        </span>
+                        <span className="text-[10px] text-ink-subtle uppercase tracking-wider group-hover/item:text-accent/70 transition-colors">
+                          {meta.subtitle} • {cat.customPriceText || meta.priceText}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <Link href="#how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">How It Works</Link>
+          <Link href="/providers" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Partner Portal</Link>
         </nav>
         <div>
           <Link
             href="/book/general"
-            className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-2 px-6 rounded-md transition-colors"
+            className="bg-accent hover:bg-accent-hover text-ink-inverse text-body-xs tracking-wider uppercase font-semibold py-3 px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer"
           >
             GET A QUOTE
           </Link>
@@ -116,103 +224,51 @@ export default async function HomePage() {
       <section className="py-24 px-6 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center mb-16">
           <span className="text-caption text-accent uppercase block mb-3">OUR PORTFOLIO</span>
-          <h2 className="text-display-md text-ink font-display font-medium mb-4">Five Service Verticals</h2>
+          <h2 className="text-display-md text-ink font-display font-medium mb-4">{sortedCategories.length} Service Verticals</h2>
           <p className="text-body-md text-ink-muted max-w-[60ch] mx-auto">
             Each specialized division operates under custom SLAs, vetted contractors, and specific intake structures to deliver precision Swiss servicing.
           </p>
         </div>
 
-        {/* 5 Cards Responsive Grid */}
+        {/* Dynamic Cards Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Card 1: Aviation */}
-          <div className="border border-border hover:bg-bg-subtle p-8 transition-colors flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                <Plane className="w-6 h-6" />
-              </div>
-              <span className="text-caption text-accent uppercase block mb-1">AVIATION</span>
-              <h3 className="text-display-sm text-ink font-medium mb-3">Private Jets & Helicopters</h3>
-              <p className="text-body-sm text-ink-muted">
-                Exterior wash, deep interior detailing, and cabin restocking in Swiss hangars and FBOs.
-              </p>
-            </div>
-            <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-              <span className="text-caption text-ink-subtle">QUOTE ON REQUEST</span>
-              <Link href="/book/aviation" className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
-            </div>
-          </div>
+          {sortedCategories.map((cat: any, idx: number) => {
+            const meta = verticalMeta[cat.slug];
+            if (!meta) return null;
+            const IconComponent = meta.icon;
 
-          {/* Card 2: Yacht */}
-          <div className="border border-border hover:bg-bg-subtle p-8 transition-colors flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                <Ship className="w-6 h-6" />
-              </div>
-              <span className="text-caption text-accent uppercase block mb-1">YACHT & MARINE</span>
-              <h3 className="text-display-sm text-ink font-medium mb-3">Vessels & Yacht Decks</h3>
-              <p className="text-body-sm text-ink-muted">
-                Teak cleaning, interior detail, end-of-season decommissioning, and marina access.
-              </p>
-            </div>
-            <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-              <span className="text-caption text-ink-subtle">QUOTE ON REQUEST</span>
-              <Link href="/book/yacht" className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
-            </div>
-          </div>
+            const isDomestic = cat.slug === "domestic";
+            const isLast = idx === sortedCategories.length - 1;
+            const isOddTotal = sortedCategories.length % 2 !== 0;
+            
+            const cardColClass = isLast && isOddTotal
+              ? `border ${isDomestic ? "border-accent bg-accent-soft/30 hover:bg-accent-soft/45" : "border-border hover:bg-bg-subtle"} p-8 transition-colors flex flex-col justify-between min-h-[300px] md:col-span-2 lg:col-span-1 relative`
+              : `border ${isDomestic ? "border-accent bg-accent-soft/30 hover:bg-accent-soft/45" : "border-border hover:bg-bg-subtle"} p-8 transition-colors flex flex-col justify-between min-h-[300px] relative`;
 
-          {/* Card 3: Commercial */}
-          <div className="border border-border hover:bg-bg-subtle p-8 transition-colors flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                <Building2 className="w-6 h-6" />
+            return (
+              <div key={cat.slug} className={cardColClass}>
+                {isDomestic && (
+                  <span className="absolute top-4 right-4 bg-accent text-ink-inverse text-[9px] uppercase px-2 py-0.5 rounded-sm font-semibold tracking-wider">
+                    PRIMARY SERVICE
+                  </span>
+                )}
+                <div>
+                  <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
+                    <IconComponent className="w-6 h-6" />
+                  </div>
+                  <span className="text-caption text-accent uppercase block mb-1">{meta.subtitle}</span>
+                  <h3 className="text-display-sm text-ink font-medium mb-3">{meta.title}</h3>
+                  <p className="text-body-sm text-ink-muted">
+                    {meta.description}
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
+                  <span className="text-caption text-ink-subtle uppercase">{cat.customPriceText || meta.priceText}</span>
+                  <Link href={meta.link} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
+                </div>
               </div>
-              <span className="text-caption text-accent uppercase block mb-1">COMMERCIAL</span>
-              <h3 className="text-display-sm text-ink font-medium mb-3">Offices & Co-working</h3>
-              <p className="text-body-sm text-ink-muted">
-                Standard cleanups, after-hours deep cleans, and tailored frequencies for office suites.
-              </p>
-            </div>
-            <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-              <span className="text-caption text-ink-subtle">FROM CHF 150</span>
-              <Link href="/book/commercial" className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
-            </div>
-          </div>
-
-          {/* Card 4: Hospitality */}
-          <div className="border border-border hover:bg-bg-subtle p-8 transition-colors flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                <Home className="w-6 h-6" />
-              </div>
-              <span className="text-caption text-accent uppercase block mb-1">HOSPITALITY</span>
-              <h3 className="text-display-sm text-ink font-medium mb-3">Airbnb Turnover & B&Bs</h3>
-              <p className="text-body-sm text-ink-muted">
-                Fast turnover schedules, linen management, and smartlock key handovers.
-              </p>
-            </div>
-            <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-              <span className="text-caption text-ink-subtle">FROM CHF 120</span>
-              <Link href="/book/hospitality" className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
-            </div>
-          </div>
-
-          {/* Card 5: Special Services */}
-          <div className="border border-border hover:bg-bg-subtle p-8 transition-colors flex flex-col justify-between min-h-[300px] md:col-span-2 lg:col-span-1">
-            <div>
-              <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                <Shield className="w-6 h-6" />
-              </div>
-              <span className="text-caption text-accent uppercase block mb-1">SPECIAL SERVICES</span>
-              <h3 className="text-display-sm text-ink font-medium mb-3">Biohazard & Post-Incident</h3>
-              <p className="text-body-sm text-ink-muted">
-                Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.
-              </p>
-            </div>
-            <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-              <span className="text-caption text-ink-subtle">PHONE ONLY</span>
-              <Link href="/book/special-services" className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </section>
 
@@ -394,10 +450,13 @@ export default async function HomePage() {
           <div>
             <span className="text-caption text-accent uppercase block mb-4">SERVICES</span>
             <ul className="space-y-2 text-body-sm text-ink-subtle">
-              <li><Link href="/aviation" className="hover:text-ink-inverse transition-colors">Aviation Division</Link></li>
-              <li><Link href="/yacht" className="hover:text-ink-inverse transition-colors">Yacht & Marine</Link></li>
-              <li><Link href="/commercial" className="hover:text-ink-inverse transition-colors">Commercial Real Estate</Link></li>
-              <li><Link href="/hospitality" className="hover:text-ink-inverse transition-colors">Hospitality & Turnover</Link></li>
+              {sortedCategories.map((cat: any) => (
+                <li key={cat.slug}>
+                  <Link href={verticalMeta[cat.slug]?.link || `/book/${cat.slug}`} className="hover:text-ink-inverse transition-colors">
+                    {verticalMeta[cat.slug]?.title || cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           {/* Col 3 */}
@@ -405,7 +464,9 @@ export default async function HomePage() {
             <span className="text-caption text-accent uppercase block mb-4">COMPANY</span>
             <ul className="space-y-2 text-body-sm text-ink-subtle">
               <li><Link href="/about" className="hover:text-ink-inverse transition-colors">About Us</Link></li>
-              <li><Link href="/partners" className="hover:text-ink-inverse transition-colors">Become a Subcontractor</Link></li>
+              <li><Link href="/providers" className="hover:text-ink-inverse transition-colors">Become a Subcontractor</Link></li>
+              <li><Link href="/providers/account/login" className="hover:text-ink-inverse transition-colors">Subcontractor Login</Link></li>
+              <li><Link href="/admin/login" className="hover:text-ink-inverse transition-colors">Staff Login</Link></li>
               <li><Link href="/contact" className="hover:text-ink-inverse transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -442,16 +503,18 @@ export default async function HomePage() {
           href="https://wa.me/41791234567?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean."
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-ink hover:bg-ink-muted text-accent hover:text-accent-hover border border-accent/35 hover:border-accent py-3 px-5 rounded-full flex items-center gap-3 transition-all duration-base shadow-[0_4px_20px_rgba(146,108,21,0.25)] hover:shadow-[0_6px_25px_rgba(146,108,21,0.4)] group"
+          className="bg-ink hover:bg-ink-muted text-accent hover:text-accent-hover border border-accent/35 hover:border-accent h-12 w-12 hover:w-[210px] focus:w-[210px] active:w-[210px] rounded-full flex items-center justify-center hover:justify-start hover:px-4 focus:justify-start focus:px-4 active:justify-start active:px-4 transition-all duration-300 shadow-[0_4px_20px_rgba(146,108,21,0.25)] hover:shadow-[0_6px_25px_rgba(146,108,21,0.4)] group overflow-hidden select-none"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-          </span>
-          <svg className="w-5 h-5 fill-currentColor animate-pulse" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.501-5.734-1.453L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.497 0 9.965-4.437 9.968-9.894.002-2.643-1.022-5.127-2.887-6.995C16.48 1.848 14.004.825 11.368.825 5.867.825 1.4 5.26 1.397 10.72c-.001 1.932.504 3.814 1.462 5.474L1.879 22.4l6.402-1.681c-.553-.307-1.112-.663-1.634-1.565z"/>
-          </svg>
-          <span className="text-caption tracking-wider font-semibold text-ink-inverse group-hover:text-accent transition-colors">
+          <div className="relative shrink-0 flex items-center justify-center">
+            <svg className="w-5 h-5 fill-currentColor animate-pulse" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.501-5.734-1.453L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.497 0 9.965-4.437 9.968-9.894.002-2.643-1.022-5.127-2.887-6.995C16.48 1.848 14.004.825 11.368.825 5.867.825 1.4 5.26 1.397 10.72c-.001 1.932.504 3.814 1.462 5.474L1.879 22.4l6.402-1.681c-.553-.307-1.112-.663-1.634-1.565z"/>
+            </svg>
+            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+            </span>
+          </div>
+          <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 group-hover:ml-3 group-focus:max-w-[150px] group-focus:opacity-100 group-focus:ml-3 group-active:max-w-[150px] group-active:opacity-100 group-active:ml-3 transition-all duration-300 ease-out whitespace-nowrap text-caption tracking-wider font-semibold text-ink-inverse group-hover:text-accent group-focus:text-accent group-active:text-accent">
             CONCIERGE ON-CALL
           </span>
         </a>

@@ -17,9 +17,16 @@ model User {
   phone                 String?
   locale                String              @default("en")
   gdprMarketingConsent  Boolean             @default(false)
+  twoFactorSecret       String?
+  twoFactorEnabled      Boolean             @default(false)
+  twoFactorMethod       String              @default("totp") // totp, email
+  emailOtpCode          String?
+  emailOtpExpiresAt     DateTime?
+  loginCount            Int                 @default(0)
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   deletedAt             DateTime?
+
 
   providerCompanyId     String?
   providerCompany       Provider?           @relation(fields: [providerCompanyId], references: [id], onDelete: SetNull)
@@ -96,13 +103,14 @@ model ProviderTeam {
 
 // 5. Service Categories
 model ServiceCategory {
-  slug         String            @id
-  name         String
-  vertical     String            // aviation, yacht, commercial, hospitality, special
-  pricingModel String            @default("instant") // instant, quote_on_request
-  active       Boolean           @default(true)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  slug            String            @id
+  name            String
+  vertical        String            // aviation, yacht, commercial, hospitality, special
+  pricingModel    String            @default("instant") // instant, quote_on_request
+  active          Boolean           @default(true)
+  customPriceText String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   offerings    ServiceOffering[]
   bookings     Booking[]

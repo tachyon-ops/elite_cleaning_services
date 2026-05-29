@@ -1,9 +1,53 @@
 import { db } from "@/lib/db";
+import { hashPassword } from "@/lib/auth-utils";
 
 export async function checkAndSeedDb() {
   try {
+    // Migrate plain-text passwords to hashed passwords (if any exist)
+    const plainUsers = await db.user.findMany();
+    for (const u of plainUsers) {
+      if (u.passwordHash && !u.passwordHash.includes(":")) {
+        const hashed = hashPassword(u.passwordHash);
+        await db.user.update({
+          where: { id: u.id },
+          data: { passwordHash: hashed }
+        });
+        console.log(`Migrated password for user ${u.email} to secure hash.`);
+      }
+    }
+
+    // Check if domestic is missing and seed it
+    const domesticCat = await db.serviceCategory.findUnique({
+      where: { slug: "domestic" }
+    });
+
+    if (!domesticCat) {
+      console.log("Domestic category missing. Seeding domestic category and offerings...");
+      await db.serviceCategory.create({
+        data: { slug: "domestic", name: "Domestic Cleaning", vertical: "domestic", pricingModel: "instant", active: true }
+      });
+
+      const domesticOfferings = [
+        { categorySlug: "domestic", name: "Standard Home Clean", basePriceChf: 80.00, unit: "per_job", description: "Includes bedroom cleaning, living room dusting, floor mopping, kitchen wipe down, and trash emptying." },
+        { categorySlug: "domestic", name: "Deep Home Clean", basePriceChf: 140.00, unit: "per_job", description: "Standard clean + carpet cleaning, window interiors, and kitchen deep cleaning." }
+      ];
+
+      for (const off of domesticOfferings) {
+        await db.serviceOffering.create({
+          data: {
+            categorySlug: off.categorySlug,
+            name: off.name,
+            basePriceChf: off.basePriceChf,
+            unit: off.unit,
+            description: off.description
+          }
+        });
+      }
+      console.log("Domestic cleaning seeded successfully.");
+    }
+
     const count = await db.serviceCategory.count();
-    if (count > 0) {
+    if (count > 1) { // 1 if only domestic was just seeded, but normally it should seed everything if completely empty
       console.log("Database already seeded. Categories count:", count);
       return;
     }
@@ -146,30 +190,6 @@ export async function checkAndSeedDb() {
         })
       }
     });
-
-    // Create default superadmin
-    await db.user.create({
-      data: {
-        email: "admin@elite-cleaning.ch",
-        name: "Elite Administrator",
-        passwordHash: "admin123",
-        role: "super_admin",
-        locale: "en"
-      }
-    });
-
-    // Create alpine staff
-    await db.user.create({
-      data: {
-        email: "partner@alpineclean.ch",
-        name: "Alpine Manager",
-        passwordHash: "partner123",
-        role: "provider_staff",
-        providerCompanyId: provider1.id,
-        locale: "en"
-      }
-    });
-
     console.log("Database seeded successfully!");
   } catch (error) {
     console.error("Error during checkAndSeedDb:", error);

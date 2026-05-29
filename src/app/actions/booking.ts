@@ -165,6 +165,15 @@ function calculatePrice(categorySlug: string, intake: any) {
     }
     const freq = intake.frequency;
     if (freq === "weekly") frequencyDiscount = 0.10; // 10%
+  } else if (categorySlug === "domestic") {
+    basePrice = 80.00;
+    const bedrooms = Number(intake.bedrooms) || 1;
+    const bathrooms = Number(intake.bathrooms) || 1;
+    sizeAdjustment = (bedrooms - 1) * 20.00 + (bathrooms - 1) * 15.00;
+    const freq = intake.frequency;
+    if (freq === "weekly") frequencyDiscount = 0.15; // 15%
+    else if (freq === "bi-weekly") frequencyDiscount = 0.10; // 10%
+    else if (freq === "monthly") frequencyDiscount = 0.05; // 5%
   }
 
   const subtotal = basePrice + sizeAdjustment + addons;
@@ -269,6 +278,18 @@ export async function createBooking(payload: {
     });
 
     return { success: true, bookingId: booking.id };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 5. Get active categories for booking flow and header
+export async function getActiveCategories() {
+  try {
+    const categories = await db.serviceCategory.findMany({
+      where: { active: true }
+    });
+    return { success: true, categories };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

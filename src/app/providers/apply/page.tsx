@@ -190,6 +190,7 @@ export default function ProviderApplyPage() {
                 <label className="text-caption text-[#a6a6a6] font-semibold uppercase block">Verticals Requested</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
+                    { id: "domestic", label: "Domestic" },
                     { id: "commercial", label: "Commercial" },
                     { id: "hospitality", label: "Hospitality" },
                     { id: "aviation", label: "Aviation" },

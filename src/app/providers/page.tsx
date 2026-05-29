@@ -13,12 +13,20 @@ export default function ProvidersLandingPage() {
         <Link href="/" className="font-display font-medium text-body-lg tracking-widest text-[#f2f2f2] hover:text-accent transition-colors">
           ELITE CLEANING
         </Link>
-        <Link
-          href="/providers/apply"
-          className="bg-accent hover:bg-accent-hover text-ink-inverse text-button px-5 py-2.5 rounded font-semibold transition-colors"
-        >
-          Apply to Join
-        </Link>
+        <div className="flex gap-4 items-center">
+          <Link
+            href="/providers/account/login"
+            className="text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors mr-2"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/providers/apply"
+            className="bg-accent hover:bg-accent-hover text-ink-inverse text-button px-5 py-2.5 rounded font-semibold transition-colors"
+          >
+            Apply to Join
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}

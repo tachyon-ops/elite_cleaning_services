@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, Lock, CreditCard, Mail, Phone, Clock } from "lucide-react";
-import { getAvailableSlots, sendOtp, verifyOtp, createBooking } from "@/app/actions/booking";
+import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 
 export default function BookingPage() {
   const params = useParams();
@@ -63,15 +63,29 @@ export default function BookingPage() {
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
 
+  const [activeSlugs, setActiveSlugs] = useState<string[]>([]);
+  const [checkingActive, setCheckingActive] = useState(true);
+
+  useEffect(() => {
+    getActiveCategories().then((res) => {
+      setCheckingActive(false);
+      if (res.success && res.categories) {
+        setActiveSlugs(res.categories.map((c: any) => c.slug));
+      }
+    });
+  }, []);
+
   // Validate Vertical
-  const isValidVertical = ["commercial", "hospitality"].includes(vertical);
+  const isValidVertical = ["commercial", "hospitality", "domestic"].includes(vertical) && activeSlugs.includes(vertical);
 
   // Auto-redirect if invalid vertical is requested
   useEffect(() => {
-    if (!isValidVertical && vertical !== "general") {
-      router.push("/book/general");
+    if (!checkingActive) {
+      if (!isValidVertical && vertical !== "general") {
+        router.push("/book/general");
+      }
     }
-  }, [vertical, isValidVertical, router]);
+  }, [vertical, isValidVertical, checkingActive, router]);
 
   // Fetch Slots when date changes
   useEffect(() => {
@@ -115,6 +129,15 @@ export default function BookingPage() {
       }
       const freq = intake.frequency;
       if (freq === "weekly") frequencyDiscount = 0.10;
+    } else if (vertical === "domestic") {
+      basePrice = 80.00;
+      const bedrooms = Number(intake.bedrooms) || 1;
+      const bathrooms = Number(intake.bathrooms) || 1;
+      sizeAdjustment = (bedrooms - 1) * 20.00 + (bathrooms - 1) * 15.00;
+      const freq = intake.frequency;
+      if (freq === "weekly") frequencyDiscount = 0.15;
+      else if (freq === "bi-weekly") frequencyDiscount = 0.10;
+      else if (freq === "monthly") frequencyDiscount = 0.05;
     }
 
     const subtotal = basePrice + sizeAdjustment + addons;
@@ -336,7 +359,7 @@ export default function BookingPage() {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : vertical === "hospitality" ? (
                 <div className="space-y-4 pt-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-caption text-ink font-semibold uppercase">Property Type</label>
@@ -411,6 +434,58 @@ export default function BookingPage() {
                       <option value="smartlock">Smartlock API access</option>
                       <option value="in-person">In-person handoff</option>
                     </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 pt-4">
+                  {/* Domestic Intake Form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Bedrooms</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={intake.bedrooms || 1}
+                        onChange={(e) => handleIntakeChange("bedrooms", parseInt(e.target.value) || 1)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Bathrooms</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={intake.bathrooms || 1}
+                        onChange={(e) => handleIntakeChange("bathrooms", parseInt(e.target.value) || 1)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">Frequency</label>
+                    <select
+                      value={intake.frequency}
+                      onChange={(e) => handleIntakeChange("frequency", e.target.value)}
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                    >
+                      <option value="one-off">One-off clean</option>
+                      <option value="weekly">Weekly (Save 15%)</option>
+                      <option value="bi-weekly">Bi-weekly (Save 10%)</option>
+                      <option value="monthly">Monthly (Save 5%)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">Special Instructions / Pets</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder="Access codes, key location, pets in house, priority rooms..."
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-24"
+                    />
                   </div>
                 </div>
               )}
@@ -514,12 +589,12 @@ export default function BookingPage() {
               <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6">
                 <div className="flex justify-between text-body-sm text-ink-muted">
                   <span>Base cleanup fee</span>
-                  <span>CHF {vertical === "commercial" ? "150.00" : "120.00"}</span>
+                  <span>CHF {vertical === "commercial" ? "150.00" : vertical === "hospitality" ? "120.00" : "80.00"}</span>
                 </div>
-                {pricing.subtotal - (vertical === "commercial" ? 150 : 120) - (intake.linenChange ? 35 : 0) > 0 && (
+                {pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
                   <div className="flex justify-between text-body-sm text-ink-muted">
                     <span>Size/Scope adjustment</span>
-                    <span>+CHF {Math.round((pricing.subtotal - (vertical === "commercial" ? 150 : 120) - (intake.linenChange ? 35 : 0)) * 100) / 100}</span>
+                    <span>+CHF {Math.round((pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * 100) / 100}</span>
                   </div>
                 )}
                 {intake.linenChange && (

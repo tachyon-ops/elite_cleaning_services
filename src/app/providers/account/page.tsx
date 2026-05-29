@@ -11,7 +11,10 @@ import {
   updateProviderListing,
   logoutProvider,
   getProviderCompanyId,
-  isProviderAuthenticated
+  isProviderAuthenticated,
+  generateProvider2FASecret,
+  enableProvider2FA,
+  disableProvider2FA
 } from "@/app/actions/provider";
 import {
   ShieldAlert,
@@ -24,7 +27,10 @@ import {
   MapPin,
   Calendar,
   LogOut,
-  Plus
+  Plus,
+  KeyRound,
+  ShieldCheck,
+  X
 } from "lucide-react";
 
 export default function ProviderDashboardPage() {
@@ -49,22 +55,77 @@ export default function ProviderDashboardPage() {
   const [decliningOfferId, setDecliningOfferId] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState("capacity");
 
+  // 2FA state variables
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [setup2FAOpen, setSetup2FAOpen] = useState(false);
+  const [twoFactorSecret, setTwoFactorSecret] = useState("");
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [totpToken, setTotpToken] = useState("");
+  const [totpError, setTotpError] = useState("");
+  const [loading2FA, setLoading2FA] = useState(false);
+
   // Load provider details
   const loadData = async (targetId: string) => {
     setLoading(true);
     const res = await getProviderPortalData(targetId);
     if (res.success) {
-      setData(res.provider);
-      // If offers or bookings need sorting
       setData({
         provider: res.provider,
         offers: res.offers,
         bookings: res.bookings
       });
+      setUserProfile(res.user);
     } else {
       setError(res.error || "Failed to load portal data");
     }
     setLoading(false);
+  };
+
+  const handleStart2FA = async () => {
+    if (!userProfile?.email) return;
+    setTotpError("");
+    setLoading2FA(true);
+    const res = await generateProvider2FASecret(userProfile.email);
+    setLoading2FA(false);
+    if (res.success && res.secret && res.qrDataUrl) {
+      setTwoFactorSecret(res.secret);
+      setQrCodeUrl(res.qrDataUrl);
+      setSetup2FAOpen(true);
+    } else {
+      setTotpError(res.error || "Failed to initiate 2FA");
+    }
+  };
+
+  const handleVerifyAndEnable2FA = async () => {
+    if (!userProfile?.email || totpToken.length !== 6) return;
+    setTotpError("");
+    setLoading2FA(true);
+    const res = await enableProvider2FA(userProfile.email, twoFactorSecret, totpToken);
+    setLoading2FA(false);
+
+    if (res.success) {
+      setSetup2FAOpen(false);
+      setTwoFactorSecret("");
+      setQrCodeUrl("");
+      setTotpToken("");
+      if (companyId) loadData(companyId);
+    } else {
+      setTotpError(res.error || "Failed to verify token");
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!userProfile?.email || !confirm("Are you sure you want to disable Two-Factor Authentication? Your account security will be significantly reduced.")) return;
+    setTotpError("");
+    setLoading2FA(true);
+    const res = await disableProvider2FA(userProfile.email);
+    setLoading2FA(false);
+
+    if (res.success) {
+      if (companyId) loadData(companyId);
+    } else {
+      alert("Failed to disable 2FA: " + res.error);
+    }
   };
 
   useEffect(() => {
@@ -403,6 +464,99 @@ export default function ProviderDashboardPage() {
         {/* Right Column: Settings & Documents */}
         <div className="space-y-6">
           
+          {/* Two-Factor Authentication (2FA) */}
+          <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
+            <h3 className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-accent" /> Security Settings
+            </h3>
+            
+            {totpError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded text-body-xs">
+                {totpError}
+              </div>
+            )}
+
+            {userProfile?.twoFactorEnabled ? (
+              <div className="space-y-3 bg-[#0d0d0d] p-4 rounded-lg border border-green-500/20">
+                <div className="flex items-center gap-2 text-green-400 text-body-xs font-semibold">
+                  <ShieldCheck className="w-4 h-4" /> Two-Factor Authentication Active
+                </div>
+                <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+                  Your account is protected by an Authenticator application token required during log in.
+                </p>
+                <button
+                  onClick={handleDisable2FA}
+                  disabled={loading2FA}
+                  className="w-full bg-red-600/10 hover:bg-red-650/15 border border-red-500/30 text-red-400 text-caption font-bold py-2 rounded transition-colors cursor-pointer"
+                >
+                  {loading2FA ? "PROCESSING..." : "DISABLE 2FA"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {!setup2FAOpen ? (
+                  <div className="space-y-3 bg-[#0d0d0d] p-4 rounded-lg border border-[#262626]">
+                    <div className="text-caption text-yellow-500 font-semibold uppercase">2FA Disabled</div>
+                    <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+                      Enable Multi-Factor Authentication to secure your dispatch account from credential leakage.
+                    </p>
+                    <button
+                      onClick={handleStart2FA}
+                      disabled={loading2FA}
+                      className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold py-2 rounded transition-colors cursor-pointer"
+                    >
+                      {loading2FA ? "GENERATING SECURE KEY..." : "ENABLE 2-FACTOR AUTH"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4 bg-[#0d0d0d] p-4 rounded-lg border border-[#262626]">
+                    <div className="flex justify-between items-center pb-2 border-b border-[#1f1f1f]">
+                      <span className="text-caption text-accent font-semibold uppercase font-mono">2FA Setup</span>
+                      <button onClick={() => setSetup2FAOpen(false)} className="text-[#a6a6a6] hover:text-[#f2f2f2] cursor-pointer">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
+                      Scan QR or input the secret key manually into Google Authenticator/Authy.
+                    </p>
+
+                    <div className="flex flex-col items-center gap-3 bg-[#141414] p-3 rounded border border-[#262626]">
+                      {qrCodeUrl && (
+                        <img src={qrCodeUrl} alt="2FA QR Code" className="w-32 h-32 border border-[#262626] p-1.5 bg-white rounded animate-fade-in" />
+                      )}
+                      <code className="text-[10px] text-accent font-mono block select-all p-1.5 bg-[#080808] border border-[#1f1f1f] rounded break-all w-full text-center">
+                        {twoFactorSecret}
+                      </code>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase">Verify Authenticator Code</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={totpToken}
+                          onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
+                          placeholder="e.g. 123456"
+                          className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2 rounded text-body-xs outline-none focus:border-accent w-24 tracking-[0.2em] font-mono text-center"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyAndEnable2FA}
+                          disabled={totpToken.length !== 6 || loading2FA}
+                          className="bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold px-3 py-2 rounded transition-colors flex-1 cursor-pointer"
+                        >
+                          {loading2FA ? "VERIFYING..." : "CONFIRM & SAVE"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Listings & Capabilities */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
             <h3 className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">

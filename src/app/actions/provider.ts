@@ -2,6 +2,8 @@
 
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifyPassword, verifyTOTPToken, getTOTPAuthUrl, generateTOTPSecret } from "@/lib/auth-utils";
+import QRCode from "qrcode";
 
 // 1. Submit Application
 export async function applyProvider(payload: {
@@ -39,23 +41,102 @@ export async function applyProvider(payload: {
   }
 }
 
-// 2. Authentication simulation
+// 2. Authentication
 export async function loginProvider(email: string, passphrase: string) {
   try {
     const user = await db.user.findFirst({
       where: { email, role: "provider_staff" }
     });
-
-    if (!user || user.passwordHash !== passphrase) {
+ 
+    if (!user || !user.passwordHash || !verifyPassword(passphrase, user.passwordHash)) {
       throw new Error("Invalid provider credentials");
     }
 
+    if (user.twoFactorEnabled && user.twoFactorSecret) {
+      return { success: true, requires2FA: true, userId: user.id };
+    }
+ 
     const cookieStore = await cookies();
-    cookieStore.set("provider_session", "true", { httpOnly: true, secure: true, path: "/" });
-    cookieStore.set("provider_email", user.email, { httpOnly: true, secure: true, path: "/" });
-    cookieStore.set("provider_company_id", user.providerCompanyId || "", { httpOnly: true, secure: true, path: "/" });
+    cookieStore.set("provider_session", "true", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
+    cookieStore.set("provider_email", user.email, { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
+    cookieStore.set("provider_company_id", user.providerCompanyId || "", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
+ 
+    return { success: true, companyId: user.providerCompanyId };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function loginProvider2FA(userId: string, token: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.role !== "provider_staff" || !user.twoFactorSecret) {
+      throw new Error("Invalid user or 2FA not set up");
+    }
+
+    const isValid = verifyTOTPToken(token, user.twoFactorSecret);
+    if (!isValid) {
+      throw new Error("Invalid 2FA token");
+    }
+
+    const cookieStore = await cookies();
+    cookieStore.set("provider_session", "true", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
+    cookieStore.set("provider_email", user.email, { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
+    cookieStore.set("provider_company_id", user.providerCompanyId || "", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
 
     return { success: true, companyId: user.providerCompanyId };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 2.1 2FA Actions for Partner Dashboard
+export async function generateProvider2FASecret(email: string) {
+  try {
+    const secret = generateTOTPSecret();
+    const otpauthUrl = getTOTPAuthUrl(email, secret);
+    const qrDataUrl = await QRCode.toDataURL(otpauthUrl);
+    return { success: true, secret, qrDataUrl };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function enableProvider2FA(email: string, secret: string, token: string) {
+  try {
+    const isValid = verifyTOTPToken(token, secret);
+    if (!isValid) {
+      throw new Error("Invalid 2FA token. Please verify the code on your Authenticator app.");
+    }
+
+    await db.user.update({
+      where: { email },
+      data: {
+        twoFactorSecret: secret,
+        twoFactorEnabled: true
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function disableProvider2FA(email: string) {
+  try {
+    await db.user.update({
+      where: { email },
+      data: {
+        twoFactorSecret: null,
+        twoFactorEnabled: false
+      }
+    });
+
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -113,7 +194,17 @@ export async function getProviderPortalData(companyId: string) {
       orderBy: { scheduledAt: "asc" }
     });
 
-    return { success: true, provider, offers, bookings };
+    const cookieStore = await cookies();
+    const email = cookieStore.get("provider_email")?.value || "";
+    const user = await db.user.findFirst({
+      where: { email, role: "provider_staff" },
+      select: {
+        email: true,
+        twoFactorEnabled: true
+      }
+    });
+
+    return { success: true, provider, offers, bookings, user };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

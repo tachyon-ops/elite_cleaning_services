@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Shield, BookOpen, Users, LogOut, LayoutDashboard } from "lucide-react";
+import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound } from "lucide-react";
+import { getLoggedInAdmin } from "@/app/actions/admin";
 
 export default async function AdminLayout({
   children
@@ -11,6 +12,8 @@ export default async function AdminLayout({
 }) {
   const cookieStore = await cookies();
   const isAuthenticated = cookieStore.get("admin_session")?.value === "true";
+  const admin = await getLoggedInAdmin();
+  const isSuperAdmin = admin?.role === "super_admin";
 
   // Check path name via header or check simple status
   // Note: Since this is a server layout, if not authenticated we let pages handle redirect or check here.
@@ -55,6 +58,20 @@ export default async function AdminLayout({
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
               <Shield className="w-4 h-4" /> Providers List
+            </Link>
+            {isSuperAdmin && (
+              <Link
+                href="/admin/verticals"
+                className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+              >
+                <Sliders className="w-4 h-4" /> Manage Verticals
+              </Link>
+            )}
+            <Link
+              href="/admin/settings"
+              className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+            >
+              <KeyRound className="w-4 h-4" /> Security Settings
             </Link>
           </nav>
 
