@@ -64,12 +64,12 @@ export async function getDashboardStats() {
     const payments = await db.payment.findMany({
       where: { status: "succeeded" }
     });
-    const revenueMTD = payments.reduce((sum, p) => sum + Number(p.amountChf), 0);
+    const revenueMTD = payments.reduce((sum: number, p) => sum + Number(p.amountChf), 0);
 
     // Calculate average satisfaction rating
     const reviews = await db.review.findMany();
     const avgRating = reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      ? reviews.reduce((sum: number, r) => sum + r.rating, 0) / reviews.length
       : 5.0;
 
     return {
