@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft } from "lucide-react";
+import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { loginAdmin, loginAdmin2FA, checkAdminExists } from "@/app/actions/admin";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -32,11 +34,11 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     
     setError("");
     setLoading(true);
-    const res = await loginAdmin(email);
+    const res = await loginAdmin(email, password);
     setLoading(false);
 
     if (res) {
@@ -117,9 +119,36 @@ export default function AdminLoginPage() {
               />
             </div>
 
+            <div className="flex flex-col gap-2 relative">
+              <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> Password
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 pr-10 rounded-md text-body-md focus:border-accent outline-none w-full"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={loading || !email || !password}
               className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? "Sending OTP..." : "SEND OTP CODE"} <ArrowRight className="w-4 h-4" />

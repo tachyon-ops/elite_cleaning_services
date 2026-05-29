@@ -24,16 +24,21 @@ export async function checkAdminExists() {
 export async function registerAdmin(payload: {
   name: string;
   email: string;
+  password?: string;
   twoFactorSecret: string;
   twoFactorToken: string;
 }) {
   try {
-    const { name, email, twoFactorSecret, twoFactorToken } = payload;
+    const { name, email, password, twoFactorSecret, twoFactorToken } = payload;
     
     // Check if an admin already exists
     const existsRes = await checkAdminExists();
     if (existsRes.success && existsRes.exists) {
       throw new Error("Admin registration is closed. An administrator already exists.");
+    }
+
+    if (!password || password.length < 8) {
+      throw new Error("Password must be at least 8 characters long.");
     }
 
     if (!twoFactorSecret || !twoFactorToken) {
@@ -49,6 +54,7 @@ export async function registerAdmin(payload: {
       data: {
         name,
         email: email.trim().toLowerCase(),
+        passwordHash: hashPassword(password),
         role: "super_admin",
         twoFactorSecret: twoFactorSecret,
         twoFactorEnabled: true,
@@ -89,13 +95,21 @@ export async function registerAdmin(payload: {
 }
 
 // 1.2 Admin login action (Initiates OTP dispatch)
-export async function loginAdmin(email: string) {
+export async function loginAdmin(email: string, password?: string) {
   try {
     const adminUser = await db.user.findFirst({
       where: { email: email.trim().toLowerCase(), role: "super_admin" }
     });
 
     if (!adminUser) {
+      throw new Error("Invalid administrative credentials");
+    }
+
+    if (!password) {
+      throw new Error("Password is required");
+    }
+
+    if (!adminUser.passwordHash || !verifyPassword(password, adminUser.passwordHash)) {
       throw new Error("Invalid administrative credentials");
     }
 

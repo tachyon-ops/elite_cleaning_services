@@ -17,6 +17,8 @@ export default function AdminSignupPage() {
   // Form inputs
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // 2FA details
   const [twoFactorSecret, setTwoFactorSecret] = useState("");
@@ -103,8 +105,13 @@ export default function AdminSignupPage() {
     e.preventDefault();
     setError("");
 
-    if (!name || !email) {
+    if (!name || !email || !password) {
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -117,6 +124,7 @@ export default function AdminSignupPage() {
     const res = await registerAdmin({
       name,
       email,
+      password,
       twoFactorSecret,
       twoFactorToken: totpToken
     });
@@ -217,6 +225,33 @@ export default function AdminSignupPage() {
                   placeholder="e.g. admin@elite-cleaning.ch"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
                 />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5 relative">
+              <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> Choose Password
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 8 characters"
+                  className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 pr-10 rounded-md text-body-sm focus:border-accent outline-none w-full"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
