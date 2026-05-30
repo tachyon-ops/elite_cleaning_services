@@ -44,6 +44,37 @@ const INTERNAL_TO_VERTICAL: Record<string, Record<string, string>> = {
   pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate" }
 };
 
+const COOKIE_OPTIONS = {
+  path: "/",
+  httpOnly: false,
+  secure: false, // Allow language preference cookie to be set/sent over HTTP in all environments (non-sensitive preference)
+  sameSite: "lax" as const, // Lax SameSite preserves the preference when arriving from external links or bookmarks
+  maxAge: 60 * 60 * 24 * 365, // 1 year
+};
+
+function getBrowserLocale(request: NextRequest): string | null {
+  const acceptLanguage = request.headers.get("accept-language");
+  if (!acceptLanguage) return null;
+
+  const parsedLangs = acceptLanguage
+    .split(",")
+    .map(lang => {
+      const parts = lang.split(";");
+      const code = parts[0].trim().split("-")[0].toLowerCase();
+      const qPart = parts[1];
+      const q = qPart ? parseFloat(qPart.split("=")[1] || "1") : 1;
+      return { code, q };
+    })
+    .sort((a, b) => b.q - a.q);
+
+  for (const lang of parsedLangs) {
+    if (LOCALES.includes(lang.code)) {
+      return lang.code;
+    }
+  }
+  return null;
+}
+
 function getLocalizationInfo(pathname: string) {
   const parts = pathname.split("/");
   let hasPrefix = false;
@@ -197,13 +228,28 @@ export async function middleware(request: NextRequest) {
     });
   };
 
+  // If the request is a POST (like Server Actions or form submissions),
+  // bypass redirections and do not overwrite or set NEXT_LOCALE cookie.
+  // We simply rewrite to the internal route and set the x-locale header.
+  if (request.method === "POST") {
+    const rewriteUrl = new URL(locInfo.internalPathname, request.url);
+    const rewriteResp = NextResponse.rewrite(rewriteUrl, {
+      request: {
+        headers: new Headers(request.headers),
+      }
+    });
+    applySessionState(rewriteResp);
+    rewriteResp.headers.set("x-locale", locInfo.urlLocale);
+    return rewriteResp;
+  }
+
   // If the path contains the DEFAULT locale prefix (e.g. /de/...), redirect to the prefixless URL
   if (locInfo.urlLocale === DEFAULT_LOCALE && locInfo.hasPrefix) {
     const cleanPath = pathname.replace(`/${DEFAULT_LOCALE}`, "") || "/";
     const redirectUrl = new URL(cleanPath, request.url);
     const redirectResp = NextResponse.redirect(redirectUrl);
     applySessionState(redirectResp);
-    redirectResp.cookies.set("NEXT_LOCALE", DEFAULT_LOCALE, { path: "/" });
+    redirectResp.cookies.set("NEXT_LOCALE", DEFAULT_LOCALE, COOKIE_OPTIONS);
     return redirectResp;
   }
 
@@ -212,13 +258,14 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = new URL(locInfo.canonicalPathname, request.url);
     const redirectResp = NextResponse.redirect(redirectUrl);
     applySessionState(redirectResp);
-    redirectResp.cookies.set("NEXT_LOCALE", locInfo.urlLocale, { path: "/" });
+    redirectResp.cookies.set("NEXT_LOCALE", locInfo.urlLocale, COOKIE_OPTIONS);
     return redirectResp;
   }
 
   // If the path DOES NOT have a locale prefix (e.g. /book/domestic or /)
   if (!locInfo.hasPrefix) {
-    const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value || DEFAULT_LOCALE;
+    const hasCookie = request.cookies.has("NEXT_LOCALE");
+    const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value || getBrowserLocale(request) || DEFAULT_LOCALE;
 
     // If the cookie locale is not the default locale, redirect to the prefixed canonical URL
     if (cookieLocale !== DEFAULT_LOCALE && LOCALES.includes(cookieLocale)) {
@@ -226,6 +273,9 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL(canonicalPath, request.url);
       const redirectResp = NextResponse.redirect(redirectUrl);
       applySessionState(redirectResp);
+      if (!hasCookie) {
+        redirectResp.cookies.set("NEXT_LOCALE", cookieLocale, COOKIE_OPTIONS);
+      }
       return redirectResp;
     }
   }
@@ -239,7 +289,7 @@ export async function middleware(request: NextRequest) {
   });
 
   applySessionState(rewriteResp);
-  rewriteResp.cookies.set("NEXT_LOCALE", locInfo.urlLocale, { path: "/" });
+  rewriteResp.cookies.set("NEXT_LOCALE", locInfo.urlLocale, COOKIE_OPTIONS);
   rewriteResp.headers.set("x-locale", locInfo.urlLocale);
 
   return rewriteResp;

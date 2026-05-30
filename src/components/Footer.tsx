@@ -29,6 +29,16 @@ export async function Footer() {
   const dictionary = getTranslationsForLocale(locale);
   const t = (key: string) => translate(key, dictionary);
 
+  const phoneSetting = await db.systemSetting.findUnique({
+    where: { key: "contact_phone" }
+  });
+  const emailSetting = await db.systemSetting.findUnique({
+    where: { key: "contact_email" }
+  });
+
+  const phone = phoneSetting?.value || COMPANY_CONFIG.phone;
+  const email = emailSetting?.value || COMPANY_CONFIG.email;
+
   const activeCategories = await db.serviceCategory.findMany({
     where: { active: true }
   }) as CategoryType[];
@@ -83,11 +93,15 @@ export async function Footer() {
           <div className="space-y-3 text-body-sm text-ink-subtle">
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-accent" />
-              <span>{COMPANY_CONFIG.phone}</span>
+              <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="hover:text-ink-inverse transition-colors">
+                {phone}
+              </a>
             </div>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-accent" />
-              <span>{COMPANY_CONFIG.email}</span>
+              <a href={`mailto:${email}`} className="hover:text-ink-inverse transition-colors">
+                {email}
+              </a>
             </div>
           </div>
         </div>

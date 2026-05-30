@@ -9,6 +9,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { COMPANY_CONFIG } from "@/lib/config";
 import { getSystemSetting } from "@/app/actions/admin";
+import HeroQuoteCalculator from "@/components/HeroQuoteCalculator";
 
 export const dynamic = "force-dynamic";
 
@@ -138,29 +139,10 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Right Half: Editorial Imagery Block (Line-Art & Fallback Graphic per §6.3) */}
-        <div className="flex-1 bg-bg-subtle border-t lg:border-t-0 lg:border-l border-border flex items-center justify-center p-8 lg:p-16 relative overflow-hidden select-none">
+        {/* Right Half: Editorial Imagery Block / Interactive Calculator */}
+        <div className="flex-1 bg-bg-subtle border-t lg:border-t-0 lg:border-l border-border flex items-center justify-center p-8 lg:p-16 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px]"></div>
-          <div className="border border-border p-8 md:p-12 bg-bg max-w-md w-full relative z-10 rounded-lg shadow-md">
-            <span className="text-caption text-accent block mb-2">{t("preview.title")}</span>
-            <span className="font-display text-display-lg text-ink font-bold block leading-none mb-1">CHF 0.00</span>
-            <span className="text-body-sm text-ink-subtle block mb-6">{t("preview.subtitle")}</span>
-            
-            <div className="space-y-4 border-t border-border pt-6">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">{t("preview.aviationDetailing")}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">{t("preview.yachtTeakCare")}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">{t("preview.commercialOffices")}</span>
-              </div>
-            </div>
-          </div>
+          <HeroQuoteCalculator />
         </div>
       </section>
 

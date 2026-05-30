@@ -110,14 +110,18 @@
       "mfaMethod": "MFA Dispatch Method",
       "enableMfa": "ENABLE MULTI-FACTOR AUTH",
       "disableMfa": "DISABLE 2-FACTOR AUTH",
-      "whatsappConfig": "WhatsApp Configuration",
+      "whatsappConfig": "Company & Contact Configuration",
       "whatsappNumberLabel": "WhatsApp Number (Digits only)",
       "displayLabel": "Display Label",
+      "contactPhoneLabel": "Contact Phone Number",
+      "contactEmailLabel": "Contact Email Address",
       "saveSettings": "SAVE SETTINGS",
-      "whatsappSuccess": "WhatsApp settings updated successfully.",
+      "whatsappSuccess": "Company settings updated successfully.",
       "whatsappError": "Please enter a valid WhatsApp number (digits only).",
       "totpApp": "Authenticator App (TOTP)",
-      "emailOtp": "Email One-Time Password (OTP)"
+      "emailOtp": "Email One-Time Password (OTP)",
+      "autoCheckoutLabel": "Enable Auto-Checkout & Online Deposits",
+      "autoCheckoutDesc": "When enabled, clients check out and pay deposits online via credit card. When disabled, bookings are routed to WhatsApp dispatch for manual validation."
     }
   },
   "partner": {
@@ -167,11 +171,14 @@
     }
   },
   "preview": {
-    "title": "METRIC PREVIEW",
+    "title": "ESTIMATE PREVIEW",
+    "price": "CHF 380.00",
     "subtitle": "No commitment, full refunds up to 24h prior.",
-    "aviationDetailing": "Aviation detailing",
-    "yachtTeakCare": "Yacht teak care",
-    "commercialOffices": "Commercial offices"
+    "item1": "Commercial office cleaning (120 m²)",
+    "item2": "Weekly scheduling (10% discount)",
+    "item3": "Fully insured Swiss dispatch",
+    "bookCurrent": "Book Current Service →",
+    "selectDivision": "Select Service Division"
   },
   "trust": {
     "fullyInsured": "FULLY INSURED",
@@ -518,6 +525,8 @@
     "selectedService": "Service Division",
     "selectedDate": "Date",
     "selectedSlot": "Time Slot",
-    "quoteSummaryTitle": "Live Quote Breakdown"
+    "quoteSummaryTitle": "Live Quote Breakdown",
+    "confirmSendWhatsapp": "Confirm & Send via WhatsApp",
+    "whatsappDispatchNotice": "Your booking will be processed manually. Click below to verify details and send your booking request via WhatsApp."
   }
 }

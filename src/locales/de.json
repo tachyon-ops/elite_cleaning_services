@@ -110,14 +110,18 @@
       "mfaMethod": "MFA-Zustellungsmethode",
       "enableMfa": "MULTI-FAKTOR-AUTH AKTIVIEREN",
       "disableMfa": "2-FAKTOR-AUTH DEAKTIVIEREN",
-      "whatsappConfig": "WhatsApp-Konfiguration",
+      "whatsappConfig": "Firmen- & Kontaktkonfiguration",
       "whatsappNumberLabel": "WhatsApp-Nummer (nur Ziffern)",
       "displayLabel": "Anzeigename / Label",
+      "contactPhoneLabel": "Kontakt-Telefonnummer",
+      "contactEmailLabel": "Kontakt-E-Mail-Adresse",
       "saveSettings": "EINSTELLUNGEN SPEICHERN",
-      "whatsappSuccess": "WhatsApp-Einstellungen erfolgreich aktualisiert.",
+      "whatsappSuccess": "Firmeneinstellungen erfolgreich aktualisiert.",
       "whatsappError": "Bitte geben Sie eine gültige WhatsApp-Nummer ein (nur Ziffern).",
       "totpApp": "Authenticator-App (TOTP)",
-      "emailOtp": "Einmalpasswort per E-Mail (OTP)"
+      "emailOtp": "Einmalpasswort per E-Mail (OTP)",
+      "autoCheckoutLabel": "Auto-Checkout & Online-Anzahlungen aktivieren",
+      "autoCheckoutDesc": "Wenn aktiviert, checken Kunden online aus und zahlen Anzahlungen per Kreditkarte. Wenn deaktiviert, werden Buchungen an den WhatsApp-Dispatch weitergeleitet."
     }
   },
   "partner": {
@@ -167,11 +171,14 @@
     }
   },
   "preview": {
-    "title": "PREISVORSCHAU",
-    "subtitle": "Keine Verpflichtung, volle Rückerstattung bis zu 24 Stunden vorher.",
-    "aviationDetailing": "Flugzeugaufbereitung",
-    "yachtTeakCare": "Yacht-Teakpflege",
-    "commercialOffices": "Gewerbliche Büros"
+    "title": "OFFERTENVORSCHAU",
+    "price": "CHF 380.00",
+    "subtitle": "Keine Verpflichtung, volle Rückerstannung bis zu 24 Stunden vorher.",
+    "item1": "Gewerbliche Büroreinigung (120 m²)",
+    "item2": "Wöchentlicher Turnus (10% Rabatt)",
+    "item3": "Vollständig versicherte Schweizer Ausführung",
+    "bookCurrent": "Dienstleistung buchen →",
+    "selectDivision": "Reinigungsklasse wählen"
   },
   "trust": {
     "fullyInsured": "VOLLSTÄNDIG VERSICHERT",
@@ -518,6 +525,8 @@
     "selectedService": "Servicebereich",
     "selectedDate": "Datum",
     "selectedSlot": "Zeitfenster",
-    "quoteSummaryTitle": "Aktuelle Preisaufstellung"
+    "quoteSummaryTitle": "Aktuelle Preisaufstellung",
+    "confirmSendWhatsapp": "Bestätigen & per WhatsApp senden",
+    "whatsappDispatchNotice": "Ihre Buchung wird manuell bearbeitet. Klicken Sie unten, um die Details zu überprüfen und Ihre Buchungsanfrage per WhatsApp zu senden."
   }
 }

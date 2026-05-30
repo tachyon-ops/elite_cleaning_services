@@ -110,14 +110,18 @@
       "mfaMethod": "Método de Envio MFA",
       "enableMfa": "ATIVAR AUTENTICAÇÃO MULTI-FATOR",
       "disableMfa": "DESATIVAR 2-FACTOR AUTH",
-      "whatsappConfig": "Configuração do WhatsApp",
+      "whatsappConfig": "Configuração da Empresa e Contactos",
       "whatsappNumberLabel": "Número do WhatsApp (Apenas dígitos)",
       "displayLabel": "Etiqueta de Exibição",
+      "contactPhoneLabel": "Número de Telefone de Contacto",
+      "contactEmailLabel": "Endereço de E-mail de Contacto",
       "saveSettings": "GUARDAR DEFINIÇÕES",
-      "whatsappSuccess": "Definições do WhatsApp atualizadas com sucesso.",
+      "whatsappSuccess": "Definições da empresa atualizadas com sucesso.",
       "whatsappError": "Por favor, introduza um número do WhatsApp válido (apenas dígitos).",
       "totpApp": "Aplicação Autenticadora (TOTP)",
-      "emailOtp": "Palavra-passe Única de Email (OTP)"
+      "emailOtp": "Palavra-passe Única de Email (OTP)",
+      "autoCheckoutLabel": "Ativar Auto-Checkout e Depósitos Online",
+      "autoCheckoutDesc": "Quando ativado, os clientes finalizam a compra e pagam depósitos online via cartão de crédito. Quando desativado, as reservas são redirecionadas para o despacho do WhatsApp."
     }
   },
   "partner": {
@@ -168,10 +172,13 @@
   },
   "preview": {
     "title": "PRÉ-VISUALIZAÇÃO DE PREÇOS",
+    "price": "CHF 380.00",
     "subtitle": "Sem compromisso, reembolso total até 24h antes.",
-    "aviationDetailing": "Limpeza de aviação",
-    "yachtTeakCare": "Tratamento de teca em iates",
-    "commercialOffices": "Escritórios comerciais"
+    "item1": "Limpeza de escritórios comerciais (120 m²)",
+    "item2": "Planeamento semanal (10% de desconto)",
+    "item3": "Envio suíço totalmente segurado",
+    "bookCurrent": "Reservar este serviço →",
+    "selectDivision": "Selecionar divisão"
   },
   "trust": {
     "fullyInsured": "TOTALMENTE SEGURADO",
@@ -518,6 +525,8 @@
     "selectedService": "Divisão de Serviço",
     "selectedDate": "Data",
     "selectedSlot": "Horário",
-    "quoteSummaryTitle": "Resumo do Orçamento"
+    "quoteSummaryTitle": "Resumo do Orçamento",
+    "confirmSendWhatsapp": "Confirmar e Enviar por WhatsApp",
+    "whatsappDispatchNotice": "A sua reserva será processada manualmente. Clique abaixo para verificar os detalhes e enviar o seu pedido de reserva via WhatsApp."
   }
 }

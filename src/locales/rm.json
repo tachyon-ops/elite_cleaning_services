@@ -110,14 +110,18 @@
       "mfaMethod": "Metoda da spediziun MFA",
       "enableMfa": "ACTIVAR L'AUTENTIFICAZIUN MULTI-FACTUR",
       "disableMfa": "DESACTIVAR L'AUTH DA 2 FACTURS",
-      "whatsappConfig": "Configuraziun da WhatsApp",
+      "whatsappConfig": "Configuraziun da fatschenta e contacts",
       "whatsappNumberLabel": "Numero da WhatsApp (be cifras)",
       "displayLabel": "Etichetta d'indicaziun",
+      "contactPhoneLabel": "Numero da telefon da contact",
+      "contactEmailLabel": "Adressa dad e-mail da contact",
       "saveSettings": "CONSERVAR LAS CONFIGURAZIUNS",
-      "whatsappSuccess": "Configuraziun da WhatsApp actualisada cun success.",
+      "whatsappSuccess": "Configuraziun da la fatschenta actualisada cun success.",
       "whatsappError": "Inseresch in numero da WhatsApp valid (be cifras).",
       "totpApp": "App d'autentificaziun (TOTP)",
-      "emailOtp": "Parola d'ordine unica per e-mail (OTP)"
+      "emailOtp": "Parola d'ordine unica per e-mail (OTP)",
+      "autoCheckoutLabel": "Activar auto-checkout & deposits online",
+      "autoCheckoutDesc": "Sche activà, ils clients pajan ils deposits online cun carta da credit. Sche desactivà, las reservaziuns vegnan reorientadas a la spediziun da WhatsApp."
     }
   },
   "partner": {
@@ -168,10 +172,13 @@
   },
   "preview": {
     "title": "VISTA PRELIMINARA",
+    "price": "CHF 380.00",
     "subtitle": "Nagut commitments, reembursament cumplain fin 24h avant.",
-    "aviationDetailing": "Pulizia d'aviaziun",
-    "yachtTeakCare": "Mantegniment dal tec da iaht",
-    "commercialOffices": "Buros commercials"
+    "item1": "Nettegiament da buros commercials (120 m²)",
+    "item2": "Planisaziun emnila (10% rabat)",
+    "item3": "Tramissun svizra cumplettamain assicurada",
+    "bookCurrent": "Reservar quest servetsch →",
+    "selectDivision": "Eleger la divisiun"
   },
   "trust": {
     "fullyInsured": "ASSICURÀ TOTALMAIN",
@@ -518,6 +525,8 @@
     "selectedService": "Sectur da servetsch",
     "selectedDate": "Data",
     "selectedSlot": "Interval da temp",
-    "quoteSummaryTitle": "Detagl dal preventiv actual"
+    "quoteSummaryTitle": "Detagl dal preventiv actual",
+    "confirmSendWhatsapp": "Confermar & trametter via WhatsApp",
+    "whatsappDispatchNotice": "Vossa reservaziun vegn procedida manualmain. Clicchei sutvart per verificar ils detagls e trametter vossa damonda via WhatsApp."
   }
 }

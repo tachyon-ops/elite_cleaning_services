@@ -110,14 +110,18 @@
       "mfaMethod": "Metodo di invio MFA",
       "enableMfa": "ABILITA AUTH MULTI-FATTORE",
       "disableMfa": "DISABILITA AUTH A 2 FATTORI",
-      "whatsappConfig": "Configurazione WhatsApp",
+      "whatsappConfig": "Configurazione dell'azienda e dei contatti",
       "whatsappNumberLabel": "Numero WhatsApp (solo cifre)",
       "displayLabel": "Etichetta di visualizzazione",
+      "contactPhoneLabel": "Numero di telefono di contatto",
+      "contactEmailLabel": "Indirizzo e-mail di contatto",
       "saveSettings": "SALVA IMPOSTAZIONI",
-      "whatsappSuccess": "Impostazioni WhatsApp aggiornate con successo.",
+      "whatsappSuccess": "Impostazioni aziendali aggiornate con successo.",
       "whatsappError": "Inserisci un numero WhatsApp valido (solo cifre).",
       "totpApp": "App di autenticazione (TOTP)",
-      "emailOtp": "One-Time Password via E-mail (OTP)"
+      "emailOtp": "One-Time Password via E-mail (OTP)",
+      "autoCheckoutLabel": "Abilita auto-checkout e depositi online",
+      "autoCheckoutDesc": "Se abilitato, i clienti completano il pagamento del deposito online. Altrimenti, le prenotazioni vengono reindirizzate al dispatcher su WhatsApp."
     }
   },
   "partner": {
@@ -168,10 +172,13 @@
   },
   "preview": {
     "title": "ANTEPRIMA PREZZI",
+    "price": "CHF 380.00",
     "subtitle": "Nessun impegno, rimborso completo fino a 24 ore prima.",
-    "aviationDetailing": "Dettagli aviazione",
-    "yachtTeakCare": "Cura del teak per yacht",
-    "commercialOffices": "Uffici commerciali"
+    "item1": "Pulizia di uffici commerciali (120 m²)",
+    "item2": "Pianificazione settimanale (10% di sconto)",
+    "item3": "Invio svizzero completamente assicurato",
+    "bookCurrent": "Prenota questo servizio →",
+    "selectDivision": "Seleziona divisione"
   },
   "trust": {
     "fullyInsured": "COMPLETAMENTE ASSICURATO",
@@ -518,6 +525,8 @@
     "selectedService": "Divisione del servizio",
     "selectedDate": "Data",
     "selectedSlot": "Fascia oraria",
-    "quoteSummaryTitle": "Riepilogo del preventivo"
+    "quoteSummaryTitle": "Riepilogo del preventivo",
+    "confirmSendWhatsapp": "Conferma e invia tramite WhatsApp",
+    "whatsappDispatchNotice": "La tua prenotazione sarà elaborata manualmente. Clicca sotto per verificare i dettagli e inviare la richiesta tramite WhatsApp."
   }
 }

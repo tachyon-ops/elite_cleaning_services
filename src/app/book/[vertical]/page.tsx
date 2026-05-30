@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X } from "lucide-react";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
 
@@ -95,15 +95,47 @@ export default function BookingPage() {
   const [error, setError] = useState("");
   const [showSpecialNotice, setShowSpecialNotice] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState("41791234567");
+  const [autoCheckout, setAutoCheckout] = useState(true);
+  const [contactPhone, setContactPhone] = useState("+41 (0) 44 123 4567");
 
   useEffect(() => {
-    async function loadWhatsapp() {
-      const res = await getSystemSetting("whatsapp_number");
-      if (res.success && res.value) {
-        setWhatsappNumber(res.value);
+    async function loadConfig() {
+      const resNum = await getSystemSetting("whatsapp_number");
+      if (resNum.success && resNum.value) {
+        setWhatsappNumber(resNum.value);
+      }
+      const resAuto = await getSystemSetting("auto_checkout");
+      if (resAuto.success) {
+        setAutoCheckout(resAuto.value === null ? true : resAuto.value === "true");
+      }
+      const resPhone = await getSystemSetting("contact_phone");
+      if (resPhone.success && resPhone.value) {
+        setContactPhone(resPhone.value);
       }
     }
-    loadWhatsapp();
+    loadConfig();
+
+    // Parse URL query parameters to pre-populate intake state
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const area = params.get("area");
+      const freq = params.get("frequency");
+      const time = params.get("time");
+      const beds = params.get("bedrooms");
+      const baths = params.get("bathrooms");
+      const linen = params.get("linen");
+
+      setIntake((prev: any) => {
+        const next = { ...prev };
+        if (area) next.surfaceArea = Number(area);
+        if (freq) next.frequency = freq;
+        if (time) next.preferredTime = time;
+        if (beds) next.bedrooms = Number(beds);
+        if (baths) next.bathrooms = Number(baths);
+        if (linen) next.linenChange = linen === "true";
+        return next;
+      });
+    }
   }, []);
 
   // Intake State
@@ -478,6 +510,40 @@ export default function BookingPage() {
     }
   };
 
+  const handleStep1WhatsAppRedirect = () => {
+    const frequencyLabel = intake.frequency ? intake.frequency.toUpperCase() : "ONE-OFF";
+    
+    let detailsText = "";
+    if (vertical === "domestic") {
+      detailsText = `Bedrooms: ${intake.bedrooms || 0}\nBathrooms: ${intake.bathrooms || 0}\nLinen Service: ${intake.linenChange ? "Yes" : "No"}`;
+    } else if (vertical === "commercial") {
+      detailsText = `Office Type: ${intake.officeType || "N/A"}\nSurface Area: ${intake.surfaceArea || 0} m²\nRooms: ${intake.rooms || 0}\nFloors: ${intake.floors || 0}`;
+    } else if (vertical === "hospitality") {
+      detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
+    } else if (vertical === "aviation") {
+      detailsText = `Aircraft Type: ${intake.aircraftType || "N/A"}\nTail Number: ${intake.tailNumber || "N/A"}\nFBO Hangar: ${intake.airportFbo || "N/A"}`;
+    } else if (vertical === "yacht") {
+      detailsText = `Vessel Type: ${intake.vesselType || "N/A"}\nLength: ${intake.vesselLength || 0} ft\nMarina: ${intake.marinaLocation || "N/A"}`;
+    } else if (vertical === "special") {
+      detailsText = `Special service request details.`;
+    }
+
+    const waMsg = `Elite Cleaning Services Booking Request
+---------------------------------------
+Division: ${vertical.toUpperCase()}
+Frequency: ${frequencyLabel}
+${pricing.prepayFactor > 1 ? `Prepayment Commitment: ${pricing.prepayFactor} months\n` : ""}
+Details:
+${detailsText}
+
+Estimated Amount: CHF ${pricing.total ? pricing.total.toFixed(2) : "0.00"}
+---------------------------------------
+Please help me schedule this service manually. Thank you!`;
+
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMsg)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   const submitBooking = async () => {
     if (!address) {
       setError(t("enterAddressError"));
@@ -498,6 +564,46 @@ export default function BookingPage() {
 
     setLoading(false);
     if (res.success && res.bookingId) {
+      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht") {
+        // Build WhatsApp message template
+        const formattedDate = selectedDate || "Not scheduled";
+        const formattedSlot = selectedSlot === "morning" ? "Morning Slot" : selectedSlot === "afternoon" ? "Afternoon Slot" : "Not specified";
+        const frequencyLabel = intake.frequency ? intake.frequency.toUpperCase() : "ONE-OFF";
+        
+        let detailsText = "";
+        if (vertical === "domestic") {
+          detailsText = `Bedrooms: ${intake.bedrooms || 0}\nBathrooms: ${intake.bathrooms || 0}\nLinen Service: ${intake.linenChange ? "Yes" : "No"}`;
+        } else if (vertical === "commercial") {
+          detailsText = `Office Type: ${intake.officeType || "N/A"}\nSurface Area: ${intake.surfaceArea || 0} m²\nRooms: ${intake.rooms || 0}\nFloors: ${intake.floors || 0}`;
+        } else if (vertical === "hospitality") {
+          detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
+        } else if (vertical === "special") {
+          detailsText = `Special service request details.`;
+        }
+
+        const waMsg = `Elite Cleaning Services Booking Request
+---------------------------------------
+Booking ID: ${res.bookingId}
+Division: ${vertical.toUpperCase()}
+Client Name: ${contact.name || "N/A"}
+Email: ${contact.email || "N/A"}
+Phone: ${contact.phone || "N/A"}
+Address: ${address}
+Scheduled Date: ${formattedDate}
+Time Slot: ${formattedSlot}
+Frequency: ${frequencyLabel}
+${pricing.prepayFactor > 1 ? `Prepayment Commitment: ${pricing.prepayFactor} months\n` : ""}
+Details:
+${detailsText}
+
+Total Amount: CHF ${pricing.total ? pricing.total.toFixed(2) : "0.00"}
+Deposit: CHF ${pricing.deposit ? pricing.deposit.toFixed(2) : "0.00"}
+---------------------------------------
+Please verify and confirm my dispatch request. Thank you!`;
+
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMsg)}`;
+        window.open(whatsappUrl, "_blank");
+      }
       setBookingId(res.bookingId);
       setStep(6);
     } else {
@@ -579,7 +685,7 @@ export default function BookingPage() {
                     <div className="pt-4 border-t border-border/40 flex items-center justify-between text-caption font-semibold uppercase text-ink-subtle group-hover:text-accent transition-colors mt-4">
                       <span>{t(`cat${capitalize(cat.slug)}Price` as any)}</span>
                       <span className="text-accent flex items-center gap-1">
-                        {isSpecial ? t("nav.services") : t("portfolio.book")}
+                        {isSpecial ? baseT("nav.services") : baseT("portfolio.book")}
                       </span>
                     </div>
                   </div>
@@ -619,11 +725,11 @@ export default function BookingPage() {
 
                 <div className="space-y-3 pt-2">
                   <a
-                    href="tel:+41441234567"
+                    href={`tel:${contactPhone.replace(/[^\d+]/g, "")}`}
                     className="flex items-center justify-center gap-3 w-full bg-ink hover:bg-ink-muted text-ink-inverse py-3 rounded-md font-semibold transition-colors border border-border"
                   >
                     <Phone className="w-4 h-4 shrink-0" />
-                    <span>{t("callDispatch").replace("{phone}", "+41 (0) 44 123 4567")}</span>
+                    <span>{t("callDispatch").replace("{phone}", contactPhone)}</span>
                   </a>
                    <a
                     href={`https://wa.me/${whatsappNumber}?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%2520inquire%2520about%2520a%2520specialty%2520post-incident%2520clean.`}
@@ -1147,10 +1253,16 @@ export default function BookingPage() {
 
               <div className="pt-6">
                 <button
-                  onClick={() => setStep(2)}
-                  className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors"
+                  onClick={() => {
+                    if (!autoCheckout) {
+                      handleStep1WhatsAppRedirect();
+                    } else {
+                      setStep(2);
+                    }
+                  }}
+                  className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors cursor-pointer"
                 >
-                  {t("continueSchedule")}
+                  {autoCheckout ? t("continueSchedule") : t("confirmSendWhatsapp")}
                 </button>
               </div>
             </div>
@@ -1575,6 +1687,36 @@ export default function BookingPage() {
                     </p>
                   </div>
                 </div>
+              ) : !autoCheckout ? (
+                <div className="space-y-4">
+                  <h2 className="text-display-sm font-display font-medium text-ink">{t("booking.reviewDetailsTitle")}</h2>
+                  <p className="text-body-sm text-ink-muted">{t("booking.whatsappDispatchNotice")}</p>
+
+                  <div className="space-y-4 pt-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("booking.serviceLocation")}</label>
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder={t("booking.addressPlaceholder")}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+
+                    <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 leading-relaxed text-body-sm text-[#a6a6a6]">
+                      <span className="text-caption text-accent uppercase font-semibold flex items-center gap-1.5">
+                        <MessageSquare className="w-4 h-4" /> WhatsApp Dispatch Routing
+                      </span>
+                      <p>
+                        Your booking information will be saved directly in our platform database as a draft request. Upon clicking the confirmation button below, a secure WhatsApp message template containing all your specifications will be prepared for you.
+                      </p>
+                      <p>
+                        Our dispatch desk and subcontractor partners in the Zurich region will coordinate manual confirmation details.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("simulatedStripe")}</h2>
@@ -1643,14 +1785,16 @@ export default function BookingPage() {
                 </button>
                 <button
                   onClick={submitBooking}
-                  disabled={loading || !address || (vertical !== "aviation" && vertical !== "yacht" && !cardName)}
+                  disabled={loading || !address || (autoCheckout && vertical !== "aviation" && vertical !== "yacht" && !cardName)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50 cursor-pointer font-body"
                 >
                   {loading 
                     ? t("processing") 
                     : vertical === "aviation" || vertical === "yacht" 
                       ? t("submitBespoke") 
-                      : `${t("payDeposit")} (CHF ${pricing.deposit})`}
+                      : !autoCheckout
+                        ? t("booking.confirmSendWhatsapp")
+                        : `${t("payDeposit")} (CHF ${pricing.deposit})`}
                 </button>
               </div>
             </div>

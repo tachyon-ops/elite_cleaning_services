@@ -290,7 +290,16 @@ export async function createBooking(payload: {
       hasMatchingProvider = !!matchingProviderListing;
     }
 
-    const initialStatus = isQuoteVertical ? "quote_pending" : (hasMatchingProvider ? "offer_dispatched" : "confirmed");
+    const autoCheckoutSetting = await db.systemSetting.findUnique({
+      where: { key: "auto_checkout" }
+    });
+    const autoCheckoutEnabled = autoCheckoutSetting ? autoCheckoutSetting.value === "true" : true;
+
+    const initialStatus = isQuoteVertical 
+      ? "quote_pending" 
+      : (!autoCheckoutEnabled 
+          ? "draft" 
+          : (hasMatchingProvider ? "offer_dispatched" : "confirmed"));
 
     // Resolve customer and recurring settings
     let customerId: string | null = null;

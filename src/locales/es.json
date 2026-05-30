@@ -110,14 +110,18 @@
       "mfaMethod": "Método de envío MFA",
       "enableMfa": "HABILITAR AUTH MULTIFACTOR",
       "disableMfa": "DESHABILITAR AUTH DE 2 FACTORES",
-      "whatsappConfig": "Configuración de WhatsApp",
+      "whatsappConfig": "Configuración de empresa y contactos",
       "whatsappNumberLabel": "Número de WhatsApp (solo dígitos)",
       "displayLabel": "Etiqueta de visualización",
+      "contactPhoneLabel": "Número de teléfono de contacto",
+      "contactEmailLabel": "Dirección de correo electrónico de contacto",
       "saveSettings": "GUARDAR AJUSTES",
-      "whatsappSuccess": "Ajustes de WhatsApp actualizados con éxito.",
+      "whatsappSuccess": "Ajustes de empresa actualizados con éxito.",
       "whatsappError": "Por favor, introduzca un número de WhatsApp válido (solo dígitos).",
       "totpApp": "Aplicación de autenticación (TOTP)",
-      "emailOtp": "Contraseña de un solo uso por correo electrónico (OTP)"
+      "emailOtp": "Contraseña de un solo uso por correo electrónico (OTP)",
+      "autoCheckoutLabel": "Activar auto-checkout y depósitos en línea",
+      "autoCheckoutDesc": "Cuando está activado, los clientes pagan depósitos en línea con tarjeta. Cuando está desactivado, las reservas se redirigen al despacho de WhatsApp."
     }
   },
   "partner": {
@@ -168,10 +172,13 @@
   },
   "preview": {
     "title": "VISTA PREVIA DE PRECIOS",
+    "price": "CHF 380.00",
     "subtitle": "Sin compromiso, reembolso completo hasta 24h antes.",
-    "aviationDetailing": "Limpieza de aviación",
-    "yachtTeakCare": "Cuidado de teca en yates",
-    "commercialOffices": "Oficinas comerciales"
+    "item1": "Limpieza de oficinas comerciales (120 m²)",
+    "item2": "Planificación semanal (10% de descuento)",
+    "item3": "Despacho suizo totalmente asegurado",
+    "bookCurrent": "Reservar este servicio →",
+    "selectDivision": "Seleccionar división"
   },
   "trust": {
     "fullyInsured": "TOTALMENTE ASEGURADO",
@@ -518,6 +525,8 @@
     "selectedService": "División de servicio",
     "selectedDate": "Fecha",
     "selectedSlot": "Horario",
-    "quoteSummaryTitle": "Desglose del presupuesto"
+    "quoteSummaryTitle": "Desglose del presupuesto",
+    "confirmSendWhatsapp": "Confirmar y enviar por WhatsApp",
+    "whatsappDispatchNotice": "Su reserva se procesará manualmente. Haga clic a continuación para verificar los detalles y enviar su solicitud por WhatsApp."
   }
 }

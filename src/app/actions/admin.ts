@@ -194,8 +194,8 @@ export async function loginAdmin2FA(userId: string, token: string) {
     cookieStore.set("NEXT_LOCALE", adminUser.locale || "de", {
       path: "/",
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 365
     });
     cookieStore.set("admin_session", "true", {

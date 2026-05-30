@@ -15,12 +15,11 @@ export async function updateUserLocale(locale: string) {
     const cookieStore = await cookies();
     const normalized = (locale || "de").toLowerCase().slice(0, 2);
 
-    // Set cookie for guest and authenticated persistence
     cookieStore.set("NEXT_LOCALE", normalized, {
       path: "/",
       httpOnly: false, // Must be readable on client to prevent flash
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false, // Allow language preference cookie to be set/sent over HTTP in all environments
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 365, // 1 year
     });
 

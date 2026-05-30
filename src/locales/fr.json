@@ -110,14 +110,18 @@
       "mfaMethod": "Méthode d'envoi MFA",
       "enableMfa": "ACTIVER L'AUTH MULTI-FACTEURS",
       "disableMfa": "DÉSACTIVER L'AUTH MULTI-FACTEURS",
-      "whatsappConfig": "Configuration WhatsApp",
+      "whatsappConfig": "Configuration de l'entreprise & des contacts",
       "whatsappNumberLabel": "Numéro WhatsApp (chiffres uniquement)",
       "displayLabel": "Étiquette d'affichage",
+      "contactPhoneLabel": "Numéro de téléphone de contact",
+      "contactEmailLabel": "Adresse e-mail de contact",
       "saveSettings": "ENREGISTRER LES PARAMÈTRES",
-      "whatsappSuccess": "Paramètres WhatsApp mis à jour avec succès.",
+      "whatsappSuccess": "Paramètres de l'entreprise mis à jour avec succès.",
       "whatsappError": "Veuillez entrer un numéro WhatsApp valide (chiffres uniquement).",
       "totpApp": "Application d'authentification (TOTP)",
-      "emailOtp": "Mot de passe unique par e-mail (OTP)"
+      "emailOtp": "Mot de passe unique par e-mail (OTP)",
+      "autoCheckoutLabel": "Activer l'auto-checkout et les dépôts en ligne",
+      "autoCheckoutDesc": "Lorsqu'il est activé, les clients paient leurs acomptes en ligne par carte de crédit. Sinon, les réservations sont redirigées vers la répartition WhatsApp."
     }
   },
   "partner": {
@@ -167,11 +171,14 @@
     }
   },
   "preview": {
-    "title": "APERÇU DES TARIFS",
+    "title": "APERÇU DU DEVIS",
+    "price": "CHF 380.00",
     "subtitle": "Sans engagement, remboursement intégral jusqu'à 24h avant.",
-    "aviationDetailing": "Nettoyage d'aviation",
-    "yachtTeakCare": "Entretien du teck de yacht",
-    "commercialOffices": "Bureaux commerciaux"
+    "item1": "Nettoyage de bureaux commerciaux (120 m²)",
+    "item2": "Planification hebdomadaire (10% de remise)",
+    "item3": "Attribution suisse entièrement assurée",
+    "bookCurrent": "Réserver ce service →",
+    "selectDivision": "Sélectionner la division"
   },
   "trust": {
     "fullyInsured": "ENTIÈREMENT ASSURÉ",
@@ -518,6 +525,8 @@
     "selectedService": "Division de service",
     "selectedDate": "Date",
     "selectedSlot": "Créneau horaire",
-    "quoteSummaryTitle": "Détail du devis en direct"
+    "quoteSummaryTitle": "Détail du devis en direct",
+    "confirmSendWhatsapp": "Confirmer et envoyer par WhatsApp",
+    "whatsappDispatchNotice": "Votre réservation sera traitée manuellement. Cliquez ci-dessous pour vérifier les détails et envoyer votre demande par WhatsApp."
   }
 }

@@ -33,6 +33,9 @@ export default function AdminSettingsPage() {
   // WhatsApp state variables
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [whatsappLabel, setWhatsappLabel] = useState("");
+  const [autoCheckout, setAutoCheckout] = useState(true);
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const [whatsappSuccess, setWhatsappSuccess] = useState("");
   const [whatsappError, setWhatsappError] = useState("");
@@ -46,11 +49,23 @@ export default function AdminSettingsPage() {
       // Load WhatsApp settings
       const resNum = await getSystemSetting("whatsapp_number");
       const resLab = await getSystemSetting("whatsapp_label");
+      const resAuto = await getSystemSetting("auto_checkout");
+      const resPhone = await getSystemSetting("contact_phone");
+      const resEmail = await getSystemSetting("contact_email");
       if (resNum.success && resNum.value) {
         setWhatsappNumber(resNum.value);
       }
       if (resLab.success && resLab.value) {
         setWhatsappLabel(resLab.value);
+      }
+      if (resAuto.success) {
+        setAutoCheckout(resAuto.value === null ? true : resAuto.value === "true");
+      }
+      if (resPhone.success && resPhone.value) {
+        setContactPhone(resPhone.value);
+      }
+      if (resEmail.success && resEmail.value) {
+        setContactEmail(resEmail.value);
       }
     } else {
       setError("Failed to load administrative session. Please log in.");
@@ -138,13 +153,16 @@ export default function AdminSettingsPage() {
 
     const resNum = await updateSystemSetting("whatsapp_number", cleanNumber);
     const resLab = await updateSystemSetting("whatsapp_label", whatsappLabel || cleanNumber);
+    const resAuto = await updateSystemSetting("auto_checkout", autoCheckout ? "true" : "false");
+    const resPhone = await updateSystemSetting("contact_phone", contactPhone);
+    const resEmail = await updateSystemSetting("contact_email", contactEmail);
     
     setSavingWhatsapp(false);
-    if (resNum.success && resLab.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success) {
       setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
-      setWhatsappError(resNum.error || resLab.error || "Failed to update WhatsApp settings.");
+      setWhatsappError(resNum.error || resLab.error || resAuto.error || resPhone.error || resEmail.error || "Failed to update settings.");
     }
   };
 
@@ -193,7 +211,7 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {/* WhatsApp Settings Card */}
+          {/* WhatsApp & Contact Settings Card */}
           <form onSubmit={handleSaveWhatsapp} className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
             <h3 className="text-body-sm font-semibold uppercase tracking-wider text-[#a6a6a6]">
               {t("admin.settings.whatsappConfig")}
@@ -235,6 +253,50 @@ export default function AdminSettingsPage() {
                   placeholder="e.g. +41 79 123 45 67"
                   className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
                 />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  {t("admin.settings.contactPhoneLabel")}
+                </label>
+                <input
+                  type="text"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="e.g. +41 (0) 44 123 4567"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  {t("admin.settings.contactEmailLabel")}
+                </label>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="e.g. ops@elite-cleaning.ch"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-[#262626] space-y-2">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="autoCheckoutCheckbox"
+                    checked={autoCheckout}
+                    onChange={(e) => setAutoCheckout(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+                  />
+                  <label htmlFor="autoCheckoutCheckbox" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                    {t("admin.settings.autoCheckoutLabel")}
+                  </label>
+                </div>
+                <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+                  {t("admin.settings.autoCheckoutDesc")}
+                </p>
               </div>
             </div>
 

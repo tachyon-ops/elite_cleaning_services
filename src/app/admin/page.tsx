@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { getTranslationsForLocale, translate } from "@/lib/i18n";
 import { isAdminAuthenticated, getDashboardStats } from "@/app/actions/admin";
 import { Calendar, CreditCard, Star, Clock, AlertCircle } from "lucide-react";
+import { db } from "@/lib/db";
+import { ContactConfigForm } from "./ContactConfigForm";
 
 export default async function AdminDashboardPage() {
   const authenticated = await isAdminAuthenticated();
@@ -24,6 +26,19 @@ export default async function AdminDashboardPage() {
     revenueMTD: 0,
     avgRating: 5.0
   };
+
+  // Fetch company & contact configuration directly from system settings
+  const whatsappNumberRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_number" } });
+  const whatsappLabelRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_label" } });
+  const contactPhoneRes = await db.systemSetting.findUnique({ where: { key: "contact_phone" } });
+  const contactEmailRes = await db.systemSetting.findUnique({ where: { key: "contact_email" } });
+  const autoCheckoutRes = await db.systemSetting.findUnique({ where: { key: "auto_checkout" } });
+
+  const initialWhatsappNumber = whatsappNumberRes?.value || "41791234567";
+  const initialWhatsappLabel = whatsappLabelRes?.value || "+41 79 123 45 67";
+  const initialContactPhone = contactPhoneRes?.value || "+41 (0) 44 123 4567";
+  const initialContactEmail = contactEmailRes?.value || "ops@elite-cleaning.ch";
+  const initialAutoCheckout = autoCheckoutRes ? autoCheckoutRes.value === "true" : true;
 
   return (
     <div className="p-8 md:p-12 space-y-8 max-w-7xl w-full mx-auto">
@@ -99,16 +114,28 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Quick Action / Notice */}
-      <div className="border border-accent/20 bg-accent-soft p-6 rounded-lg flex items-start gap-4">
-        <AlertCircle className="w-6 h-6 text-accent shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <h3 className="text-body-md font-semibold text-[#f2f2f2]">
-            {t("admin.dashboard.noticeTitle")}
-          </h3>
-          <p className="text-body-sm text-[#a6a6a6] max-w-[80ch]">
-            {t("admin.dashboard.noticeText")}
-          </p>
+      {/* Two Column Layout: System Notice & Settings Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2 border border-[#262626] bg-[#141414] p-6 rounded-lg flex items-start gap-4">
+          <AlertCircle className="w-6 h-6 text-accent shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h3 className="text-body-md font-semibold text-[#f2f2f2]">
+              {t("admin.dashboard.noticeTitle")}
+            </h3>
+            <p className="text-body-sm text-[#a6a6a6] leading-relaxed">
+              {t("admin.dashboard.noticeText")}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <ContactConfigForm
+            initialWhatsappNumber={initialWhatsappNumber}
+            initialWhatsappLabel={initialWhatsappLabel}
+            initialContactPhone={initialContactPhone}
+            initialContactEmail={initialContactEmail}
+            initialAutoCheckout={initialAutoCheckout}
+          />
         </div>
       </div>
     </div>
