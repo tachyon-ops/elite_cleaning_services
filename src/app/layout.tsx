@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import { cookies } from "next/headers";
+import { getTranslationsForLocale } from "@/lib/i18n";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,16 +23,23 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const dictionary = getTranslationsForLocale(locale);
+
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
-        {children}
+        <LanguageProvider locale={locale} dictionary={dictionary}>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
 }
+

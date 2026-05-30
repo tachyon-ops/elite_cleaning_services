@@ -207,8 +207,17 @@ Before creating one, ask:
 - **Premature package.** A new package created for a single function. Put
   it in the consumer until duplication forces extraction.
 
+## Logic Isolation & Library Promotion
+
+For maximum maintainability and to enable plug-and-play across multiple projects (such as `elite_cleaning_services` and `estore`), any core logic must follow these isolation principles:
+
+1. **Functional Programming Principles**: Isolate business logic into pure functions and core classes. Ensure they are decoupled from specific frameworks, global state, databases, or environment-specific I/O.
+2. **Evaluate Reusability**: Identify capabilities with standalone semantics (e.g., authentication, OTP, email notification formatting, i18n key resolution).
+3. **Promote to Standalone Library**: If a feature is decoupled enough and has semantic value in other domains or projects, structure it as an independent module or package (e.g., in a `packages/` directory, Git submodule, or private npm package) rather than coupling it to the application shell.
+4. **Clean API Surface**: Ensure promoted libraries have minimal, highly-defined public APIs.
+
 ---
 
 ## The Architecture Mantra
 
-> **"One package, one reason. Dependencies flow down. Public is a promise. Internal is a secret."**
+> **"One package, one reason. Dependencies flow down. Isolate logic for reuse. Public is a promise. Internal is a secret."**

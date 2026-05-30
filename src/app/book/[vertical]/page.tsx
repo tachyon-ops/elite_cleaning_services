@@ -32,7 +32,19 @@ export default function BookingPage() {
     bedrooms: 2,
     bathrooms: 1,
     linenChange: false,
-    keyHandling: "lockbox"
+    keyHandling: "lockbox",
+
+    // Aviation fields
+    aircraftType: "light_jet",
+    fboLocation: "Zürich (LSZH) - Jet Aviation FBO",
+    tailNumber: "",
+    aviationScope: ["interior_detail"],
+
+    // Yacht fields
+    vesselType: "motor_yacht",
+    vesselLength: 30,
+    marinaLocation: "Zürich Wollishofen Marina",
+    yachtScope: ["deck_wash"]
   });
 
   // Schedule State
@@ -76,7 +88,7 @@ export default function BookingPage() {
   }, []);
 
   // Validate Vertical
-  const isValidVertical = ["commercial", "hospitality", "domestic"].includes(vertical) && activeSlugs.includes(vertical);
+  const isValidVertical = ["commercial", "hospitality", "domestic", "aviation", "yacht"].includes(vertical) && activeSlugs.includes(vertical);
 
   // Auto-redirect if invalid vertical is requested
   useEffect(() => {
@@ -436,6 +448,177 @@ export default function BookingPage() {
                     </select>
                   </div>
                 </div>
+              ) : vertical === "aviation" ? (
+                <div className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Aircraft Type</label>
+                      <select
+                        value={intake.aircraftType}
+                        onChange={(e) => handleIntakeChange("aircraftType", e.target.value)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
+                      >
+                        <option value="light_jet">Light Cabin Business Jet</option>
+                        <option value="mid_size_jet">Mid-size Cabin Business Jet</option>
+                        <option value="heavy_jet">Heavy Cabin Business Jet</option>
+                        <option value="turboprop">Turboprop Aircraft</option>
+                        <option value="helicopter">Helicopter</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase font-body">Tail Number / Registration</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. HB-JES"
+                        value={intake.tailNumber}
+                        onChange={(e) => handleIntakeChange("tailNumber", e.target.value)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">Airport FBO / Hangar Location</label>
+                    <select
+                      value={intake.fboLocation}
+                      onChange={(e) => handleIntakeChange("fboLocation", e.target.value)}
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
+                    >
+                      <option value="Zürich (LSZH) - Cat Air Service FBO">Zürich (LSZH) - Cat Air Service FBO</option>
+                      <option value="Zürich (LSZH) - Jet Aviation FBO">Zürich (LSZH) - Jet Aviation FBO</option>
+                      <option value="Geneva (LSGG) - Signature FBO">Geneva (LSGG) - Signature FBO</option>
+                      <option value="Dübendorf (LSMD) - Private Hangar">Dübendorf (LSMD) - Private Hangar</option>
+                      <option value="St. Gallen-Altenrhein (LSZR) - FBO">St. Gallen-Altenrhein (LSZR) - FBO</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-caption text-ink font-semibold uppercase block">Detailing Service Scope</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
+                      {[
+                        { id: "exterior_wash", label: "Exterior Wash & Polish" },
+                        { id: "interior_detail", label: "Deep Cabin Interior Detailing" },
+                        { id: "cockpit_detail", label: "Cockpit & Instrument Cleaning" },
+                        { id: "carpet_shampoo", label: "Carpet & Upholstery Steam Clean" },
+                        { id: "cabin_restock", label: "Cabin Restocking & Galley Prep" }
+                      ].map((item) => {
+                        const isChecked = intake.aviationScope?.includes(item.id);
+                        return (
+                          <label key={item.id} className="flex items-center gap-2.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const nextScope = e.target.checked
+                                  ? [...(intake.aviationScope || []), item.id]
+                                  : (intake.aviationScope || []).filter((id: string) => id !== item.id);
+                                handleIntakeChange("aviationScope", nextScope);
+                              }}
+                              className="accent-accent h-4 w-4"
+                            />
+                            {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase font-body">Special Instructions</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder="Access authorization requirements, specific cabin materials..."
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-20 resize-none"
+                    />
+                  </div>
+                </div>
+              ) : vertical === "yacht" ? (
+                <div className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Vessel Type</label>
+                      <select
+                        value={intake.vesselType}
+                        onChange={(e) => handleIntakeChange("vesselType", e.target.value)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
+                      >
+                        <option value="motor_yacht">Motor Yacht</option>
+                        <option value="sailing_yacht">Sailing Yacht</option>
+                        <option value="catamaran">Catamaran</option>
+                        <option value="tender">Tender / Runabout</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Vessel Length (Feet)</label>
+                      <input
+                        type="number"
+                        min="10"
+                        max="200"
+                        value={intake.vesselLength}
+                        onChange={(e) => handleIntakeChange("vesselLength", parseInt(e.target.value) || 30)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">Marina / Mooring Location</label>
+                    <select
+                      value={intake.marinaLocation}
+                      onChange={(e) => handleIntakeChange("marinaLocation", e.target.value)}
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
+                    >
+                      <option value="Zürich Wollishofen Marina">Zürich Wollishofen Marina</option>
+                      <option value="Horgen Harbor">Horgen Harbor</option>
+                      <option value="Rapperswil Harbor">Rapperswil Harbor</option>
+                      <option value="Geneva Port Noir">Geneva Port Noir</option>
+                      <option value="Zug Lake Marina">Zug Lake Marina</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-caption text-ink font-semibold uppercase block font-body">Servicing Scope</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
+                      {[
+                        { id: "teak_clean", label: "Teak Deck Scrub & Treatment" },
+                        { id: "hull_polish", label: "Gelcoat & Hull Polishing" },
+                        { id: "interior_detail", label: "Cabin Interior Detailing & Sanitization" },
+                        { id: "deck_wash", label: "Full Washdown & Stainless Steel Brightening" },
+                        { id: "decommission", label: "End-of-season Winterization Prep" }
+                      ].map((item) => {
+                        const isChecked = intake.yachtScope?.includes(item.id);
+                        return (
+                          <label key={item.id} className="flex items-center gap-2.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const nextScope = e.target.checked
+                                  ? [...(intake.yachtScope || []), item.id]
+                                  : (intake.yachtScope || []).filter((id: string) => id !== item.id);
+                                handleIntakeChange("yachtScope", nextScope);
+                              }}
+                              className="accent-accent h-4 w-4"
+                            />
+                            {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase font-body">Special Instructions</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder="Slip number, harbor security clearance codes, canvas care..."
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-20 resize-none"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4 pt-4">
                   {/* Domestic Intake Form */}
@@ -583,43 +766,67 @@ export default function BookingPage() {
           {/* STEP 3: QUOTE */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-display-sm font-display font-medium text-ink">Locked-in Subcontractor Quote</h2>
-              <p className="text-body-sm text-ink-muted">All dispatches are fully insured and backed by our quality pledge.</p>
-
-              <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6">
-                <div className="flex justify-between text-body-sm text-ink-muted">
-                  <span>Base cleanup fee</span>
-                  <span>CHF {vertical === "commercial" ? "150.00" : vertical === "hospitality" ? "120.00" : "80.00"}</span>
-                </div>
-                {pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
-                  <div className="flex justify-between text-body-sm text-ink-muted">
-                    <span>Size/Scope adjustment</span>
-                    <span>+CHF {Math.round((pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * 100) / 100}</span>
+              {vertical === "aviation" || vertical === "yacht" ? (
+                <div className="space-y-4">
+                  <h2 className="text-display-sm font-display font-medium text-ink">Bespoke Quote Required</h2>
+                  <p className="text-body-sm text-ink-muted">Aviation and Yachting cleanings require custom dispatch reviews.</p>
+                  <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6 text-body-sm leading-relaxed">
+                    <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
+                      <Clock className="w-4 h-4" /> REVIEW PENDING
+                    </span>
+                    <p className="text-[#a6a6a6]">
+                      We operate a vetted subcontractor network with custom pricing tiers for private aircraft interiors and marine vessels.
+                    </p>
+                    <p className="text-[#a6a6a6]">
+                      Our Zürich dispatch desk will review your intake coordinates and tail/slip details. A custom quote will be compiled and sent to you via email within **4 hours**.
+                    </p>
+                    <div className="border-t border-border pt-4 text-caption uppercase text-accent font-semibold flex justify-between">
+                      <span>Service Quote Status</span>
+                      <span>Quote Pending</span>
+                    </div>
                   </div>
-                )}
-                {intake.linenChange && (
-                  <div className="flex justify-between text-body-sm text-ink-muted">
-                    <span>Linen service laundry</span>
-                    <span>+CHF 35.00</span>
-                  </div>
-                )}
-                {pricing.discount > 0 && (
-                  <div className="flex justify-between text-body-sm text-green-600 font-medium">
-                    <span>Frequency discount</span>
-                    <span>-CHF {pricing.discount}</span>
-                  </div>
-                )}
-
-                <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
-                  <span>Total Amount</span>
-                  <span>CHF {pricing.total}</span>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-display-sm font-display font-medium text-ink">Locked-in Subcontractor Quote</h2>
+                  <p className="text-body-sm text-ink-muted">All dispatches are fully insured and backed by our quality pledge.</p>
 
-                <div className="border-t border-border border-dashed pt-4 flex justify-between text-body-md text-accent font-semibold">
-                  <span>Stripe Deposit (30% to secure)</span>
-                  <span>CHF {pricing.deposit}</span>
+                  <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6">
+                    <div className="flex justify-between text-body-sm text-ink-muted">
+                      <span>Base cleanup fee</span>
+                      <span>CHF {vertical === "commercial" ? "150.00" : vertical === "hospitality" ? "120.00" : "80.00"}</span>
+                    </div>
+                    {pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>Size/Scope adjustment</span>
+                        <span>+CHF {Math.round((pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * 100) / 100}</span>
+                      </div>
+                    )}
+                    {intake.linenChange && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>Linen service laundry</span>
+                        <span>+CHF 35.00</span>
+                      </div>
+                    )}
+                    {pricing.discount > 0 && (
+                      <div className="flex justify-between text-body-sm text-green-600 font-medium">
+                        <span>Frequency discount</span>
+                        <span>-CHF {pricing.discount}</span>
+                      </div>
+                    )}
+
+                    <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
+                      <span>Total Amount</span>
+                      <span>CHF {pricing.total}</span>
+                    </div>
+
+                    <div className="border-t border-border border-dashed pt-4 flex justify-between text-body-md text-accent font-semibold">
+                      <span>Stripe Deposit (30% to secure)</span>
+                      <span>CHF {pricing.deposit}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-4 pt-6">
                 <button
@@ -681,7 +888,7 @@ export default function BookingPage() {
                   <button
                     onClick={triggerSendOtp}
                     disabled={loading || !contact.email || !contact.name}
-                    className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors disabled:opacity-50"
+                    className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors disabled:opacity-50 font-body cursor-pointer"
                   >
                     {loading ? "Sending Code..." : "SEND OTP CODE"}
                   </button>
@@ -709,13 +916,13 @@ export default function BookingPage() {
                   <button
                     onClick={triggerVerifyOtp}
                     disabled={loading}
-                    className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors"
+                    className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors cursor-pointer font-body"
                   >
                     {loading ? "Verifying..." : "VERIFY CODE"}
                   </button>
                   <button
                     onClick={() => setOtpSent(false)}
-                    className="w-full text-caption text-ink-subtle hover:text-ink font-semibold uppercase tracking-wider text-center mt-2"
+                    className="w-full text-caption text-ink-subtle hover:text-ink font-semibold uppercase tracking-wider text-center mt-2 cursor-pointer"
                   >
                     Edit email address
                   </button>
@@ -736,60 +943,92 @@ export default function BookingPage() {
           {/* STEP 5: PAYMENT */}
           {step === 5 && (
             <div className="space-y-6">
-              <h2 className="text-display-sm font-display font-medium text-ink">Simulated Stripe deposit</h2>
-              <p className="text-body-sm text-ink-muted">A 30% deposit is required to lock in the subcontractor dispatch.</p>
+              {vertical === "aviation" || vertical === "yacht" ? (
+                <div className="space-y-4">
+                  <h2 className="text-display-sm font-display font-medium text-ink">Confirm Request Submission</h2>
+                  <p className="text-body-sm text-ink-muted">Specify the target hangar/slip coordinates to submit your bespoke request.</p>
 
-              <div className="space-y-4 pt-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-caption text-ink font-semibold uppercase">Service Location Address</label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Seestrasse 10, 8002 Zürich"
-                    className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                  />
-                </div>
-
-                <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4">
-                  <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
-                    <Lock className="w-4 h-4" /> SECURE STRIPE GATEWAY
-                  </span>
-                  
                   <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">Cardholder Name</label>
+                    <label className="text-caption text-ink font-semibold uppercase">Exact Hangar / FBO / Slip Location</label>
                     <input
                       type="text"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      placeholder="John Doe"
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder={vertical === "aviation" ? "e.g. Hangar 3, Jet Aviation FBO, Zürich Airport" : "e.g. Pier B, Slip 42, Horgen Harbor"}
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="col-span-2 flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">Card Number</label>
+                  <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 leading-relaxed text-body-sm text-[#a6a6a6]">
+                    <span className="text-caption text-accent uppercase font-semibold flex items-center gap-1.5">
+                      <Shield className="w-4 h-4" /> NO DEPOSIT REQUIRED NOW
+                    </span>
+                    <p>
+                      Bespoke dispatches are reviewed manually. We do not charge your credit card at this stage.
+                    </p>
+                    <p>
+                      Once the dispatcher compiles your custom subcontract quote, you will receive a secure email link to review the price and secure the 30% booking deposit.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-display-sm font-display font-medium text-ink">Simulated Stripe deposit</h2>
+                  <p className="text-body-sm text-ink-muted">A 30% deposit is required to lock in the subcontractor dispatch.</p>
+
+                  <div className="space-y-4 pt-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">Service Location Address</label>
                       <input
                         type="text"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        placeholder="4242 4242 4242 4242"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Seestrasse 10, 8002 Zürich"
                         className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">CVC</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        maxLength={3}
-                        className="border border-border bg-bg p-3 rounded-md text-body-md text-center focus:border-accent outline-none"
-                      />
+
+                    <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4">
+                      <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
+                        <Lock className="w-4 h-4" /> SECURE STRIPE GATEWAY
+                      </span>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-caption text-ink font-semibold uppercase">Cardholder Name</label>
+                        <input
+                          type="text"
+                          value={cardName}
+                          onChange={(e) => setCardName(e.target.value)}
+                          placeholder="John Doe"
+                          className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="col-span-2 flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">Card Number</label>
+                          <input
+                            type="text"
+                            value={cardNumber}
+                            onChange={(e) => setCardNumber(e.target.value)}
+                            placeholder="4242 4242 4242 4242"
+                            className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">CVC</label>
+                          <input
+                            type="text"
+                            placeholder="123"
+                            maxLength={3}
+                            className="border border-border bg-bg p-3 rounded-md text-body-md text-center focus:border-accent outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-4 pt-6 border-t border-border mt-8">
                 <button
@@ -800,10 +1039,10 @@ export default function BookingPage() {
                 </button>
                 <button
                   onClick={submitBooking}
-                  disabled={loading || !address || !cardName}
-                  className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50"
+                  disabled={loading || !address || (vertical !== "aviation" && vertical !== "yacht" && !cardName)}
+                  className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50 cursor-pointer font-body"
                 >
-                  {loading ? "Processing..." : `PAY DEPOSIT (CHF ${pricing.deposit})`}
+                  {loading ? "Processing..." : vertical === "aviation" || vertical === "yacht" ? "SUBMIT BESPOKE REQUEST" : `PAY DEPOSIT (CHF ${pricing.deposit})`}
                 </button>
               </div>
             </div>
@@ -815,16 +1054,26 @@ export default function BookingPage() {
               <div className="h-16 w-16 bg-accent-soft text-accent rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/25">
                 <Check className="w-8 h-8" />
               </div>
-              <h2 className="text-display-md font-display font-medium text-ink">Booking Confirmed</h2>
-              <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto">
-                Thank you, {contact.name}. Your 30% deposit has been processed. A certified subcontractor team has been assigned for dispatch to:
+              <h2 className="text-display-md font-display font-medium text-ink">
+                {vertical === "aviation" || vertical === "yacht" ? "Request Submitted" : "Booking Confirmed"}
+              </h2>
+              <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
+                {vertical === "aviation" || vertical === "yacht" ? (
+                  `Thank you, ${contact.name}. Your bespoke request has been sent to our desk for review. We will notify you at:`
+                ) : (
+                  `Thank you, ${contact.name}. Your 30% deposit has been processed. A certified subcontractor team has been assigned for dispatch to:`
+                )}
               </p>
-              <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4">
+              <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4 text-accent">
                 {address}<br />
                 Scheduled: {selectedDate} ({selectedSlot === "morning" ? "Morning Slot" : "Afternoon Slot"})
               </div>
-              <p className="text-body-sm text-ink-subtle pt-6">
-                A copy of your PDF receipt and .ics calendar invite has been sent to: <b>{contact.email}</b>.
+              <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
+                {vertical === "aviation" || vertical === "yacht" ? (
+                  <span>A copy of your intake details has been sent to: <b>{contact.email}</b>. Look out for your quote email within 4 hours.</span>
+                ) : (
+                  <span>A copy of your PDF receipt and .ics calendar invite has been sent to: <b>{contact.email}</b>.</span>
+                )}
               </p>
               <div className="pt-8">
                 <Link href="/" className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-8 py-3 rounded-md transition-colors text-button">

@@ -1,7 +1,11 @@
+import React from "react";
 import Link from "next/link";
 import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Phone, Mail, Award, Clock } from "lucide-react";
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
 import { db } from "@/lib/db";
+import { cookies } from "next/headers";
+import { getTranslationsForLocale, translate } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +70,11 @@ const verticalMeta: Record<string, {
 export default async function HomePage() {
   await checkAndSeedDb();
 
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const dictionary = getTranslationsForLocale(locale);
+  const t = (key: string) => translate(key, dictionary);
+
   const activeCategories = await db.serviceCategory.findMany({
     where: { active: true }
   });
@@ -93,7 +102,7 @@ export default async function HomePage() {
           {/* Services Dropdown */}
           <div className="relative group/dropdown py-2">
             <button className="flex items-center gap-1.5 text-body-sm font-medium text-ink-muted hover:text-ink transition-colors cursor-pointer">
-              Services
+              {t("nav.services")}
               <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover/dropdown:rotate-180 text-ink-subtle" />
             </button>
             <div className="absolute top-[calc(100%-4px)] left-1/2 -translate-x-1/2 pt-3 opacity-0 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:pointer-events-auto transition-all duration-300 ease-out translate-y-2 group-hover/dropdown:translate-y-0 z-50">
@@ -116,10 +125,10 @@ export default async function HomePage() {
                       </div>
                       <div className="flex flex-col text-left">
                         <span className="text-body-sm font-semibold text-ink group-hover/item:text-accent transition-colors">
-                          {meta.title}
+                          {t(`categories.${cat.slug}.title`)}
                         </span>
                         <span className="text-[10px] text-ink-subtle uppercase tracking-wider group-hover/item:text-accent/70 transition-colors">
-                          {meta.subtitle} • {cat.customPriceText || meta.priceText}
+                          {t(`categories.${cat.slug}.subtitle`)} • {cat.customPriceText || t(`categories.${cat.slug}.priceText`)}
                         </span>
                       </div>
                     </Link>
@@ -128,15 +137,16 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-          <Link href="#how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">How It Works</Link>
-          <Link href="/providers" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">Partner Portal</Link>
+          <Link href="#how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.howItWorks")}</Link>
+          <Link href="/providers" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
         </nav>
-        <div>
+        <div className="flex items-center gap-6">
+          <LanguageSwitcher />
           <Link
             href="/book/general"
             className="bg-accent hover:bg-accent-hover text-ink-inverse text-body-xs tracking-wider uppercase font-semibold py-3 px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer"
           >
-            GET A QUOTE
+            {t("nav.getQuote")}
           </Link>
         </div>
       </header>
@@ -145,27 +155,29 @@ export default async function HomePage() {
       <section className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] lg:min-h-[720px] bg-bg border-b border-border">
         {/* Left Half: Copy */}
         <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-16 lg:py-0 max-w-4xl">
-          <span className="text-caption text-accent uppercase mb-3">SWISS SPECIALTY BROKERAGE</span>
+          <span className="text-caption text-accent uppercase mb-3">{t("hero.division")}</span>
           <h1 className="text-display-md md:text-display-xl text-ink font-display font-medium leading-none tracking-tight mb-6">
-            Specialty cleaning.<br />
-            Booked online.<br />
-            Done by experts.
+            {t("hero.title").split(". ").map((s, i) => (
+              <React.Fragment key={i}>
+                {s}{i < 2 ? "." : ""}<br />
+              </React.Fragment>
+            ))}
           </h1>
           <p className="text-body-lg text-ink-muted mb-8 max-w-[55ch]">
-            A curated, Swiss-based network of specialty cleaning subcontractors. Insured delivery, single point of contact, and locked-in recurring schedules.
+            {t("hero.description")}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
               href="/book/general"
               className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md"
             >
-              Get a quote in 60s
+              {t("hero.ctaQuote")}
             </Link>
             <Link
               href="#how-it-works"
               className="border border-ink hover:bg-ink hover:text-ink-inverse text-ink text-button font-semibold py-3 px-8 rounded-md transition-all"
             >
-              How it works
+              {t("hero.ctaHow")}
             </Link>
           </div>
         </div>
@@ -225,10 +237,10 @@ export default async function HomePage() {
       {/* Vertical Grid Section */}
       <section className="py-24 px-6 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center mb-16">
-          <span className="text-caption text-accent uppercase block mb-3">OUR PORTFOLIO</span>
-          <h2 className="text-display-md text-ink font-display font-medium mb-4">{sortedCategories.length} Service Verticals</h2>
+          <span className="text-caption text-accent uppercase block mb-3">{t("portfolio.subtitle")}</span>
+          <h2 className="text-display-md text-ink font-display font-medium mb-4">{sortedCategories.length} {t("portfolio.title")}</h2>
           <p className="text-body-md text-ink-muted max-w-[60ch] mx-auto">
-            Each specialized division operates under custom SLAs, vetted contractors, and specific intake structures to deliver precision Swiss servicing.
+            {t("portfolio.description")}
           </p>
         </div>
 
@@ -251,22 +263,22 @@ export default async function HomePage() {
               <div key={cat.slug} className={cardColClass}>
                 {isDomestic && (
                   <span className="absolute top-4 right-4 bg-accent text-ink-inverse text-[9px] uppercase px-2 py-0.5 rounded-sm font-semibold tracking-wider">
-                    PRIMARY SERVICE
+                    {t("portfolio.primaryService")}
                   </span>
                 )}
                 <div>
                   <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
                     <IconComponent className="w-6 h-6" />
                   </div>
-                  <span className="text-caption text-accent uppercase block mb-1">{meta.subtitle}</span>
-                  <h3 className="text-display-sm text-ink font-medium mb-3">{meta.title}</h3>
+                  <span className="text-caption text-accent uppercase block mb-1">{t(`categories.${cat.slug}.subtitle`)}</span>
+                  <h3 className="text-display-sm text-ink font-medium mb-3">{t(`categories.${cat.slug}.title`)}</h3>
                   <p className="text-body-sm text-ink-muted">
-                    {meta.description}
+                    {t(`categories.${cat.slug}.description`)}
                   </p>
                 </div>
                 <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-                  <span className="text-caption text-ink-subtle uppercase">{cat.customPriceText || meta.priceText}</span>
-                  <Link href={meta.link} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">Book →</Link>
+                  <span className="text-caption text-ink-subtle uppercase">{cat.customPriceText || t(`categories.${cat.slug}.priceText`)}</span>
+                  <Link href={meta.link} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">{t("portfolio.book")}</Link>
                 </div>
               </div>
             );
@@ -279,44 +291,47 @@ export default async function HomePage() {
         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#926c15_1px,transparent_1px)] [background-size:24px_24px]"></div>
         <div className="max-w-7xl mx-auto w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
-            <span className="text-caption text-accent uppercase tracking-wider block">VIP DIRECT CHANNEL</span>
+            <span className="text-caption text-accent uppercase tracking-wider block">{t("concierge.subtitle")}</span>
             <h2 className="text-display-md md:text-display-lg text-ink-inverse font-display font-medium leading-tight">
-              Bespoke dispatch.<br />
-              Direct via WhatsApp.
+              {t("concierge.title").split(". ").map((s, i) => (
+                <React.Fragment key={i}>
+                  {s}{i === 0 ? "." : ""}<br />
+                </React.Fragment>
+              ))}
             </h2>
             <p className="text-body-md text-ink-subtle max-w-[55ch]">
-              For private aviation crews, yacht captains, and luxury estate managers, we offer an on-demand, high-touch dispatch service. Bypass portals and forms—simply send your cleaning requirements, photos of the target cabin/deck/villa, or coordinates directly to our desk. A dedicated Swiss dispatcher will organize the team and confirm your booking within 15 minutes.
+              {t("concierge.description")}
             </p>
             <div className="flex flex-wrap gap-8 pt-4">
               <div className="flex flex-col">
                 <span className="text-display-xs text-accent font-serif font-bold">&lt; 5 Min</span>
-                <span className="text-caption text-ink-subtle uppercase">Response Time</span>
+                <span className="text-caption text-ink-subtle uppercase">{t("concierge.responseTime")}</span>
               </div>
               <div className="flex flex-col border-l border-ink-muted/30 pl-8">
                 <span className="text-display-xs text-accent font-serif font-bold">24 / 7</span>
-                <span className="text-caption text-ink-subtle uppercase">Dispatcher Coverage</span>
+                <span className="text-caption text-ink-subtle uppercase">{t("concierge.coverage")}</span>
               </div>
               <div className="flex flex-col border-l border-ink-muted/30 pl-8">
                 <span className="text-display-xs text-accent font-serif font-bold">Vetted</span>
-                <span className="text-caption text-ink-subtle uppercase">SLA Matching</span>
+                <span className="text-caption text-ink-subtle uppercase">{t("concierge.matching")}</span>
               </div>
             </div>
           </div>
           <div className="lg:col-span-5 lg:pl-8">
             <div className="border border-accent/25 bg-bg/5 p-8 rounded-lg backdrop-blur-sm space-y-6">
-              <h3 className="text-body-lg font-display text-ink-inverse font-semibold">How to Book via Concierge:</h3>
+              <h3 className="text-body-lg font-display text-ink-inverse font-semibold">{t("concierge.howToBook")}</h3>
               <ul className="space-y-4 text-body-sm text-ink-subtle">
                 <li className="flex gap-3">
                   <span className="text-accent font-semibold font-serif">1.</span>
-                  <span>Tap the WhatsApp link to open a secure direct chat with our Zurich dispatch office.</span>
+                  <span>{t("concierge.step1")}</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-accent font-semibold font-serif">2.</span>
-                  <span>Share details (hangar FBO name, vessel length/location, or villa photos).</span>
+                  <span>{t("concierge.step2")}</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-accent font-semibold font-serif">3.</span>
-                  <span>Confirm our tailored subcontractor pricing and lock in your schedule.</span>
+                  <span>{t("concierge.step3")}</span>
                 </li>
               </ul>
               <div className="pt-6 border-t border-accent/15">
@@ -329,7 +344,7 @@ export default async function HomePage() {
                   <svg className="w-5 h-5 fill-currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.501-5.734-1.453L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.497 0 9.965-4.437 9.968-9.894.002-2.643-1.022-5.127-2.887-6.995C16.48 1.848 14.004.825 11.368.825 5.867.825 1.4 5.26 1.397 10.72c-.001 1.932.504 3.814 1.462 5.474L1.879 22.4l6.402-1.681c-.553-.307-1.112-.663-1.634-1.565z"/>
                   </svg>
-                  <span>CONNECT TO CONCIERGE</span>
+                  <span>{t("concierge.cta")}</span>
                 </a>
               </div>
             </div>
@@ -455,7 +470,7 @@ export default async function HomePage() {
               {sortedCategories.map((cat: any) => (
                 <li key={cat.slug}>
                   <Link href={verticalMeta[cat.slug]?.link || `/book/${cat.slug}`} className="hover:text-ink-inverse transition-colors">
-                    {verticalMeta[cat.slug]?.title || cat.name}
+                    {t(`categories.${cat.slug}.title`)}
                   </Link>
                 </li>
               ))}
@@ -491,10 +506,13 @@ export default async function HomePage() {
         {/* Bottom Strip */}
         <div className="border-t border-ink-muted/20 py-8 px-6 md:px-16 text-center text-body-sm text-ink-subtle max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <span>&copy; {new Date().getFullYear()} Elite Cleaning Services. All rights reserved.</span>
-          <div className="flex gap-6">
-            <Link href="/legal/privacy" className="hover:text-ink-inverse transition-colors">Privacy Policy</Link>
-            <Link href="/legal/terms" className="hover:text-ink-inverse transition-colors">Terms of Service</Link>
-            <Link href="/legal/cookies" className="hover:text-ink-inverse transition-colors">Cookie Policy</Link>
+          <div className="flex items-center gap-6">
+            <LanguageSwitcher />
+            <div className="flex gap-6">
+              <Link href="/legal/privacy" className="hover:text-ink-inverse transition-colors">Privacy Policy</Link>
+              <Link href="/legal/terms" className="hover:text-ink-inverse transition-colors">Terms of Service</Link>
+              <Link href="/legal/cookies" className="hover:text-ink-inverse transition-colors">Cookie Policy</Link>
+            </div>
           </div>
         </div>
       </footer>

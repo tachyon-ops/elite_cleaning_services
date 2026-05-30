@@ -57,6 +57,13 @@ export async function loginProvider(email: string, passphrase: string) {
     }
  
     const cookieStore = await cookies();
+    cookieStore.set("NEXT_LOCALE", user.locale || "en", {
+      path: "/",
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 365
+    });
     cookieStore.set("provider_session", "true", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
     cookieStore.set("provider_email", user.email, { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
     cookieStore.set("provider_company_id", user.providerCompanyId || "", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
@@ -83,6 +90,13 @@ export async function loginProvider2FA(userId: string, token: string) {
     }
 
     const cookieStore = await cookies();
+    cookieStore.set("NEXT_LOCALE", user.locale || "en", {
+      path: "/",
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 365
+    });
     cookieStore.set("provider_session", "true", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
     cookieStore.set("provider_email", user.email, { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });
     cookieStore.set("provider_company_id", user.providerCompanyId || "", { httpOnly: true, secure: process.env.NODE_ENV === "production", path: "/" });

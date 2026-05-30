@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "services": "Dienstleistungen",
+    "howItWorks": "Ablauf",
+    "partnerPortal": "Partner-Portal",
+    "getQuote": "OFFERTE ANFORDERN"
+  },
+  "hero": {
+    "division": "SCHWEIZER SPEZIALREINIGUNG",
+    "title": "Spezialreinigung. Online gebucht. Von Experten ausgeführt.",
+    "description": "Ein kuratiertes, Schweizer Netzwerk von spezialisierten Reinigungs-Subunternehmern. Versicherte Ausführung, ein einziger Ansprechpartner und feste wiederkehrende Termine.",
+    "ctaQuote": "Offerte in 60s erhalten",
+    "ctaHow": "So funktioniert's"
+  },
+  "portfolio": {
+    "subtitle": "UNSER PORTFOLIO",
+    "title": "Dienstleistungsbereiche",
+    "description": "Jede Spezialabteilung arbeitet nach massgeschneiderten SLAs, geprüften Partnern und spezifischen Aufnahmestrukturen, um Schweizer Präzisionsarbeit zu leisten.",
+    "primaryService": "HAUPTDIENST",
+    "book": "Buchen →"
+  },
+  "concierge": {
+    "subtitle": "VIP DIREKTKANAL",
+    "title": "Individuelle Abwicklung. Direkt per WhatsApp.",
+    "description": "Für Crews der privaten Luftfahrt, Yachtkapitäne und Manager von Luxusanwesen bieten wir einen persönlichen Express-Service auf Abruf. Umgehen Sie Portale und Formulare – senden Sie Ihre Reinigungsanforderungen, Fotos oder Koordinaten direkt an unsere Zentrale. Ein Schweizer Disponent organisiert das Team und bestätigt Ihre Buchung innerhalb von 15 Minuten.",
+    "responseTime": "Antwortzeit",
+    "coverage": "Erreichbarkeit",
+    "matching": "SLA-Zuweisung",
+    "howToBook": "Buchung per Concierge:",
+    "step1": "Tippen Sie auf den WhatsApp-Link, um einen direkten Chat mit unserer Zürcher Zentrale zu öffnen.",
+    "step2": "Teilen Sie Details (Hangar-Name, Schiffslänge/-standort oder Fotos).",
+    "step3": "Bestätigen Sie unsere Preise und sichern Sie Ihren Termin.",
+    "cta": "MIT CONCIERGE VERBINDEN"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "ELITE STEUERUNG",
+      "subtitle": "Backoffice Betrieb",
+      "dashboard": "Dashboard",
+      "bookings": "Buchungen & Disposition",
+      "applications": "Bewerbungen",
+      "providers": "Partnerliste",
+      "verticals": "Sparten verwalten",
+      "settings": "Sicherheitseinstellungen",
+      "logout": "Abmelden"
+    }
+  },
+  "partner": {
+    "dashboard": "Partner-Dashboard",
+    "logout": "Abmelden",
+    "activeOffers": "Aktive Buchungsangebote",
+    "assignedBookings": "Zugewiesene Spezialaufträge",
+    "companySettings": "Unternehmens-Setup",
+    "mfaSettings": "MFA Sicherheit"
+  },
+  "categories": {
+    "domestic": {
+      "title": "Haus- & Villenreinigung",
+      "subtitle": "PRIVATHAUS",
+      "description": "Regelmässige Pflege, Tiefenreinigung und Umzugsreinigung für Premium-Wohnungen und Villen.",
+      "priceText": "AB CHF 80"
+    },
+    "aviation": {
+      "title": "Privatjets & Helikopter",
+      "subtitle": "LUFTFAHRT",
+      "description": "Aussenwäsche, gründliche Innenreinigung und Kabinen-Auffüllung in Schweizer Hangars und FBOs.",
+      "priceText": "OFFERTE AUF ANFRAGE"
+    },
+    "yacht": {
+      "title": "Boote & Yachtdecks",
+      "subtitle": "YACHT & MARINE",
+      "description": "Teakholzreinigung, Innenreinigung, Stilllegung zum Saisonende und Marina-Zugang.",
+      "priceText": "OFFERTE AUF ANFRAGE"
+    },
+    "commercial": {
+      "title": "Büros & Co-Working Spaces",
+      "subtitle": "GEWERBE",
+      "description": "Standardreinigung, Tiefenreinigung nach Geschäftsschluss und massgeschneiderte Intervalle für Büros.",
+      "priceText": "AB CHF 150"
+    },
+    "hospitality": {
+      "title": "Airbnb-Turnover & Ferienwohnungen",
+      "subtitle": "BEHERBERGUNG",
+      "description": "Schnelle Reinigungszyklen bei Gästewechsel, Wäscheservice und Schlüsselübergabe.",
+      "priceText": "AB CHF 120"
+    },
+    "special": {
+      "title": "Biohazard & Tatortreinigung",
+      "subtitle": "SPEZIALREINIGUNG",
+      "description": "Restaurierende Spezialreinigung, Unterstützung bei Unfällen und Messi-Wohnungen. Diskrete Abwicklung.",
+      "priceText": "NUR TELEFONISCH"
+    }
+  }
+}

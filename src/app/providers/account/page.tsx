@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   getProviderPortalData,
   respondToOffer,
@@ -35,6 +37,7 @@ import {
 
 export default function ProviderDashboardPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -251,14 +254,17 @@ export default function ProviderDashboardPage() {
       <nav className="border-b border-[#1f1f1f] bg-[#0d0d0d] px-6 py-4 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/" className="font-display font-medium text-body-lg tracking-widest text-[#f2f2f2] hover:text-accent transition-colors">
-            ELITE PARTNER HUB
+            {t("partner.dashboard")}
           </Link>
           <span className="h-4 w-px bg-[#262626]" />
           <span className="text-body-xs font-mono text-[#a6a6a6]">{provider.name}</span>
         </div>
-        <button onClick={handleLogout} className="text-[#a6a6a6] hover:text-red-400 transition-colors flex items-center gap-1.5 text-body-sm font-semibold">
-          <LogOut className="w-4 h-4" /> Sign Out
-        </button>
+        <div className="flex items-center gap-6">
+          <LanguageSwitcher />
+          <button onClick={handleLogout} className="text-[#a6a6a6] hover:text-red-400 transition-colors flex items-center gap-1.5 text-body-sm font-semibold cursor-pointer">
+            <LogOut className="w-4 h-4" /> {t("partner.logout")}
+          </button>
+        </div>
       </nav>
 
       {/* Main Grid */}
@@ -316,7 +322,7 @@ export default function ProviderDashboardPage() {
           {/* Job Offers Inbox */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
             <h3 className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-accent" /> Dispatch Job Inbox
+              <Briefcase className="w-5 h-5 text-accent" /> {t("partner.activeOffers")}
             </h3>
 
             {offers.filter((o: any) => o.response === "pending").length === 0 ? (
@@ -418,7 +424,7 @@ export default function ProviderDashboardPage() {
           {/* Active Assigned Jobs */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
             <h3 className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-accent" /> Active Schedules
+              <Calendar className="w-5 h-5 text-accent" /> {t("partner.assignedBookings")}
             </h3>
 
             {bookings.length === 0 ? (
@@ -467,7 +473,7 @@ export default function ProviderDashboardPage() {
           {/* Two-Factor Authentication (2FA) */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
             <h3 className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-accent" /> Security Settings
+              <KeyRound className="w-5 h-5 text-accent" /> {t("partner.mfaSettings")}
             </h3>
             
             {totpError && (

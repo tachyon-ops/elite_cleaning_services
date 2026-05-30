@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound } from "lucide-react";
 import { getLoggedInAdmin } from "@/app/actions/admin";
+import { getTranslationsForLocale, translate } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function AdminLayout({
   children
@@ -15,9 +17,9 @@ export default async function AdminLayout({
   const admin = await getLoggedInAdmin();
   const isSuperAdmin = admin?.role === "super_admin";
 
-  // Check path name via header or check simple status
-  // Note: Since this is a server layout, if not authenticated we let pages handle redirect or check here.
-  // We can let layout gate all children except login.
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const dictionary = getTranslationsForLocale(locale);
+  const t = (key: string) => translate(key, dictionary);
 
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-[#f2f2f2] flex font-body">
@@ -29,8 +31,8 @@ export default async function AdminLayout({
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-display font-medium text-body-md block tracking-tight">ELITE CONTROL</span>
-              <span className="text-caption text-ink-subtle uppercase">Backoffice Ops</span>
+              <span className="font-display font-medium text-body-md block tracking-tight">{t("admin.sidebar.title")}</span>
+              <span className="text-caption text-ink-subtle uppercase">{t("admin.sidebar.subtitle")}</span>
             </div>
           </div>
 
@@ -39,49 +41,53 @@ export default async function AdminLayout({
               href="/admin"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <LayoutDashboard className="w-4 h-4" /> Dashboard
+              <LayoutDashboard className="w-4 h-4" /> {t("admin.sidebar.dashboard")}
             </Link>
             <Link
               href="/admin/bookings"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <BookOpen className="w-4 h-4" /> Bookings & Dispatch
+              <BookOpen className="w-4 h-4" /> {t("admin.sidebar.bookings")}
             </Link>
             <Link
               href="/admin/provider-applications"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <Users className="w-4 h-4" /> Applications Queue
+              <Users className="w-4 h-4" /> {t("admin.sidebar.applications")}
             </Link>
             <Link
               href="/admin/providers"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <Shield className="w-4 h-4" /> Providers List
+              <Shield className="w-4 h-4" /> {t("admin.sidebar.providers")}
             </Link>
             {isSuperAdmin && (
               <Link
                 href="/admin/verticals"
                 className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
               >
-                <Sliders className="w-4 h-4" /> Manage Verticals
+                <Sliders className="w-4 h-4" /> {t("admin.sidebar.verticals")}
               </Link>
             )}
             <Link
               href="/admin/settings"
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
-              <KeyRound className="w-4 h-4" /> Security Settings
+              <KeyRound className="w-4 h-4" /> {t("admin.sidebar.settings")}
             </Link>
           </nav>
 
-          <div className="pt-6 border-t border-[#262626]">
+          <div className="flex flex-col gap-4 pt-6 border-t border-[#262626]">
+            <div className="px-4 flex items-center justify-between">
+              <span className="text-[10px] text-ink-subtle uppercase tracking-wider font-semibold">Language</span>
+              <LanguageSwitcher />
+            </div>
             <form action="/api/admin/logout" method="POST">
               <button
                 type="submit"
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-red-400 hover:bg-red-500/10 transition-all text-left"
               >
-                <LogOut className="w-4 h-4" /> Log Out
+                <LogOut className="w-4 h-4" /> {t("admin.sidebar.logout")}
               </button>
             </form>
           </div>

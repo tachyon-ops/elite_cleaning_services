@@ -218,22 +218,29 @@ export async function createBooking(payload: {
     // Secure price calculation
     const pricing = calculatePrice(categorySlug, intake);
 
-    // Matching Engine: Find active providers with active listing for this category slug
-    const matchingProviderListing = await db.providerListing.findFirst({
-      where: {
-        categorySlug,
-        active: true,
-        provider: {
-          onboardingStatus: "active"
-        }
-      },
-      include: {
-        provider: true
-      }
-    });
+    const isQuoteVertical = ["aviation", "yacht", "special"].includes(categorySlug);
 
-    const hasMatchingProvider = !!matchingProviderListing;
-    const initialStatus = hasMatchingProvider ? "offer_dispatched" : "confirmed";
+    // Matching Engine: Find active providers with active listing for this category slug (only if not a quote vertical yet)
+    let hasMatchingProvider = false;
+    let matchingProviderListing = null;
+
+    if (!isQuoteVertical) {
+      matchingProviderListing = await db.providerListing.findFirst({
+        where: {
+          categorySlug,
+          active: true,
+          provider: {
+            onboardingStatus: "active"
+          }
+        },
+        include: {
+          provider: true
+        }
+      });
+      hasMatchingProvider = !!matchingProviderListing;
+    }
+
+    const initialStatus = isQuoteVertical ? "quote_pending" : (hasMatchingProvider ? "offer_dispatched" : "confirmed");
 
     // Create Booking
     const booking = await db.booking.create({
@@ -253,29 +260,31 @@ export async function createBooking(payload: {
       }
     });
 
-    // Create offer if match is found
-    if (hasMatchingProvider) {
-      await db.providerOffer.create({
+    if (!isQuoteVertical) {
+      // Create offer if match is found
+      if (hasMatchingProvider && matchingProviderListing) {
+        await db.providerOffer.create({
+          data: {
+            bookingId: booking.id,
+            providerId: matchingProviderListing.providerId,
+            offeredAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes timeout
+            response: "pending"
+          }
+        });
+      }
+
+      // Record Simulated Payment
+      await db.payment.create({
         data: {
           bookingId: booking.id,
-          providerId: matchingProviderListing.providerId,
-          offeredAt: new Date(),
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes timeout
-          response: "pending"
+          stripeChargeId: `ch_mock_${Math.random().toString(36).substr(2, 9)}`,
+          amountChf: pricing.deposit,
+          status: "succeeded",
+          refundedAmountChf: 0
         }
       });
     }
-
-    // Record Simulated Payment
-    await db.payment.create({
-      data: {
-        bookingId: booking.id,
-        stripeChargeId: `ch_mock_${Math.random().toString(36).substr(2, 9)}`,
-        amountChf: pricing.deposit,
-        status: "succeeded",
-        refundedAmountChf: 0
-      }
-    });
 
     return { success: true, bookingId: booking.id };
   } catch (error: any) {
@@ -290,6 +299,171 @@ export async function getActiveCategories() {
       where: { active: true }
     });
     return { success: true, categories };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 6. Accept booking quote and pay deposit
+export async function acceptQuoteAndPayDeposit(payload: {
+  bookingId: string;
+  paymentMethodId?: string;
+}) {
+  try {
+    const { bookingId } = payload;
+    if (!bookingId) {
+      throw new Error("Booking ID is required");
+    }
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        quote: true
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    if (booking.status !== "quote_sent") {
+      throw new Error("Booking is not in quote_sent state");
+    }
+
+    if (!booking.quote) {
+      throw new Error("No quote associated with this booking");
+    }
+
+    // Check expiration
+    if (booking.quote.validUntil && new Date() > booking.quote.validUntil) {
+      throw new Error("Quote has expired");
+    }
+
+    // Determine matching provider (matching engine)
+    const matchingProviderListing = await db.providerListing.findFirst({
+      where: {
+        categorySlug: booking.categorySlug,
+        active: true,
+        provider: {
+          onboardingStatus: "active"
+        }
+      },
+      include: {
+        provider: true
+      }
+    });
+    const hasMatchingProvider = !!matchingProviderListing;
+
+    const nextStatus = hasMatchingProvider ? "offer_dispatched" : "confirmed";
+
+    // Start a transaction so that booking update, quote update, payment, commission, and payout are consistent
+    await db.$transaction(async (tx) => {
+      // 1. Update Booking status
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: nextStatus
+        }
+      });
+
+      // 2. Update Quote acceptance
+      await tx.quote.update({
+        where: { bookingId },
+        data: {
+          acceptedAt: new Date()
+        }
+      });
+
+      // 3. Create simulated Payment
+      await tx.payment.create({
+        data: {
+          bookingId: booking.id,
+          stripeChargeId: `ch_mock_${Math.random().toString(36).substring(2, 11)}`,
+          amountChf: booking.depositAmountChf,
+          status: "succeeded",
+          refundedAmountChf: 0
+        }
+      });
+
+      // 4. Create CommissionLedger
+      const gross = Number(booking.totalAmountChf);
+      const commissionRate = 0.15;
+      const commissionAmount = Math.round(gross * commissionRate * 100) / 100;
+      const providerPayout = Math.round((gross - commissionAmount) * 100) / 100;
+
+      await tx.commissionLedger.create({
+        data: {
+          bookingId: booking.id,
+          grossAmountChf: gross,
+          commissionRate,
+          commissionAmountChf: commissionAmount,
+          providerPayoutChf: providerPayout,
+          notes: `Bespoke dispatch commission for ${booking.categorySlug}`
+        }
+      });
+
+      // 5. Create Payout record if matching provider exists
+      if (hasMatchingProvider && matchingProviderListing) {
+        // Create matching ProviderOffer
+        await tx.providerOffer.create({
+          data: {
+            bookingId: booking.id,
+            providerId: matchingProviderListing.providerId,
+            offeredAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 mins
+            response: "pending"
+          }
+        });
+
+        // Create scheduled Payout record
+        await tx.payout.create({
+          data: {
+            providerId: matchingProviderListing.providerId,
+            bookingId: booking.id,
+            amountChf: providerPayout,
+            status: "scheduled",
+            scheduledFor: new Date(booking.scheduledAt.getTime() + 24 * 60 * 60 * 1000) // 24 hours after service scheduled date
+          }
+        });
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 7. Get booking details and its quote for client checkout page
+export async function getBookingQuoteDetails(bookingId: string) {
+  try {
+    if (!bookingId) {
+      throw new Error("Booking ID is required");
+    }
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        quote: true
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // Convert Decimals to numbers for client component serialization safety
+    const formatted = {
+      ...booking,
+      totalAmountChf: Number(booking.totalAmountChf),
+      depositAmountChf: Number(booking.depositAmountChf),
+      quote: booking.quote ? {
+        ...booking.quote,
+        amountChf: Number(booking.quote.amountChf)
+      } : null
+    };
+
+    return { success: true, booking: formatted };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

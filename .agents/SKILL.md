@@ -49,6 +49,9 @@ comment, or generated code. They are stack-agnostic.
 9. **Never duplicate** — search the codebase before introducing a new function, type, component, or constant. If something close exists, extend or reuse it.
 10. **Never bypass security baselines** — auth, input validation, secret handling, and authorization checks follow the rules in the `security-fundamentals` skill. No exceptions for "internal" or "temporary" code.
 11. **Never proceed past ambiguity** — output an `AGENT PAUSE` instead of guessing.
+12. **Always practice Test-Driven Development (TDD)** — write the tests first to verify assumptions and validate logic correctness *before* writing the implementation. This is non-negotiable.
+13. **Always treat bugs as test misses** — any bug is a missing test. Never resolve a bug without first writing a test that reproduces the bug and fails.
+14. **Always isolate logic and follow functional programming principles** — logic must be pure, isolated, and decoupled from side effects. If logic has standalone semantics (e.g., authentication, OTP, i18n), isolate and package it into a proper reusable library.
 
 ---
 

@@ -183,15 +183,36 @@ A handful of well-chosen E2E tests beats a hundred flaky ones.
 
 ---
 
+## Test-Driven Development (TDD) — Non-Negotiable!
+
+TDD is a mandatory workflow. You must write tests *first* to check the assumptions for your logic to yield the right results before writing the implementation:
+
+1. **Write the Tests First**: Write one or more tests that represent the expected inputs and correct outputs for the logic you plan to implement. Ensure that these tests fail (or fail to compile/run) because the logic doesn't exist yet.
+2. **Implement the Logic**: Write the minimum amount of code required to make the tests pass.
+3. **Refactor Safely**: Clean up the code while verifying that your tests continue to pass.
+
+Writing tests after the logic is a violation of these guidelines.
+
+---
+
+## Treating Bugs as Test Misses
+
+Every bug is a gap in the test suite (a "test miss"). 
+When resolving a bug:
+1. **Never jump directly to fixing the code.**
+2. **Reproduce the bug in a test**: Write a test case that replicates the bug scenario. The test must fail when run against the current (buggy) codebase.
+3. **Verify the fix**: Fix the bug in the implementation, and ensure that the test now passes without breaking other tests.
+4. **Treat the test as documentation**: The test ensures the regression can never happen again.
+
+---
+
 ## Test Discipline for AI Agents
 
-- Write the test alongside the change, in the same commit. Tests
-  shipped later get shipped never.
+- Practice TDD for every change — write the test before writing the code.
+- Write the test alongside the change, in the same commit. Tests shipped later get shipped never.
 - Run the relevant tests before claiming the task complete.
-- If you cannot run tests, say so. "Untested — please run X to verify"
-  is honest.
-- A change that breaks existing tests is incomplete unless the test
-  changes are deliberate and explained.
+- If you cannot run tests, say so. "Untested — please run X to verify" is honest.
+- A change that breaks existing tests is incomplete unless the test changes are deliberate and explained.
 
 ---
 
@@ -201,11 +222,10 @@ Refuse a change, and surface, when:
 
 - A test is being disabled to make a change pass.
 - The change reduces existing test coverage of a public surface.
-- An "untested for now" change involves auth, money, data integrity, or
-  security boundaries.
+- An "untested for now" change involves auth, money, data integrity, or security boundaries.
 
 ---
 
 ## The Testing Mantra
 
-> **"Test the contract. Fast, isolated, deterministic. The test names the behaviour. Failure tells you why."**
+> **"TDD is non-negotiable: tests first, logic second. A bug is a test miss; reproduce it first. Test the contract."**

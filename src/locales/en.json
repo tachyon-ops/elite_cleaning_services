@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "services": "Services",
+    "howItWorks": "How It Works",
+    "partnerPortal": "Partner Portal",
+    "getQuote": "GET A QUOTE"
+  },
+  "hero": {
+    "division": "SWISS SPECIALTY BROKERAGE",
+    "title": "Specialty cleaning. Booked online. Done by experts.",
+    "description": "A curated, Swiss-based network of specialty cleaning subcontractors. Insured delivery, single point of contact, and locked-in recurring schedules.",
+    "ctaQuote": "Get a quote in 60s",
+    "ctaHow": "How it works"
+  },
+  "portfolio": {
+    "subtitle": "OUR PORTFOLIO",
+    "title": "Service Verticals",
+    "description": "Each specialized division operates under custom SLAs, vetted contractors, and specific intake structures to deliver precision Swiss servicing.",
+    "primaryService": "PRIMARY SERVICE",
+    "book": "Book →"
+  },
+  "concierge": {
+    "subtitle": "VIP DIRECT CHANNEL",
+    "title": "Bespoke dispatch. Direct via WhatsApp.",
+    "description": "For private aviation crews, yacht captains, and luxury estate managers, we offer an on-demand, high-touch dispatch service. Bypass portals and forms—simply send your cleaning requirements, photos of the target cabin/deck/villa, or coordinates directly to our desk. A dedicated Swiss dispatcher will organize the team and confirm your booking within 15 minutes.",
+    "responseTime": "Response Time",
+    "coverage": "Dispatcher Coverage",
+    "matching": "SLA Matching",
+    "howToBook": "How to Book via Concierge:",
+    "step1": "Tap the WhatsApp link to open a secure direct chat with our Zurich dispatch office.",
+    "step2": "Share details (hangar FBO name, vessel length/location, or villa photos).",
+    "step3": "Confirm our tailored subcontractor pricing and lock in your schedule.",
+    "cta": "CONNECT TO CONCIERGE"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "ELITE CONTROL",
+      "subtitle": "Backoffice Ops",
+      "dashboard": "Dashboard",
+      "bookings": "Bookings & Dispatch",
+      "applications": "Applications Queue",
+      "providers": "Providers List",
+      "verticals": "Manage Verticals",
+      "settings": "Security Settings",
+      "logout": "Log Out"
+    }
+  },
+  "partner": {
+    "dashboard": "Partner Dashboard",
+    "logout": "Sign Out",
+    "activeOffers": "Active Booking Offers",
+    "assignedBookings": "Assigned Specialty Bookings",
+    "companySettings": "Company Setup",
+    "mfaSettings": "MFA Security"
+  },
+  "categories": {
+    "domestic": {
+      "title": "Home & Villa Cleaning",
+      "subtitle": "DOMESTIC",
+      "description": "Regular upkeep, deep cleaning, and move-out servicing for premium apartments and villas.",
+      "priceText": "FROM CHF 80"
+    },
+    "aviation": {
+      "title": "Private Jets & Helicopters",
+      "subtitle": "AVIATION",
+      "description": "Exterior wash, deep interior detailing, and cabin restocking in Swiss hangars and FBOs.",
+      "priceText": "QUOTE ON REQUEST"
+    },
+    "yacht": {
+      "title": "Vessels & Yacht Decks",
+      "subtitle": "YACHT & MARINE",
+      "description": "Teak cleaning, interior detail, end-of-season decommissioning, and marina access.",
+      "priceText": "QUOTE ON REQUEST"
+    },
+    "commercial": {
+      "title": "Offices & Co-working",
+      "subtitle": "COMMERCIAL",
+      "description": "Standard cleanups, after-hours deep cleans, and tailored frequencies for office suites.",
+      "priceText": "FROM CHF 150"
+    },
+    "hospitality": {
+      "title": "Airbnb Turnover & B&Bs",
+      "subtitle": "HOSPITALITY",
+      "description": "Fast turnover schedules, linen management, and smartlock key handovers.",
+      "priceText": "FROM CHF 120"
+    },
+    "special": {
+      "title": "Biohazard & Post-Incident",
+      "subtitle": "SPECIAL SERVICES",
+      "description": "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
+      "priceText": "PHONE ONLY"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getBookingsList, getPartnersList, assignPartnerTeam, updateBookingStatus, deleteCustomerDataGDPR } from "@/app/actions/admin";
+import { getBookingsList, getPartnersList, assignPartnerTeam, updateBookingStatus, deleteCustomerDataGDPR, createQuote } from "@/app/actions/admin";
 import { BookOpen, User, MapPin, Eye, Trash2, CheckCircle2, AlertTriangle, ShieldAlert } from "lucide-react";
 
 export default function AdminBookingsPage() {
@@ -13,6 +13,57 @@ export default function AdminBookingsPage() {
 
   // Details drawer
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+
+  // Quote form state
+  const [quotePrice, setQuotePrice] = useState("");
+  const [quoteValidity, setQuoteValidity] = useState("7");
+  const [quoteNotes, setQuoteNotes] = useState("");
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+
+  const handleSendQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBooking) return;
+    const price = parseFloat(quotePrice);
+    if (isNaN(price) || price <= 0) {
+      setError("Please enter a valid price greater than 0");
+      return;
+    }
+    const days = parseInt(quoteValidity);
+    if (isNaN(days) || days <= 0) {
+      setError("Please enter a valid validity window");
+      return;
+    }
+
+    setSubmittingQuote(true);
+    setError("");
+    setSuccessMsg("");
+
+    const res = await createQuote({
+      bookingId: selectedBooking.id,
+      amountChf: price,
+      validUntilDays: days,
+      notes: quoteNotes
+    });
+
+    setSubmittingQuote(false);
+
+    if (res.success) {
+      setSuccessMsg("Quote created and sent to customer successfully.");
+      setQuotePrice("");
+      setQuoteValidity("7");
+      setQuoteNotes("");
+      loadData();
+      // Update selected booking view
+      setSelectedBooking((prev: any) => ({
+        ...prev,
+        status: "quote_sent",
+        totalAmountChf: price,
+        depositAmountChf: Math.round(price * 0.3 * 100) / 100
+      }));
+    } else {
+      setError(res.error || "Failed to create quote");
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -183,10 +234,14 @@ export default function AdminBookingsPage() {
                               ? "text-green-400"
                               : booking.status === "cancelled"
                               ? "text-red-400"
+                              : booking.status === "quote_pending"
+                              ? "text-yellow-400"
                               : "text-accent"
                           }`}
                         >
                           <option value="draft">Draft</option>
+                          <option value="quote_pending">Quote Pending</option>
+                          <option value="quote_sent">Quote Sent</option>
                           <option value="confirmed">Confirmed</option>
                           <option value="assigned">Assigned</option>
                           <option value="completed">Completed</option>
@@ -255,6 +310,74 @@ export default function AdminBookingsPage() {
                     {JSON.stringify(JSON.parse(selectedBooking.intake), null, 2)}
                   </pre>
                 </div>
+
+                {selectedBooking.status === "quote_pending" && (
+                  <form onSubmit={handleSendQuote} className="border-t border-[#262626] pt-4 space-y-4">
+                    <span className="text-caption text-accent block uppercase font-semibold">Generate Bespoke Quote</span>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Price (CHF)</label>
+                        <input
+                          type="number"
+                          value={quotePrice}
+                          onChange={(e) => setQuotePrice(e.target.value)}
+                          placeholder="e.g. 750"
+                          min="1"
+                          required
+                          className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded-md focus:border-accent outline-none text-body-sm font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Validity (Days)</label>
+                        <input
+                          type="number"
+                          value={quoteValidity}
+                          onChange={(e) => setQuoteValidity(e.target.value)}
+                          placeholder="e.g. 7"
+                          min="1"
+                          required
+                          className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded-md focus:border-accent outline-none text-body-sm font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Operator Notes / Scope Detail</label>
+                      <textarea
+                        value={quoteNotes}
+                        onChange={(e) => setQuoteNotes(e.target.value)}
+                        placeholder="e.g. Exterior hand wash, gelcoat sealant, and interior cabin detail."
+                        rows={3}
+                        className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded-md focus:border-accent outline-none text-body-sm font-medium resize-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submittingQuote}
+                      className="w-full border border-accent bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 text-button font-semibold py-3 rounded-md transition-colors uppercase tracking-wide text-xs"
+                    >
+                      {submittingQuote ? "Sending Quote..." : "Send Quote to Client"}
+                    </button>
+                  </form>
+                )}
+
+                {selectedBooking.status === "quote_sent" && (
+                  <div className="border-t border-[#262626] pt-4 space-y-3">
+                    <span className="text-caption text-accent block uppercase font-semibold">Active Quote Details</span>
+                    <div className="bg-[#0d0d0d] p-4 rounded-md border border-[#262626] text-body-sm space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-[#a6a6a6]">Total Price:</span>
+                        <span className="font-semibold text-[#f2f2f2]">CHF {selectedBooking.totalAmountChf}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#a6a6a6]">30% Deposit:</span>
+                        <span className="font-semibold text-accent">CHF {selectedBooking.depositAmountChf}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="border-t border-[#262626] pt-6 flex flex-col gap-3">
                   <button
