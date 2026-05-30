@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { getBookingsList, getPartnersList, assignPartnerTeam, updateBookingStatus, deleteCustomerDataGDPR, createQuote } from "@/app/actions/admin";
 import { BookOpen, User, MapPin, Eye, Trash2, CheckCircle2, AlertTriangle, ShieldAlert } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function AdminBookingsPage() {
+  const { locale, t } = useLanguage();
   const [bookings, setBookings] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,12 +27,12 @@ export default function AdminBookingsPage() {
     if (!selectedBooking) return;
     const price = parseFloat(quotePrice);
     if (isNaN(price) || price <= 0) {
-      setError("Please enter a valid price greater than 0");
+      setError(t("admin.bookings.invalidPrice"));
       return;
     }
     const days = parseInt(quoteValidity);
     if (isNaN(days) || days <= 0) {
-      setError("Please enter a valid validity window");
+      setError(t("admin.bookings.invalidValidity"));
       return;
     }
 
@@ -48,7 +50,7 @@ export default function AdminBookingsPage() {
     setSubmittingQuote(false);
 
     if (res.success) {
-      setSuccessMsg("Quote created and sent to customer successfully.");
+      setSuccessMsg(t("admin.bookings.quoteCreated"));
       setQuotePrice("");
       setQuoteValidity("7");
       setQuoteNotes("");
@@ -61,7 +63,7 @@ export default function AdminBookingsPage() {
         depositAmountChf: Math.round(price * 0.3 * 100) / 100
       }));
     } else {
-      setError(res.error || "Failed to create quote");
+      setError(res.error || t("admin.bookings.quoteError"));
     }
   };
 
@@ -103,7 +105,7 @@ export default function AdminBookingsPage() {
     setSuccessMsg("");
     const res = await assignPartnerTeam(bookingId, teamId || null);
     if (res.success) {
-      setSuccessMsg("Subcontractor team updated successfully");
+      setSuccessMsg(t("admin.bookings.teamUpdated"));
       loadData();
     } else {
       setError(res.error || "Failed to assign partner team");
@@ -115,7 +117,7 @@ export default function AdminBookingsPage() {
     setSuccessMsg("");
     const res = await updateBookingStatus(bookingId, status);
     if (res.success) {
-      setSuccessMsg("Booking status updated successfully");
+      setSuccessMsg(t("admin.bookings.statusUpdated"));
       loadData();
     } else {
       setError(res.error || "Failed to update status");
@@ -123,20 +125,20 @@ export default function AdminBookingsPage() {
   };
 
   const handleDeleteGDPR = async (email: string) => {
-    if (!window.confirm(`WARNING: GDPR Request. This will permanently delete all logs, reviews, payments, and bookings associated with customer email: ${email}. Are you absolutely sure?`)) {
+    if (!window.confirm(t("admin.bookings.gdprConfirm").replace("{email}", email))) {
       return;
     }
     setError("");
     setSuccessMsg("");
     const res = await deleteCustomerDataGDPR(email);
     if (res.success) {
-      setSuccessMsg(`GDPR deletion complete for ${email}`);
+      setSuccessMsg(t("admin.bookings.gdprSuccess").replace("{email}", email));
       loadData();
       if (selectedBooking?.guestEmail === email) {
         setSelectedBooking(null);
       }
     } else {
-      setError(res.error || "Failed to execute GDPR deletion");
+      setError(res.error || t("admin.bookings.gdprError"));
     }
   };
 
@@ -144,9 +146,11 @@ export default function AdminBookingsPage() {
     <div className="p-8 md:p-12 space-y-8 max-w-7xl w-full mx-auto">
       <header className="flex justify-between items-center">
         <div>
-          <span className="text-caption text-accent uppercase tracking-widest block mb-2 font-semibold">Active Dispatch</span>
+          <span className="text-caption text-accent uppercase tracking-widest block mb-2 font-semibold">
+            {t("admin.bookings.activeDispatch")}
+          </span>
           <h1 className="text-display-md font-display font-medium text-[#f2f2f2] tracking-tight">
-            Bookings Dashboard
+            {t("admin.bookings.dashboardTitle")}
           </h1>
         </div>
       </header>
@@ -165,7 +169,7 @@ export default function AdminBookingsPage() {
 
       {loading ? (
         <div className="text-center py-12 text-[#a6a6a6] text-body-sm">
-          Loading dispatches from SQLite...
+          {t("admin.bookings.loading")}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -173,7 +177,8 @@ export default function AdminBookingsPage() {
           <div className="lg:col-span-2 border border-[#262626] bg-[#141414] rounded-lg overflow-hidden">
             <div className="p-6 border-b border-[#262626]">
               <span className="text-body-md font-semibold text-[#f2f2f2] flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-accent" /> Active Bookings List ({bookings.length})
+                <BookOpen className="w-5 h-5 text-accent" />{" "}
+                {t("admin.bookings.listTitle").replace("{count}", bookings.length.toString())}
               </span>
             </div>
 
@@ -181,19 +186,19 @@ export default function AdminBookingsPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-[#262626] text-caption uppercase text-[#a6a6a6] bg-[#0d0d0d]">
-                    <th className="p-4 font-semibold">Service Date</th>
-                    <th className="p-4 font-semibold">Customer</th>
-                    <th className="p-4 font-semibold">Service Details</th>
-                    <th className="p-4 font-semibold">Partner Assigned</th>
-                    <th className="p-4 font-semibold">Status</th>
-                    <th className="p-4 font-semibold">Inspect</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.date")}</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.customer")}</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.details")}</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.partner")}</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.status")}</th>
+                    <th className="p-4 font-semibold">{t("admin.bookings.table.inspect")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#262626] text-body-sm text-[#f2f2f2]">
                   {bookings.map((booking) => (
                     <tr key={booking.id} className="hover:bg-[#1a1a1a] transition-colors">
                       <td className="p-4 font-medium">
-                        {new Date(booking.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {new Date(booking.scheduledAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}
                         <span className="block text-caption text-[#a6a6a6] capitalize">{booking.scheduledWindow}</span>
                       </td>
                       <td className="p-4">
@@ -209,7 +214,7 @@ export default function AdminBookingsPage() {
                           onChange={(e) => handleAssignTeam(booking.id, e.target.value)}
                           className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2 rounded-md focus:border-accent outline-none text-body-xs font-semibold w-full"
                         >
-                          <option value="">Unassigned</option>
+                          <option value="">{t("admin.bookings.unassigned")}</option>
                           {partners
                             .filter(t => {
                               try {
@@ -261,7 +266,7 @@ export default function AdminBookingsPage() {
                   {bookings.length === 0 && (
                     <tr>
                       <td colSpan={6} className="p-8 text-center text-[#a6a6a6]">
-                        No active bookings logged in SQLite database yet.
+                        {t("admin.bookings.empty")}
                       </td>
                     </tr>
                   )}
@@ -276,7 +281,9 @@ export default function AdminBookingsPage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-body-md font-semibold text-[#f2f2f2]">Intake Details</h3>
+                    <h3 className="text-body-md font-semibold text-[#f2f2f2]">
+                      {t("admin.bookings.details.intakeDetails")}
+                    </h3>
                     <span className="text-caption text-accent uppercase font-mono block">ID: {selectedBooking.id.substring(0, 8)}</span>
                   </div>
                   <span className={`text-caption uppercase px-2 py-1 rounded font-bold ${
@@ -290,7 +297,9 @@ export default function AdminBookingsPage() {
                   <div className="flex gap-3">
                     <User className="w-5 h-5 text-[#a6a6a6] shrink-0" />
                     <div>
-                      <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">Contact Email</span>
+                      <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">
+                        {t("admin.bookings.details.contactEmail")}
+                      </span>
                       <span className="font-medium text-[#f2f2f2]">{selectedBooking.guestEmail}</span>
                     </div>
                   </div>
@@ -298,14 +307,18 @@ export default function AdminBookingsPage() {
                   <div className="flex gap-3">
                     <MapPin className="w-5 h-5 text-[#a6a6a6] shrink-0" />
                     <div>
-                      <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">Service Location</span>
+                      <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">
+                        {t("admin.bookings.details.serviceLocation")}
+                      </span>
                       <span className="font-medium text-[#f2f2f2]">{selectedBooking.locationAddress}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="border-t border-[#262626] pt-4">
-                  <span className="text-caption text-[#a6a6a6] block uppercase font-semibold mb-3">Intake Schema Variables</span>
+                  <span className="text-caption text-[#a6a6a6] block uppercase font-semibold mb-3">
+                    {t("admin.bookings.details.intakeSchema")}
+                  </span>
                   <pre className="bg-[#0d0d0d] p-4 rounded-md border border-[#262626] text-body-xs font-mono overflow-auto max-h-60 text-accent">
                     {JSON.stringify(JSON.parse(selectedBooking.intake), null, 2)}
                   </pre>
@@ -313,11 +326,15 @@ export default function AdminBookingsPage() {
 
                 {selectedBooking.status === "quote_pending" && (
                   <form onSubmit={handleSendQuote} className="border-t border-[#262626] pt-4 space-y-4">
-                    <span className="text-caption text-accent block uppercase font-semibold">Generate Bespoke Quote</span>
+                    <span className="text-caption text-accent block uppercase font-semibold">
+                      {t("admin.bookings.details.generateQuote")}
+                    </span>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Price (CHF)</label>
+                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">
+                          {t("admin.bookings.details.priceLabel")}
+                        </label>
                         <input
                           type="number"
                           value={quotePrice}
@@ -329,7 +346,9 @@ export default function AdminBookingsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Validity (Days)</label>
+                        <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">
+                          {t("admin.bookings.details.validityLabel")}
+                        </label>
                         <input
                           type="number"
                           value={quoteValidity}
@@ -343,7 +362,9 @@ export default function AdminBookingsPage() {
                     </div>
 
                     <div>
-                      <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">Operator Notes / Scope Detail</label>
+                      <label className="text-caption text-[#a6a6a6] block mb-1 font-semibold">
+                        {t("admin.bookings.details.notesLabel")}
+                      </label>
                       <textarea
                         value={quoteNotes}
                         onChange={(e) => setQuoteNotes(e.target.value)}
@@ -358,21 +379,23 @@ export default function AdminBookingsPage() {
                       disabled={submittingQuote}
                       className="w-full border border-accent bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 text-button font-semibold py-3 rounded-md transition-colors uppercase tracking-wide text-xs"
                     >
-                      {submittingQuote ? "Sending Quote..." : "Send Quote to Client"}
+                      {submittingQuote ? t("admin.bookings.details.sendingQuote") : t("admin.bookings.details.sendQuoteCta")}
                     </button>
                   </form>
                 )}
 
                 {selectedBooking.status === "quote_sent" && (
                   <div className="border-t border-[#262626] pt-4 space-y-3">
-                    <span className="text-caption text-accent block uppercase font-semibold">Active Quote Details</span>
+                    <span className="text-caption text-accent block uppercase font-semibold">
+                      {t("admin.bookings.details.activeQuote")}
+                    </span>
                     <div className="bg-[#0d0d0d] p-4 rounded-md border border-[#262626] text-body-sm space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-[#a6a6a6]">Total Price:</span>
+                        <span className="text-[#a6a6a6]">{t("admin.bookings.details.totalPrice")}</span>
                         <span className="font-semibold text-[#f2f2f2]">CHF {selectedBooking.totalAmountChf}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#a6a6a6]">30% Deposit:</span>
+                        <span className="text-[#a6a6a6]">{t("admin.bookings.details.depositLabel")}</span>
                         <span className="font-semibold text-accent">CHF {selectedBooking.depositAmountChf}</span>
                       </div>
                     </div>
@@ -384,14 +407,14 @@ export default function AdminBookingsPage() {
                     onClick={() => handleDeleteGDPR(selectedBooking.guestEmail)}
                     className="w-full border border-red-500/30 bg-red-500/5 text-red-400 hover:bg-red-500/10 text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 uppercase tracking-wide text-xs"
                   >
-                    <Trash2 className="w-4 h-4" /> Permanent GDPR Deletion
+                    <Trash2 className="w-4 h-4" /> {t("admin.bookings.details.gdprCta")}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-24 text-[#a6a6a6] space-y-2">
                 <AlertTriangle className="w-8 h-8 mx-auto text-[#a6a6a6]/50" />
-                <p className="text-body-sm">Select a booking from the list to inspect client intake forms and perform dispatches.</p>
+                <p className="text-body-sm">{t("admin.bookings.details.placeholder")}</p>
               </div>
             )}
           </div>

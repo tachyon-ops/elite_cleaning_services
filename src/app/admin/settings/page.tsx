@@ -3,16 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, ShieldCheck, X, ShieldAlert, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 import {
   getLoggedInAdmin,
   getRegistration2FASecret,
   sendRegistrationEmailOtp,
   enableAdmin2FA,
-  disableAdmin2FA
+  disableAdmin2FA,
+  getSystemSetting,
+  updateSystemSetting
 } from "@/app/actions/admin";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [admin, setAdmin] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,11 +30,28 @@ export default function AdminSettingsPage() {
   const [totpError, setTotpError] = useState("");
   const [loading2FA, setLoading2FA] = useState(false);
 
+  // WhatsApp state variables
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappLabel, setWhatsappLabel] = useState("");
+  const [savingWhatsapp, setSavingWhatsapp] = useState(false);
+  const [whatsappSuccess, setWhatsappSuccess] = useState("");
+  const [whatsappError, setWhatsappError] = useState("");
+
   const loadAdmin = async () => {
     setLoading(true);
     const user = await getLoggedInAdmin();
     if (user) {
       setAdmin(user);
+      
+      // Load WhatsApp settings
+      const resNum = await getSystemSetting("whatsapp_number");
+      const resLab = await getSystemSetting("whatsapp_label");
+      if (resNum.success && resNum.value) {
+        setWhatsappNumber(resNum.value);
+      }
+      if (resLab.success && resLab.value) {
+        setWhatsappLabel(resLab.value);
+      }
     } else {
       setError("Failed to load administrative session. Please log in.");
     }
@@ -101,6 +122,32 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleSaveWhatsapp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingWhatsapp(true);
+    setWhatsappSuccess("");
+    setWhatsappError("");
+    
+    // Validate digits only for the number
+    const cleanNumber = whatsappNumber.replace(/\D/g, "");
+    if (!cleanNumber) {
+      setWhatsappError(t("admin.settings.whatsappError"));
+      setSavingWhatsapp(false);
+      return;
+    }
+
+    const resNum = await updateSystemSetting("whatsapp_number", cleanNumber);
+    const resLab = await updateSystemSetting("whatsapp_label", whatsappLabel || cleanNumber);
+    
+    setSavingWhatsapp(false);
+    if (resNum.success && resLab.success) {
+      setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
+      setWhatsappNumber(cleanNumber);
+    } else {
+      setWhatsappError(resNum.error || resLab.error || "Failed to update WhatsApp settings.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 md:p-12 text-center text-body-md font-mono text-accent animate-pulse">
@@ -121,30 +168,91 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-8 md:p-12 space-y-8 max-w-7xl w-full mx-auto">
       <header>
-        <span className="text-caption text-accent uppercase tracking-widest block mb-2">Backoffice Settings</span>
+        <span className="text-caption text-accent uppercase tracking-widest block mb-2">
+          {t("admin.settings.backofficeSettings")}
+        </span>
         <h1 className="text-display-md font-display font-medium text-[#f2f2f2] tracking-tight">
-          Security Configuration
+          {t("admin.settings.securityConfig")}
         </h1>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        {/* Profile Card */}
-        <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
-          <h3 className="text-body-sm font-semibold uppercase tracking-wider text-[#a6a6a6]">Admin Profile</h3>
-          <div className="space-y-1">
-            <span className="text-body-md font-bold text-[#f2f2f2] block">{admin.name}</span>
-            <span className="text-body-xs text-[#a6a6a6] font-mono block">{admin.email}</span>
-            <span className="text-[10px] bg-accent/10 border border-accent/20 text-accent font-mono uppercase font-bold px-2 py-0.5 rounded inline-block mt-2">
-              {admin.role}
-            </span>
+        {/* Left Column: Profile Card & WhatsApp Settings Card */}
+        <div className="space-y-8">
+          {/* Profile Card */}
+          <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
+            <h3 className="text-body-sm font-semibold uppercase tracking-wider text-[#a6a6a6]">
+              {t("admin.settings.adminProfile")}
+            </h3>
+            <div className="space-y-1">
+              <span className="text-body-md font-bold text-[#f2f2f2] block">{admin.name}</span>
+              <span className="text-body-xs text-[#a6a6a6] font-mono block">{admin.email}</span>
+              <span className="text-[10px] bg-accent/10 border border-accent/20 text-accent font-mono uppercase font-bold px-2 py-0.5 rounded inline-block mt-2">
+                {admin.role}
+              </span>
+            </div>
           </div>
+
+          {/* WhatsApp Settings Card */}
+          <form onSubmit={handleSaveWhatsapp} className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">
+            <h3 className="text-body-sm font-semibold uppercase tracking-wider text-[#a6a6a6]">
+              {t("admin.settings.whatsappConfig")}
+            </h3>
+            
+            {whatsappSuccess && (
+              <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded text-body-xs">
+                {whatsappSuccess}
+              </div>
+            )}
+            {whatsappError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded text-body-xs">
+                {whatsappError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  {t("admin.settings.whatsappNumberLabel")}
+                </label>
+                <input
+                  type="text"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="e.g. 41791234567"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  {t("admin.settings.displayLabel")}
+                </label>
+                <input
+                  type="text"
+                  value={whatsappLabel}
+                  onChange={(e) => setWhatsappLabel(e.target.value)}
+                  placeholder="e.g. +41 79 123 45 67"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={savingWhatsapp}
+              className="w-full bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold py-2.5 rounded transition-colors cursor-pointer text-center uppercase tracking-wider"
+            >
+              {savingWhatsapp ? "SAVING..." : t("admin.settings.saveSettings")}
+            </button>
+          </form>
         </div>
 
-        {/* 2FA Settings Card */}
+        {/* Right Column: 2FA Settings Card */}
         <div className="md:col-span-2 border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-6">
           <div className="flex items-center gap-3">
             <KeyRound className="w-5 h-5 text-accent" />
-            <h3 className="text-body-md font-semibold text-[#f2f2f2]">Multi-Factor Authentication (MFA)</h3>
+            <h3 className="text-body-md font-semibold text-[#f2f2f2]">{t("admin.settings.mfaTitle")}</h3>
           </div>
 
           {totpError && (
@@ -159,14 +267,14 @@ export default function AdminSettingsPage() {
                 <ShieldCheck className="w-4 h-4" /> Two-Factor Authentication Active
               </div>
               <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
-                Your administrative backoffice account is guarded with **{admin.twoFactorMethod === "email" ? "Email One-Time Password (OTP)" : "Authenticator App (TOTP)"}**. A verification code will be requested on each log in session.
+                Your administrative backoffice account is guarded with **{admin.twoFactorMethod === "email" ? t("admin.settings.emailOtp") : t("admin.settings.totpApp")}**. A verification code will be requested on each log in session.
               </p>
               <button
                 onClick={handleDisable2FA}
                 disabled={loading2FA}
                 className="bg-red-600/10 hover:bg-red-650/15 border border-red-500/30 text-red-400 text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer"
               >
-                {loading2FA ? "PROCESSING..." : "DISABLE 2-FACTOR AUTH"}
+                {loading2FA ? "PROCESSING..." : t("admin.settings.disableMfa")}
               </button>
             </div>
           ) : (
@@ -179,7 +287,7 @@ export default function AdminSettingsPage() {
                   </p>
 
                   <div className="flex flex-col gap-3 pt-2">
-                    <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase">MFA Dispatch Method</label>
+                    <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase">{t("admin.settings.mfaMethod")}</label>
                     <div className="flex gap-6 pb-2">
                       <label className="flex items-center gap-2 text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
                         <input
@@ -190,7 +298,7 @@ export default function AdminSettingsPage() {
                           onChange={() => setTwoFactorMethod("totp")}
                           className="accent-accent"
                         />
-                        Authenticator App (TOTP)
+                        {t("admin.settings.totpApp")}
                       </label>
                       <label className="flex items-center gap-2 text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
                         <input
@@ -201,7 +309,7 @@ export default function AdminSettingsPage() {
                           onChange={() => setTwoFactorMethod("email")}
                           className="accent-accent"
                         />
-                        Email One-Time Password (OTP)
+                        {t("admin.settings.emailOtp")}
                       </label>
                     </div>
                   </div>
@@ -211,7 +319,7 @@ export default function AdminSettingsPage() {
                     disabled={loading2FA}
                     className="bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <span>{loading2FA ? "GENERATING SECURE KEY..." : "ENABLE MULTI-FACTOR AUTH"}</span>
+                    <span>{loading2FA ? "GENERATING SECURE KEY..." : t("admin.settings.enableMfa")}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

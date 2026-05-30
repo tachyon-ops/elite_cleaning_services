@@ -41,9 +41,9 @@ All tokens are exposed as CSS custom properties and Tailwind theme extensions. N
   --color-ink-inverse: #ffffff; /* text on dark backgrounds */
 
   /* Accent — used ≤ 10% of any view */
-  --color-accent: #926c15; /* primary accent (gold) */
-  --color-accent-hover: #7a5a11; /* darker on hover */
-  --color-accent-soft: #f5efe0; /* tint, for badges or highlights */
+  --color-accent: #d4af37; /* primary accent (gold) */
+  --color-accent-hover: #bda03c; /* darker on hover */
+  --color-accent-soft: #fbf8eb; /* tint, for badges or highlights */
 
   /* Structure */
   --color-border: #e2e8f0; /* 1px dividers, input borders */
@@ -558,7 +558,7 @@ export default {
           subtle: "#94A3B8",
           inverse: "#FFFFFF",
         },
-        accent: { DEFAULT: "#926C15", hover: "#7A5A11", soft: "#F5EFE0" },
+        accent: { DEFAULT: "#d4af37", hover: "#bda03c", soft: "#fbf8eb" },
         border: { DEFAULT: "#E2E8F0", strong: "#CBD5E1" },
       },
       fontFamily: {

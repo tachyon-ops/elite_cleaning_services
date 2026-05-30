@@ -956,4 +956,33 @@ export async function updateRecurringScheduleStatus(scheduleId: string, status: 
   }
 }
 
+// 18. System Setting retrieval (Public for client pages to load config dynamically)
+export async function getSystemSetting(key: string) {
+  try {
+    const setting = await db.systemSetting.findUnique({
+      where: { key }
+    });
+    return { success: true, value: setting ? setting.value : null };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 
+// 19. System Setting update (Admin restricted)
+export async function updateSystemSetting(key: string, value: string) {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    const setting = await db.systemSetting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value }
+    });
+
+    return { success: true, value: setting.value };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
