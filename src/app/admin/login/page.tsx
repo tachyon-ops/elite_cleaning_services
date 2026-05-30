@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
-import { loginAdmin, loginAdmin2FA, checkAdminExists } from "@/app/actions/admin";
+import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated } from "@/app/actions/admin";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -21,15 +21,22 @@ export default function AdminLoginPage() {
   const [totpToken, setTotpToken] = useState("");
 
   useEffect(() => {
-    const checkExists = async () => {
+    const checkExistsAndAuth = async () => {
       const res = await checkAdminExists();
       if (res.success && !res.exists) {
         router.push("/admin/signup");
-      } else {
-        setChecking(false);
+        return;
       }
+
+      const authenticated = await isAdminAuthenticated();
+      if (authenticated) {
+        router.push("/admin");
+        return;
+      }
+
+      setChecking(false);
     };
-    checkExists();
+    checkExistsAndAuth();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {

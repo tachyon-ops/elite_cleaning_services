@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound, RefreshCw } from "lucide-react";
 import { getLoggedInAdmin } from "@/app/actions/admin";
 import { getTranslationsForLocale, translate } from "@/lib/i18n";
@@ -12,6 +12,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAuthPage = pathname === "/admin/login" || pathname === "/admin/signup";
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
   const cookieStore = await cookies();
   const isAuthenticated = cookieStore.get("admin_session")?.value === "true";
   const admin = await getLoggedInAdmin();

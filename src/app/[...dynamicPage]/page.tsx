@@ -22,13 +22,27 @@ function renderMarkdownToHtml(md: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Headers
-  html = html.replace(/^#\s+(.+)$/gm, '<h1 class="text-display-md md:text-display-lg font-display font-medium text-ink uppercase tracking-[0.1em] mb-6 border-b border-border/30 pb-6">$1</h1>');
-  html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-body-lg md:text-body-xl font-bold text-ink uppercase tracking-wider mt-10 mb-4">$1</h2>');
-  html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-body-md font-semibold text-accent uppercase tracking-wider mt-8 mb-3">$1</h3>');
+  // Headers (smaller and more elegant)
+  html = html.replace(/^#\s+(.+)$/gm, '<h1 class="text-body-xl font-display font-bold text-ink uppercase tracking-wider mb-6 border-b border-border/30 pb-4">$1</h1>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-body-md font-bold text-ink uppercase tracking-wider mt-8 mb-3">$1</h2>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-body-sm font-semibold text-accent uppercase tracking-wider mt-6 mb-2">$1</h3>');
 
   // Bullet Lists
   html = html.replace(/^\s*-\s+(.+)$/gm, '<li class="ml-6 list-disc mb-2 text-ink-subtle">$1</li>');
+
+  // Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+  // Italic
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+  // Inline Code
+  html = html.replace(/`(.*?)`/g, '<code class="bg-bg-subtle px-1.5 py-0.5 rounded text-sm font-mono border border-border/50 text-ink">$1</code>');
+
+  // Links
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-accent hover:text-accent-hover underline">$1</a>');
 
   // Split into blocks by double newlines for paragraphs
   const blocks = html.split(/\n\n+/);
@@ -112,7 +126,22 @@ export default async function DynamicStaticPage({ params }: PageProps) {
   // Check if admin edit mode should be active
   const isAdmin = cookieStore.get("admin_session")?.value === "true";
 
-  const parsedHtml = renderMarkdownToHtml(translation.content);
+  // Fetch admin configured values for contact details (or fallbacks)
+  const emailRes = await db.systemSetting.findUnique({ where: { key: "contact_email" } });
+  const phoneRes = await db.systemSetting.findUnique({ where: { key: "contact_phone" } });
+  const addressRes = await db.systemSetting.findUnique({ where: { key: "contact_address" } });
+
+  const email = emailRes?.value || "ops@elite-cleaning.ch";
+  const phone = phoneRes?.value || "+41 (0) 44 123 4567";
+  const address = addressRes?.value || "Bahnhofstrasse 12, 8001 Zürich, Switzerland";
+
+  // Replace placeholders dynamically
+  const contentWithConfig = translation.content
+    .replaceAll("{{CONTACT_EMAIL}}", email)
+    .replaceAll("{{CONTACT_PHONE}}", phone)
+    .replaceAll("{{CONTACT_ADDRESS}}", address);
+
+  const parsedHtml = renderMarkdownToHtml(contentWithConfig);
 
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-body">

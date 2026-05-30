@@ -223,10 +223,12 @@ export async function middleware(request: NextRequest) {
   // bypass redirections and do not overwrite or set NEXT_LOCALE cookie.
   // We simply rewrite to the internal route and set the x-locale header.
   if (request.method === "POST") {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-pathname", locInfo.internalPathname);
     const rewriteUrl = new URL(locInfo.internalPathname, request.url);
     const rewriteResp = NextResponse.rewrite(rewriteUrl, {
       request: {
-        headers: new Headers(request.headers),
+        headers: requestHeaders,
       }
     });
     applySessionState(rewriteResp);
@@ -280,10 +282,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rewrite to the internal route path (e.g. /providers/apply)
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", locInfo.internalPathname);
   const rewriteUrl = new URL(locInfo.internalPathname, request.url);
   const rewriteResp = NextResponse.rewrite(rewriteUrl, {
     request: {
-      headers: new Headers(request.headers),
+      headers: requestHeaders,
     }
   });
 
