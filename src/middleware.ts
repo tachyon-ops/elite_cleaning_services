@@ -24,6 +24,26 @@ const SLUG_TO_INTERNAL: Record<string, Record<string, string>> = {
   pt: { parceiros: "providers", reservar: "book" }
 };
 
+const VERTICAL_SLUGS: Record<string, Record<string, string>> = {
+  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
+  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht" },
+  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht" },
+  rm: { domestic: "domestic", commercial: "commercial", ospitalita: "hospitality", aviada: "aviation", iaht: "yacht" },
+  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht" },
+  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht" }
+};
+
+const INTERNAL_TO_VERTICAL: Record<string, Record<string, string>> = {
+  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
+  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht" },
+  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "ospitalita", aviation: "aviada", yacht: "iaht" },
+  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate" },
+  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate" }
+};
+
 function getLocalizationInfo(pathname: string) {
   const parts = pathname.split("/");
   let hasPrefix = false;
@@ -65,13 +85,57 @@ function getLocalizationInfo(pathname: string) {
     }
   }
 
-  const internalPathname = "/" + [internalSlug, ...remainingParts.slice(1)].filter(Boolean).join("/");
-  const canonicalParts = [canonicalSlug, ...remainingParts.slice(1)].filter(Boolean);
+  let internalVertical = remainingParts[1] || "";
+  let canonicalVertical = remainingParts[1] || "";
+
+  if (internalSlug === "book" && remainingParts[1]) {
+    const verticalPart = remainingParts[1];
+    let matchedVertical: string | null = null;
+    
+    if (VERTICAL_SLUGS[urlLocale] && VERTICAL_SLUGS[urlLocale][verticalPart]) {
+      matchedVertical = VERTICAL_SLUGS[urlLocale][verticalPart];
+    } else {
+      for (const loc of LOCALES) {
+        if (VERTICAL_SLUGS[loc] && VERTICAL_SLUGS[loc][verticalPart]) {
+          matchedVertical = VERTICAL_SLUGS[loc][verticalPart];
+          break;
+        }
+      }
+    }
+    
+    if (matchedVertical) {
+      internalVertical = matchedVertical;
+      canonicalVertical = INTERNAL_TO_VERTICAL[urlLocale][matchedVertical] || matchedVertical;
+    }
+  }
+
+  const internalParts = [internalSlug];
+  if (internalSlug === "book" && internalVertical) {
+    internalParts.push(internalVertical);
+    if (remainingParts.slice(2).length > 0) {
+      internalParts.push(...remainingParts.slice(2));
+    }
+  } else {
+    internalParts.push(...remainingParts.slice(1));
+  }
+
+  const canonicalParts = [canonicalSlug];
+  if (internalSlug === "book" && canonicalVertical) {
+    canonicalParts.push(canonicalVertical);
+    if (remainingParts.slice(2).length > 0) {
+      canonicalParts.push(...remainingParts.slice(2));
+    }
+  } else {
+    canonicalParts.push(...remainingParts.slice(1));
+  }
+
+  const internalPathname = "/" + internalParts.filter(Boolean).join("/");
+  const canonicalPathnameParts = canonicalParts.filter(Boolean);
   let canonicalPathname = "";
   if (urlLocale === DEFAULT_LOCALE) {
-    canonicalPathname = "/" + canonicalParts.join("/");
+    canonicalPathname = "/" + canonicalPathnameParts.join("/");
   } else {
-    canonicalPathname = `/${urlLocale}` + (canonicalParts.length ? "/" + canonicalParts.join("/") : "");
+    canonicalPathname = `/${urlLocale}` + (canonicalPathnameParts.length ? "/" + canonicalPathnameParts.join("/") : "");
   }
 
   return {
@@ -91,11 +155,23 @@ function getCanonicalPathname(internalPathname: string, targetLocale: string) {
     canonicalSlug = INTERNAL_TO_SLUG[targetLocale][firstSlug];
   }
   
-  const remaining = [canonicalSlug, ...parts.slice(2)].filter(Boolean);
-  if (targetLocale === DEFAULT_LOCALE) {
-    return "/" + remaining.join("/");
+  const remaining = [canonicalSlug];
+  if (firstSlug === "book" && parts[2]) {
+    const internalVert = parts[2];
+    const localizedVert = (INTERNAL_TO_VERTICAL[targetLocale] && INTERNAL_TO_VERTICAL[targetLocale][internalVert]) || internalVert;
+    remaining.push(localizedVert);
+    if (parts.slice(3).length > 0) {
+      remaining.push(...parts.slice(3));
+    }
   } else {
-    return `/${targetLocale}` + (remaining.length ? "/" + remaining.join("/") : "");
+    remaining.push(...parts.slice(2));
+  }
+  
+  const finalPath = remaining.filter(Boolean);
+  if (targetLocale === DEFAULT_LOCALE) {
+    return "/" + finalPath.join("/");
+  } else {
+    return `/${targetLocale}` + (finalPath.length ? "/" + finalPath.join("/") : "");
   }
 }
 

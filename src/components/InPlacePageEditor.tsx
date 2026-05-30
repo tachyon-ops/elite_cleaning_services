@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { updatePageTranslation, getPageTranslationAction } from "@/app/actions/page-translations";
 import { Globe, Pencil, Save, X, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -31,6 +32,24 @@ export function InPlacePageEditor({
   initialContent,
 }: InPlacePageEditorProps) {
   const router = useRouter();
+  
+  let langContext;
+  try {
+    langContext = useLanguage();
+  } catch {
+    // context not available
+  }
+
+  const t = (key: string): string => {
+    if (langContext?.t) {
+      return langContext.t(key);
+    }
+    const fallbacks: Record<string, string> = {
+      "admin.editPage": "Edit Page"
+    };
+    return fallbacks[key] || key;
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState(initialLocale);
   
@@ -145,19 +164,19 @@ export function InPlacePageEditor({
 
   if (!isEditing) {
     return (
-      <div className="fixed bottom-24 right-6 z-50">
+      <div className="fixed bottom-24 right-6 z-[110]">
         <button
           onClick={() => setIsEditing(true)}
           className="bg-accent hover:bg-accent-hover text-ink-inverse flex items-center gap-2 px-5 py-3 rounded-full shadow-[0_4px_20px_rgba(181,148,16,0.35)] hover:shadow-[0_6px_25px_rgba(181,148,16,0.5)] transition-all font-semibold tracking-wide text-body-sm cursor-pointer select-none"
         >
-          <Pencil className="w-4 h-4" /> Edit Page Translation
+          <Pencil className="w-4 h-4" /> {t("admin.editPage")}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080808]/90 backdrop-blur-md flex justify-center items-center p-4 md:p-8 overflow-y-auto animate-popover-in">
+    <div className="fixed inset-0 z-[9999] bg-[#080808]/90 backdrop-blur-md flex justify-center items-center p-4 md:p-8 overflow-y-auto animate-popover-in">
       <div className="bg-[#141414] border border-[#262626] rounded-lg max-w-4xl w-full flex flex-col max-h-[90vh] shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-[#262626] flex items-center justify-between">

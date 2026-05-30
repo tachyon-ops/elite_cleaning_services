@@ -4,500 +4,24 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
-import { localizeHref } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, Lock, CreditCard, Mail, Phone, Clock } from "lucide-react";
+import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 
-const T: Record<string, Record<string, string>> = {
-  de: {
-    bookingFlow: "Buchungsablauf",
-    intake: "Angaben",
-    schedule: "Termin",
-    quote: "Angebot",
-    verify: "Verifizieren",
-    payment: "Zahlung",
-    describeReqs: "Beschreiben Sie Ihren Auftrag",
-    defineScope: "Definieren Sie den Leistungsumfang für garantierte lokale Partner-Preise.",
-    continueSchedule: "Weiter zur Terminwahl",
-    back: "Zurück",
-    continueQuote: "Weiter zum Angebot",
-    selectDateWindow: "Wählen Sie Datum und Zeitfenster",
-    subcontractorCapacity: "Kapazitätsprüfung der Subunternehmer in der Region Zürich.",
-    serviceDate: "Servicedatum",
-    chooseDate: "Datum wählen...",
-    availableSlot: "Verfügbares Zeitfenster",
-    checkingDispatches: "Prüfe Verfügbarkeit...",
-    fullyBooked: "AUSGEBUCHT",
-    secureWithOtp: "Mit OTP-Code sichern",
-    bespokeQuoteRequired: "Individuelle Offerte erforderlich",
-    aviationYachtQuoteDesc: "Reinigungen für Luftfahrt und Yachten erfordern eine manuelle Prüfung.",
-    reviewPending: "PRÜFUNG LÄUFT",
-    subcontractorNetworkNote: "Wir betreiben ein geprüftes Partnernetzwerk mit spezifischen Preisstufen für Privatflugzeuge und Schiffe.",
-    dispatchDeskNote: "Unsere Zentrale in Zürich prüft Ihre Angaben. Eine Offerte wird Ihnen innerhalb von 4 Stunden per E-Mail zugestellt.",
-    quoteStatus: "Offertenstatus",
-    quotePending: "Prüfung ausstehend",
-    lockedInQuote: "Garantierter Partnerpreis",
-    qualityPledgeNote: "Alle Einsätze sind voll versichert und durch unser Qualitätsversprechen gedeckt.",
-    baseFee: "Grundgebühr Reinigung",
-    sizeAdjustment: "Grössenzuschlag",
-    linenLaundry: "Wäscheservice (Bettwäsche)",
-    frequencyDiscount: "Rabatt für Häufigkeit",
-    totalAmount: "Gesamtbetrag",
-    stripeDeposit: "Stripe-Anzahlung (30% zur Sicherung)",
-    guestVerification: "Verifizierung als Gast",
-    secureCredentialsNote: "Sichern Sie Ihre Buchungsdetails und Quittungen.",
-    fullName: "Vollständiger Name",
-    phoneNumber: "Telefonnummer",
-    emailAddress: "E-Mail-Adresse",
-    sendingCode: "Code wird gesendet...",
-    sendOtp: "OTP-CODE SENDEN",
-    testingCodeTriggered: "Test-Code generiert",
-    enterVerificationCode: "Geben Sie den Verifizierungscode ein:",
-    enter6DigitCode: "6-stelligen Code eingeben",
-    verifying: "Verifizieren...",
-    verifyCode: "CODE VERIFIZIEREN",
-    editEmail: "E-Mail-Adresse bearbeiten",
-    confirmRequestSubmission: "Anfrage senden bestätigen",
-    specifyCoordinatesNote: "Geben Sie den genauen Standort des Hangars/Liegeplatzes an, um Ihre Anfrage zu senden.",
-    exactLocation: "Genaue Hangar- / FBO- / Liegeplatz-Angabe",
-    noDepositRequired: "KEINE ANZAHLUNG ERFORDERLICH",
-    bespokeReviewedNote: "Individuelle Anfragen werden manuell geprüft. Ihre Karte wird jetzt nicht belastet.",
-    customQuoteEmailNote: "Sobald das Angebot vorliegt, erhalten Sie einen E-Mail-Link, um den Preis zu bestätigen und die Anzahlung von 30% zu leisten.",
-    simulatedStripe: "Simulierte Stripe-Anzahlung",
-    depositRequiredNote: "Eine Anzahlung von 30% ist erforderlich, um den Auftrag zu sichern.",
-    serviceLocation: "Adresse des Einsatzortes",
-    secureStripeGateway: "SICHERE STRIPE-ZAHLUNG",
-    cardholderName: "Name des Karteninhabers",
-    cardNumber: "Kartennummer",
-    cvc: "CVC",
-    processing: "Wird verarbeitet...",
-    submitBespoke: "INDIVIDUELLE ANFRAGE SENDEN",
-    payDeposit: "ANZAHLUNG LEISTEN",
-    requestSubmitted: "Anfrage gesendet",
-    bookingConfirmed: "Buchung bestätigt",
-    thankYouAviation: "Vielen Dank. Ihre individuelle Anfrage wurde zur Prüfung weitergeleitet. Wir informieren Sie unter:",
-    thankYouRegular: "Vielen Dank. Ihre Anzahlung von 30% wurde verarbeitet. Ein zertifiziertes Partner-Team wurde für Sie reserviert an der Adresse:",
-    scheduled: "Geplant:",
-    morningSlot: "Vormittag",
-    afternoonSlot: "Nachmittag",
-    quoteSentEmail: "Eine Kopie Ihrer Angaben wurde gesendet an: {email}. Ihr Angebot folgt in Kürze.",
-    pdfReceiptSent: "Ein PDF-Beleg und eine Kalendereinladung (.ics) wurden gesendet an: {email}.",
-    returnHome: "ZURÜCK ZUR STARTSEITE",
-    officeType: "Bürotyp",
-    surfaceArea: "Fläche (m²)",
-    frequencies: "Häufigkeit",
-    prefTime: "Bevorzugte Zeit",
-    specialReqs: "Spezielle Anforderungen",
-    propertyType: "Unterkunftsart",
-    bedrooms: "Schlafzimmer",
-    bathrooms: "Badezimmer",
-    turnoverFreq: "Wechsel-Häufigkeit",
-    linenLaunService: "Professionellen Wäscheservice anfordern (+CHF 35)",
-    keyHandling: "Schlüsselübergabe",
-    aircraftType: "Flugzeugtyp",
-    tailNumber: "Registrierungsnummer (Tail Number)",
-    airportFbo: "Flughafen FBO / Hangar",
-    detScope: "Umfang der Flugzeugaufbereitung",
-    specInstructions: "Besondere Anweisungen",
-    vesselType: "Bootstyp",
-    vesselLength: "Schiffslänge (Fuss)",
-    marinaLoc: "Marina / Liegeplatz",
-    servScope: "Service-Umfang",
-    oneOff: "Einmalig",
-    weekly: "Wöchentlich",
-    biWeekly: "Zweiwöchentlich",
-    monthly: "Monatlich",
-    priceOnRequest: "PREIS AUF ANFRAGE",
-    oneOffClean: "Einmalige Reinigung",
-    weeklySave15: "Wöchentlich (15% Rabatt)",
-    biWeeklySave10: "Zweiwöchentlich (10% Rabatt)",
-    monthlySave5: "Monatlich (5% Rabatt)",
-    turnoverAsRequested: "Pro-Wechsel (auf Anfrage)",
-    weeklySave10: "Wöchentlich (10% Rabatt)",
-    quoteDrivenDispatch: "ANGEBOTSBASIERTE DISPONIERUNG",
-    bespokeInquiry: "Individuelle Anfrage",
-    bespokeInquiryDesc: "Spezialreinigungen für Luftfahrt, Yachten oder nach Zwischenfällen erfordern eine Überprüfung des Angebots.",
-    returnConciergeChat: "Zurück zum Concierge-Chat",
-    corporateOffice: "Firmen- / Standardbüro",
-    studioCreative: "Studio & Kreativbereich",
-    retailShowroom: "Einzelhandel / Showroom",
-    gymFitness: "Fitnessstudio / Sportbereich",
-    restaurantKitchen: "Restaurant / Küchenbereich",
-    businessHours: "Geschäftszeiten",
-    afterHours: "Ausserhalb der Geschäftszeiten",
-    weekends: "Wochenende",
-    specialReqsPlaceholder: "Sicherheits-Codes, Handhabung empfindlicher Geräte...",
-    airbnbApartment: "Airbnb-Wohnung",
-    bedBreakfast: "Bed & Breakfast",
-    holidayLetChalet: "Ferienwohnung / Chalet",
-    lockboxOnSite: "Schlüsseldepot vor Ort",
-    smartlockApi: "Smartlock API-Zugang",
-    inPersonHandoff: "Persönliche Übergabe",
-    lightJet: "Light Cabin Business Jet",
-    midSizeJet: "Mid-size Cabin Business Jet",
-    heavyJet: "Heavy Cabin Business Jet",
-    turboprop: "Turboprop-Flugzeug",
-    helicopter: "Helikopter",
-    exteriorWash: "Aussenwäsche & Politur",
-    interiorDetail: "Tiefenreinigung der Kabineninnenausstattung",
-    cockpitDetail: "Cockpit- & Instrumentenreinigung",
-    carpetShampoo: "Teppich- & Polsterdampfreinigung",
-    cabinRestock: "Kabinenauffüllung & Pantry-Vorbereitung",
-    specInstructionsAviationPlaceholder: "Zugangs-Autorisierungsanforderungen, spezifische Kabinenmaterialien...",
-    motorYacht: "Motoryacht",
-    sailingYacht: "Segelyacht",
-    catamaranYacht: "Katamaran",
-    tenderYacht: "Beiboot / Runabout",
-    teakClean: "Teakdeck-Reinigung & Behandlung",
-    hullPolish: "Gelcoat- & Rumpfpolitur",
-    yachtInteriorDetail: "Kabineninnenreinigung & Desinfektion",
-    deckWash: "Komplette Deckswäsche & Edelstahlpflege",
-    decommission: "Vorbereitung auf die Winterlagerung",
-    specInstructionsYachtPlaceholder: "Liegeplatznummer, Hafensicherheitscodes, Persenningpflege...",
-    specialInstructionsPets: "Besondere Anweisungen / Haustiere",
-    specialInstructionsPetsPlaceholder: "Zugangscodes, Schlüsselort, Haustiere im Haus, Prioritätsräume...",
-    aviationLocationPlaceholder: "z.B. Hangar 3, Jet Aviation FBO, Flughafen Zürich",
-    yachtLocationPlaceholder: "z.B. Steg B, Liegeplatz 42, Hafen Horgen",
-    addressPlaceholder: "Seestrasse 10, 8002 Zürich",
-    failedFetchSlots: "Fehler beim Laden der Zeitfenster",
-    invalidEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein",
-    failedSendCode: "Fehler beim Senden des Codes",
-    enterVerificationCodeError: "Bitte geben Sie den Verifizierungscode ein",
-    verificationFailed: "Verifizierung fehlgeschlagen",
-    enterAddressError: "Bitte geben Sie die Adresse des Einsatzortes ein",
-    failedFinalizeBooking: "Fehler beim Abschliessen der Buchung"
-  },
-  fr: {
-    bookingFlow: "Flux de réservation",
-    intake: "Saisie",
-    schedule: "Planification",
-    quote: "Devis",
-    verify: "Vérification",
-    payment: "Paiement",
-    describeReqs: "Décrivez vos besoins",
-    defineScope: "Définissez l'étendue du service pour obtenir un tarif sous-traitant local garanti.",
-    continueSchedule: "Continuer vers la planification",
-    back: "Retour",
-    continueQuote: "Continuer vers le devis",
-    selectDateWindow: "Sélectionnez la date et le créneau",
-    subcontractorCapacity: "Vérification de la disponibilité dans la région de Zurich.",
-    serviceDate: "Date de service",
-    chooseDate: "Choisir une date...",
-    availableSlot: "Créneau disponible",
-    checkingDispatches: "Vérification des disponibilités...",
-    fullyBooked: "COMPLET",
-    secureWithOtp: "Sécuriser avec le code OTP",
-    bespokeQuoteRequired: "Devis personnalisé requis",
-    aviationYachtQuoteDesc: "Les nettoyages pour l'aviation et le nautisme nécessitent un examen par un répartiteur.",
-    reviewPending: "EXAMEN EN COURS",
-    subcontractorNetworkNote: "Nous gérons un réseau de sous-traitants certifiés avec des grilles tarifaires spécifiques pour les avions privés et les bateaux.",
-    dispatchDeskNote: "Notre bureau de répartition à Zurich examinera vos coordonnées et détails. Un devis personnalisé vous sera envoyé par e-mail sous **4 heures**.",
-    quoteStatus: "Statut du devis",
-    quotePending: "Devis en attente",
-    lockedInQuote: "Tarif sous-traitant garanti",
-    qualityPledgeNote: "Toutes les interventions sont entièrement assurées et couvertes par notre engagement qualité.",
-    baseFee: "Frais de nettoyage de base",
-    sizeAdjustment: "Ajustement taille/portée",
-    linenLaundry: "Blanchisserie (draps)",
-    frequencyDiscount: "Remise sur la fréquence",
-    totalAmount: "Montant total",
-    stripeDeposit: "Acompte Stripe (30% pour valider)",
-    guestVerification: "Vérification de l'invité",
-    secureCredentialsNote: "Sécurisez vos détails de réservation et reçus.",
-    fullName: "Nom complet",
-    phoneNumber: "Numéro de téléphone",
-    emailAddress: "Adresse e-mail",
-    sendingCode: "Envoi du code...",
-    sendOtp: "ENVOYER LE CODE OTP",
-    testingCodeTriggered: "Code de test local généré",
-    enterVerificationCode: "Saisissez le code de vérification :",
-    enter6DigitCode: "Saisissez le code à 6 chiffres",
-    verifying: "Vérification...",
-    verifyCode: "VÉRIFIER LE CODE",
-    editEmail: "Modifier l'adresse e-mail",
-    confirmRequestSubmission: "Confirmer l'envoi de la demande",
-    specifyCoordinatesNote: "Précisez l'emplacement exact du hangar/quai pour envoyer votre demande.",
-    exactLocation: "Emplacement exact du hangar / FBO / quai",
-    noDepositRequired: "AUCUN ACOMPTE REQUIS POUR L'INSTANT",
-    bespokeReviewedNote: "Les interventions personnalisées sont examinées manuellement. Votre carte ne sera pas débitée à ce stade.",
-    customQuoteEmailNote: "Une fois que le répartiteur aura établi votre devis personnalisé, vous recevrez un lien e-mail sécurisé pour valider le prix et payer l'acompte de 30%.",
-    simulatedStripe: "Acompte Stripe simulé",
-    depositRequiredNote: "Un acompte de 30% est requis pour valider l'intervention du sous-traitant.",
-    serviceLocation: "Adresse de l'intervention",
-    secureStripeGateway: "PASSERELLE STRIPE SÉCURISÉE",
-    cardholderName: "Nom sur la carte",
-    cardNumber: "Numéro de carte",
-    cvc: "CVC",
-    processing: "Traitement...",
-    submitBespoke: "SOUMETTRE LA DEMANDE PERSONNALISÉE",
-    payDeposit: "PAYER L'ACOMPTE",
-    requestSubmitted: "Demande soumise",
-    bookingConfirmed: "Réservation confirmée",
-    thankYouAviation: "Merci. Votre demande personnalisée a été transmise à notre bureau pour examen. Nous vous contacterons à :",
-    thankYouRegular: "Merci. Votre acompte de 30% a été traité. Une équipe de sous-traitants certifiés a été affectée à l'adresse suivante :",
-    scheduled: "Planifié :",
-    morningSlot: "Créneau matin",
-    afternoonSlot: "Créneau après-midi",
-    quoteSentEmail: "Une copie de vos détails a été envoyée à : {email}. Vous recevrez votre devis par e-mail sous 4 heures.",
-    pdfReceiptSent: "Un reçu PDF et une invitation d'agenda .ics ont été envoyés à : {email}.",
-    returnHome: "RETOUR À L'ACCUEIL",
-    officeType: "Type de bureau",
-    surfaceArea: "Surface (m²)",
-    frequencies: "Fréquence",
-    prefTime: "Moment préféré",
-    specialReqs: "Besoins particuliers",
-    propertyType: "Type de propriété",
-    bedrooms: "Chambres",
-    bathrooms: "Salles de bain",
-    turnoverFreq: "Fréquence de rotation",
-    linenLaunService: "Demander le service de blanchisserie pour les draps (+CHF 35)",
-    keyHandling: "Remise des clés",
-    aircraftType: "Type d'appareil",
-    tailNumber: "Numéro d'immatriculation (Tail Number)",
-    airportFbo: "FBO de l'aéroport / Hangar",
-    detScope: "Étendue du nettoyage aéronautique",
-    specInstructions: "Instructions spéciales",
-    vesselType: "Type de navire",
-    vesselLength: "Longueur du navire (pieds)",
-    marinaLoc: "Marina / Emplacement",
-    servScope: "Étendue de l'intervention",
-    oneOff: "Unique",
-    weekly: "Hebdomadaire",
-    biWeekly: "Toutes les 2 semaines",
-    monthly: "Mensuel",
-    priceOnRequest: "PRIX SUR DEMANDE",
-    oneOffClean: "Nettoyage unique",
-    weeklySave15: "Hebdomadaire (15% de remise)",
-    biWeeklySave10: "Toutes les 2 semaines (10% de remise)",
-    monthlySave5: "Mensuel (5% de remise)",
-    turnoverAsRequested: "Par rotation (sur demande)",
-    weeklySave10: "Hebdomadaire (10% de remise)",
-    quoteDrivenDispatch: "DEVIS SUR MESURE",
-    bespokeInquiry: "Demande personnalisée",
-    bespokeInquiryDesc: "Les nettoyages spécialisés pour l'aviation, le nautisme ou après sinistre nécessitent un examen du devis.",
-    returnConciergeChat: "Retour au chat conciergerie",
-    corporateOffice: "Bureau d'entreprise / Standard",
-    studioCreative: "Studio & Espace créatif",
-    retailShowroom: "Boutique / Showroom",
-    gymFitness: "Salle de sport / Fitness",
-    restaurantKitchen: "Restaurant / Espace cuisine",
-    businessHours: "Heures de bureau",
-    afterHours: "En dehors des heures",
-    weekends: "Week-ends",
-    specialReqsPlaceholder: "Codes de sécurité, manipulation de matériel sensible...",
-    airbnbApartment: "Appartement Airbnb",
-    bedBreakfast: "Chambre d'hôtes",
-    holidayLetChalet: "Location de vacances / Chalet",
-    lockboxOnSite: "Boîte à clés sur place",
-    smartlockApi: "Accès API Smartlock",
-    inPersonHandoff: "Remise en main propre",
-    lightJet: "Jet d'affaires cabine légère",
-    midSizeJet: "Jet d'affaires cabine moyenne",
-    heavyJet: "Jet d'affaires cabine lourde",
-    turboprop: "Avion à turbopropulseur",
-    helicopter: "Hélicoptère",
-    exteriorWash: "Lavage & polissage extérieur",
-    interiorDetail: "Nettoyage approfondi de l'intérieur de la cabine",
-    cockpitDetail: "Nettoyage du cockpit & des instruments",
-    carpetShampoo: "Nettoyage à la vapeur des tapis & tissus",
-    cabinRestock: "Ravitaillement de la cabine & préparation de l'office",
-    specInstructionsAviationPlaceholder: "Autorisations d'accès requises, matériaux spécifiques de la cabine...",
-    motorYacht: "Yacht à moteur",
-    sailingYacht: "Voilier",
-    catamaranYacht: "Catamaran",
-    tenderYacht: "Annexe / Canot",
-    teakClean: "Lavage & traitement du pont en teck",
-    hullPolish: "Polissage de la coque & gelcoat",
-    yachtInteriorDetail: "Nettoyage intérieur de la cabine & désinfection",
-    deckWash: "Lavage complet & polissage inox",
-    decommission: "Préparation à l'hivernage de fin de saison",
-    specInstructionsYachtPlaceholder: "Numéro de place, codes d'accès au port, entretien de la bâche...",
-    specialInstructionsPets: "Instructions spéciales / Animaux",
-    specialInstructionsPetsPlaceholder: "Codes d'accès, emplacement des clés, animaux à la maison, pièces prioritaires...",
-    aviationLocationPlaceholder: "ex. Hangar 3, Jet Aviation FBO, Aéroport de Zurich",
-    yachtLocationPlaceholder: "ex. Jetée B, Emplacement 42, Port de Horgen",
-    addressPlaceholder: "Rue de la Gare 10, 8002 Zurich",
-    failedFetchSlots: "Échec de la récupération des créneaux",
-    invalidEmail: "Veuillez saisir une adresse e-mail valide",
-    failedSendCode: "Échec de l'envoi du code",
-    enterVerificationCodeError: "Veuillez saisir le code de vérification",
-    verificationFailed: "Échec de la vérification",
-    enterAddressError: "Veuillez saisir l'adresse de l'intervention",
-    failedFinalizeBooking: "Échec de la finalisation de la réservation"
-  },
-  en: {
-    bookingFlow: "Booking Flow",
-    intake: "Intake",
-    schedule: "Schedule",
-    quote: "Quote",
-    verify: "Verify",
-    payment: "Payment",
-    describeReqs: "Describe your requirements",
-    defineScope: "Define the scope of service for locked-in local subcontractor pricing.",
-    continueSchedule: "Continue to Schedule",
-    back: "Back",
-    continueQuote: "Continue to Quote",
-    selectDateWindow: "Select date and window",
-    subcontractorCapacity: "Subcontractor capacity check within Zürich region.",
-    serviceDate: "Service Date",
-    chooseDate: "Choose a date...",
-    availableSlot: "Available Slot",
-    checkingDispatches: "Checking dispatches...",
-    fullyBooked: "FULLY BOOKED",
-    secureWithOtp: "Secure with OTP Verification",
-    bespokeQuoteRequired: "Bespoke Quote Required",
-    aviationYachtQuoteDesc: "Aviation and Yachting cleanings require custom dispatch reviews.",
-    reviewPending: "REVIEW PENDING",
-    subcontractorNetworkNote: "We operate a vetted subcontractor network with custom pricing tiers for private aircraft interiors and marine vessels.",
-    dispatchDeskNote: "Our Zürich dispatch desk will review your intake coordinates and tail/slip details. A custom quote will be compiled and sent to you via email within **4 hours**.",
-    quoteStatus: "Service Quote Status",
-    quotePending: "Quote Pending",
-    lockedInQuote: "Locked-in Subcontractor Quote",
-    qualityPledgeNote: "All dispatches are fully insured and backed by our quality pledge.",
-    baseFee: "Base cleanup fee",
-    sizeAdjustment: "Size/Scope adjustment",
-    linenLaundry: "Linen service laundry",
-    frequencyDiscount: "Frequency discount",
-    totalAmount: "Total Amount",
-    stripeDeposit: "Stripe Deposit (30% to secure)",
-    guestVerification: "Guest verification",
-    secureCredentialsNote: "Secure your booking details and receipt credentials.",
-    fullName: "Full Name",
-    phoneNumber: "Phone Number",
-    emailAddress: "Email Address",
-    sendingCode: "Sending Code...",
-    sendOtp: "SEND OTP CODE",
-    testingCodeTriggered: "Local Testing Code Triggered",
-    enterVerificationCode: "Enter verification code:",
-    enter6DigitCode: "Enter 6-Digit Code",
-    verifying: "Verifying...",
-    verifyCode: "VERIFY CODE",
-    editEmail: "Edit email address",
-    confirmRequestSubmission: "Confirm Request Submission",
-    specifyCoordinatesNote: "Specify the target hangar/slip coordinates to submit your bespoke request.",
-    exactLocation: "Exact Hangar / FBO / Slip Location",
-    noDepositRequired: "NO DEPOSIT REQUIRED NOW",
-    bespokeReviewedNote: "Bespoke dispatches are reviewed manually. We do not charge your credit card at this stage.",
-    customQuoteEmailNote: "Once the dispatcher compiles your custom subcontract quote, you will receive a secure email link to review the price and secure the 30% booking deposit.",
-    simulatedStripe: "Simulated Stripe deposit",
-    depositRequiredNote: "A 30% deposit is required to lock in the subcontractor dispatch.",
-    serviceLocation: "Service Location Address",
-    secureStripeGateway: "SECURE STRIPE GATEWAY",
-    cardholderName: "Cardholder Name",
-    cardNumber: "Card Number",
-    cvc: "CVC",
-    processing: "Processing...",
-    submitBespoke: "SUBMIT BESPOKE REQUEST",
-    payDeposit: "PAY DEPOSIT",
-    requestSubmitted: "Request Submitted",
-    bookingConfirmed: "Booking Confirmed",
-    thankYouAviation: "Thank you. Your bespoke request has been sent to our desk for review. We will notify you at:",
-    thankYouRegular: "Thank you. Your 30% deposit has been processed. A certified subcontractor team has been assigned for dispatch to:",
-    scheduled: "Scheduled:",
-    morningSlot: "Morning Slot",
-    afternoonSlot: "Afternoon Slot",
-    quoteSentEmail: "A copy of your intake details has been sent to: {email}. Look out for your quote email within 4 hours.",
-    pdfReceiptSent: "A copy of your PDF receipt and .ics calendar invite has been sent to: {email}.",
-    returnHome: "RETURN HOME",
-    officeType: "Office Type",
-    surfaceArea: "Surface Area (m²)",
-    frequencies: "Frequencies",
-    prefTime: "Preferred Time",
-    specialReqs: "Special Requirements",
-    propertyType: "Property Type",
-    bedrooms: "Bedrooms",
-    bathrooms: "Bathrooms",
-    turnoverFreq: "Turnover Frequency",
-    linenLaunService: "Request professional linen laundering service (+CHF 35)",
-    keyHandling: "Key Handling",
-    aircraftType: "Aircraft Type",
-    tailNumber: "Tail Number / Registration",
-    airportFbo: "Airport FBO / Hangar Location",
-    detScope: "Detailing Service Scope",
-    specInstructions: "Special Instructions",
-    vesselType: "Vessel Type",
-    vesselLength: "Vessel Length (Feet)",
-    marinaLoc: "Marina / Mooring Location",
-    servScope: "Servicing Scope",
-    oneOff: "One-off",
-    weekly: "Weekly",
-    biWeekly: "Bi-weekly",
-    monthly: "Monthly",
-    priceOnRequest: "QUOTE ON REQUEST",
-    oneOffClean: "One-off clean",
-    weeklySave15: "Weekly (Save 15%)",
-    biWeeklySave10: "Bi-weekly (Save 10%)",
-    monthlySave5: "Monthly (Save 5%)",
-    turnoverAsRequested: "Per-turnover (As requested)",
-    weeklySave10: "Weekly scheduling (Save 10%)",
-    quoteDrivenDispatch: "QUOTE DRIVEN DISPATCH",
-    bespokeInquiry: "Bespoke Inquiry",
-    bespokeInquiryDesc: "Specialty aviation, marine yachting, or post-incident cleanups require dispatcher quote reviews.",
-    returnConciergeChat: "Return to Concierge Chat",
-    corporateOffice: "Corporate/Standard Office",
-    studioCreative: "Studio & Creative Space",
-    retailShowroom: "Retail / Showroom",
-    gymFitness: "Gym / Fitness Suite",
-    restaurantKitchen: "Restaurant / Kitchen Space",
-    businessHours: "Business hours",
-    afterHours: "After hours",
-    weekends: "Weekends",
-    specialReqsPlaceholder: "Security codes, sensitive equipment handling...",
-    airbnbApartment: "Airbnb Apartment",
-    bedBreakfast: "Bed & Breakfast",
-    holidayLetChalet: "Holiday Let / Chalet",
-    lockboxOnSite: "Lockbox on-site",
-    smartlockApi: "Smartlock API access",
-    inPersonHandoff: "In-person handoff",
-    lightJet: "Light Cabin Business Jet",
-    midSizeJet: "Mid-size Cabin Business Jet",
-    heavyJet: "Heavy Cabin Business Jet",
-    turboprop: "Turboprop Aircraft",
-    helicopter: "Helicopter",
-    exteriorWash: "Exterior Wash & Polish",
-    interiorDetail: "Deep Cabin Interior Detailing",
-    cockpitDetail: "Cockpit & Instrument Cleaning",
-    carpetShampoo: "Carpet & Upholstery Steam Clean",
-    cabinRestock: "Cabin Restocking & Galley Prep",
-    specInstructionsAviationPlaceholder: "Access authorization requirements, specific cabin materials...",
-    motorYacht: "Motor Yacht",
-    sailingYacht: "Sailing Yacht",
-    catamaranYacht: "Catamaran",
-    tenderYacht: "Tender / Runabout",
-    teakClean: "Teak Deck Scrub & Treatment",
-    hullPolish: "Gelcoat & Hull Polishing",
-    yachtInteriorDetail: "Cabin Interior Detailing & Sanitization",
-    deckWash: "Full Washdown & Stainless Steel Brightening",
-    decommission: "End-of-season Winterization Prep",
-    specInstructionsYachtPlaceholder: "Slip number, harbor security clearance codes, canvas care...",
-    specialInstructionsPets: "Special Instructions / Pets",
-    specialInstructionsPetsPlaceholder: "Access codes, key location, pets in house, priority rooms...",
-    aviationLocationPlaceholder: "e.g. Hangar 3, Jet Aviation FBO, Zürich Airport",
-    yachtLocationPlaceholder: "e.g. Pier B, Slip 42, Horgen Harbor",
-    addressPlaceholder: "Seestrasse 10, 8002 Zürich",
-    failedFetchSlots: "Failed to fetch slots",
-    invalidEmail: "Please enter a valid email address",
-    failedSendCode: "Failed to send code",
-    enterVerificationCodeError: "Please enter the verification code",
-    verificationFailed: "Verification failed",
-    enterAddressError: "Please enter the service location address",
-    failedFinalizeBooking: "Failed to finalize booking"
-  }
-};
-
 export default function BookingPage() {
-  const { locale } = useLanguage();
-  const localeT = T[locale] || T.en;
-  const t = (key: keyof typeof T.en) => localeT[key] || T.en[key];
+  const { locale, t: baseT } = useLanguage();
+  const t = (key: string) => baseT("booking." + key);
 
   const params = useParams();
   const router = useRouter();
-  const vertical = (params?.vertical as string) || "general";
+  const rawVertical = (params?.vertical as string) || "general";
+  const vertical = resolveVerticalSlug(rawVertical, locale);
 
   // Stepper state
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showSpecialNotice, setShowSpecialNotice] = useState(false);
 
   // Intake State
   const [intake, setIntake] = useState<any>({
@@ -728,6 +252,142 @@ export default function BookingPage() {
   };
 
   if (!isValidVertical) {
+    if (vertical === "general") {
+      const categoriesList = [
+        { slug: "domestic", icon: Sparkles },
+        { slug: "commercial", icon: Building2 },
+        { slug: "hospitality", icon: Home },
+        { slug: "aviation", icon: Plane },
+        { slug: "yacht", icon: Ship },
+        { slug: "special", icon: Shield }
+      ];
+
+      const activeCategoriesToShow = categoriesList.filter(cat => activeSlugs.includes(cat.slug));
+      const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+      return (
+        <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
+          {/* Header */}
+          <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center px-6 md:px-16 justify-between sticky top-0 z-50">
+            <Link href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
+              <span className="text-accent font-serif font-bold">E</span>LITE
+            </Link>
+            <span className="text-caption text-accent uppercase font-semibold">
+              {t("selectDivision")}
+            </span>
+          </header>
+
+          <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-12">
+            <div className="text-center mb-12 space-y-4">
+              <span className="text-caption text-accent uppercase tracking-wider block font-semibold">{t("quoteDrivenDispatch")}</span>
+              <h1 className="text-display-md text-ink font-display font-medium leading-none tracking-tight">{t("selectDivision")}</h1>
+              <p className="text-body-md text-ink-muted max-w-[65ch] mx-auto">
+                {t("selectDivisionDesc")}
+              </p>
+            </div>
+
+            {/* Grid of Divisions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+              {activeCategoriesToShow.map(cat => {
+                const IconComponent = cat.icon;
+                const isSpecial = cat.slug === "special";
+                
+                return (
+                  <div
+                    key={cat.slug}
+                    onClick={() => {
+                      if (isSpecial) {
+                        setShowSpecialNotice(true);
+                      } else {
+                        router.push(localizeHref(`/book/${cat.slug}`, locale));
+                      }
+                    }}
+                    className="border border-border/60 hover:border-accent bg-bg hover:bg-accent-soft/20 p-6 rounded-lg cursor-pointer flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 group"
+                  >
+                    <div>
+                      {/* Icon container */}
+                      <div className="h-10 w-10 bg-accent-soft text-accent rounded-sm flex items-center justify-center border border-accent/15 group-hover:border-accent/30 transition-colors mb-4 shrink-0">
+                        <IconComponent className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] text-accent font-semibold tracking-wider uppercase block mb-1">
+                        {t(`cat${capitalize(cat.slug)}Sub` as any)}
+                      </span>
+                      <h3 className="text-body-lg font-display font-semibold text-ink group-hover:text-accent transition-colors mb-2">
+                        {t(`cat${capitalize(cat.slug)}Title` as any)}
+                      </h3>
+                      <p className="text-body-sm text-ink-muted leading-relaxed">
+                        {t(`cat${capitalize(cat.slug)}Desc` as any)}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-border/40 flex items-center justify-between text-caption font-semibold uppercase text-ink-subtle group-hover:text-accent transition-colors mt-4">
+                      <span>{t(`cat${capitalize(cat.slug)}Price` as any)}</span>
+                      <span className="text-accent flex items-center gap-1">
+                        {isSpecial ? t("nav.services") : t("portfolio.book")}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </main>
+
+          {/* Confidential Notice Modal for Special Services */}
+          {showSpecialNotice && (
+            <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
+              <div className="bg-bg border border-border p-8 rounded-lg max-w-md w-full shadow-xl space-y-6 relative transition-all animate-popover-in text-center">
+                <button
+                  onClick={() => setShowSpecialNotice(false)}
+                  className="absolute top-4 right-4 text-ink-subtle hover:text-ink transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="h-12 w-12 bg-accent-soft text-accent rounded-full flex items-center justify-center border border-accent/10 mx-auto">
+                  <Shield className="w-6 h-6" />
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-caption text-accent uppercase font-semibold block">
+                    {t("catSpecialSub")}
+                  </span>
+                  <h3 className="text-display-sm font-display font-medium text-ink">
+                    {t("catSpecialTitle")}
+                  </h3>
+                </div>
+
+                <p className="text-body-sm text-ink-muted leading-relaxed text-left border-y border-border/40 py-4">
+                  {t("confidentialNotice")}
+                </p>
+
+                <div className="space-y-3 pt-2">
+                  <a
+                    href="tel:+41441234567"
+                    className="flex items-center justify-center gap-3 w-full bg-ink hover:bg-ink-muted text-ink-inverse py-3 rounded-md font-semibold transition-colors border border-border"
+                  >
+                    <Phone className="w-4 h-4 shrink-0" />
+                    <span>{t("callDispatch").replace("{phone}", "+41 (0) 44 123 4567")}</span>
+                  </a>
+                  <a
+                    href="https://wa.me/41791234567?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20post-incident%20clean."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full bg-accent hover:bg-accent-hover text-ink-inverse py-3 rounded-md font-semibold transition-colors shadow-sm"
+                  >
+                    <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    <span>{t("chatWhatsApp")}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-bg text-ink flex flex-col justify-center items-center px-6">
         <div className="max-w-md w-full border border-border p-8 bg-bg rounded-lg space-y-6 text-center">
@@ -1177,58 +837,92 @@ export default function BookingPage() {
           {/* STEP 2: SCHEDULE */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-display-sm font-display font-medium text-ink">{t("selectDateWindow")}</h2>
-              <p className="text-body-sm text-ink-muted">{t("subcontractorCapacity")}</p>
+              <div>
+                <h2 className="text-display-sm font-display font-medium text-ink">{t("selectDateWindow")}</h2>
+                <p className="text-body-sm text-ink-muted">{t("subcontractorCapacity")}</p>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-caption text-ink font-semibold uppercase">{t("serviceDate")}</label>
-                  <select
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                  >
-                    <option value="">{t("chooseDate")}</option>
-                    {getNext14Days().map((d) => (
-                      <option key={d} value={d}>
-                        {new Date(d).toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" })}
-                      </option>
-                    ))}
-                  </select>
+              <div className="space-y-6 pt-4">
+                <div>
+                  <label className="text-caption text-ink font-semibold uppercase tracking-wider block mb-3">
+                    {t("serviceDate")}
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                    {getNext14Days().map((d) => {
+                      const dateObj = new Date(d);
+                      const isSelected = selectedDate === d;
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setSelectedDate(d)}
+                          className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all select-none ${
+                            isSelected
+                              ? "border-accent bg-accent-soft/40 shadow-sm text-ink ring-1 ring-accent scale-[1.02]"
+                              : "border-border hover:border-accent/40 bg-bg hover:bg-bg-subtle text-ink-muted hover:text-ink hover:scale-[1.01]"
+                          }`}
+                        >
+                          <span className="text-[10px] uppercase font-semibold tracking-wider opacity-75">
+                            {dateObj.toLocaleDateString(locale, { weekday: "short" })}
+                          </span>
+                          <span className="text-display-xs font-bold font-serif my-1">
+                            {dateObj.getDate()}
+                          </span>
+                          <span className="text-[10px] uppercase font-medium tracking-wide">
+                            {dateObj.toLocaleDateString(locale, { month: "short" })}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {selectedDate && (
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("availableSlot")}</label>
+                  <div className="space-y-4 pt-6 border-t border-border/40">
+                    <label className="text-caption text-ink font-semibold uppercase tracking-wider block">
+                      {t("availableSlot")}
+                    </label>
                     {loading ? (
-                      <span className="text-body-sm text-ink-subtle">{t("checkingDispatches")}</span>
+                      <div className="flex items-center gap-3 py-4">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
+                        <span className="text-body-sm text-ink-subtle">{t("checkingDispatches")}</span>
+                      </div>
                     ) : (
-                      <div className="space-y-2">
-                        {availableSlots.map((slot) => (
-                          <label
-                            key={slot.id}
-                            className={`flex items-center justify-between p-3 border rounded-md cursor-pointer transition-colors ${
-                              !slot.available
-                                ? "border-border opacity-50 bg-bg-subtle cursor-not-allowed"
-                                : selectedSlot === slot.id
-                                ? "border-accent bg-accent-soft"
-                                : "border-border hover:bg-bg-subtle"
-                            }`}
-                          >
-                            <span className="text-body-sm font-medium">{slot.label}</span>
-                            {slot.available ? (
-                              <input
-                                type="radio"
-                                name="slot"
-                                checked={selectedSlot === slot.id}
-                                onChange={() => setSelectedSlot(slot.id)}
-                                className="accent-accent"
-                              />
-                            ) : (
-                              <span className="text-caption text-red-500 uppercase">{t("fullyBooked")}</span>
-                            )}
-                          </label>
-                        ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {availableSlots.map((slot) => {
+                          const isSelected = selectedSlot === slot.id;
+                          return (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              disabled={!slot.available}
+                              onClick={() => setSelectedSlot(slot.id)}
+                              className={`flex items-center justify-between p-4 border rounded-lg transition-all w-full text-left select-none ${
+                                !slot.available
+                                  ? "border-border opacity-40 bg-bg-subtle cursor-not-allowed"
+                                  : isSelected
+                                  ? "border-accent bg-accent-soft/40 ring-1 ring-accent text-ink scale-[1.01]"
+                                  : "border-border hover:border-accent/40 bg-bg hover:bg-bg-subtle text-ink-muted hover:text-ink hover:scale-[1.005]"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Clock className={`w-4 h-4 ${isSelected ? "text-accent" : "text-ink-subtle"}`} />
+                                <span className="text-body-sm font-semibold">{slot.label}</span>
+                              </div>
+                              {slot.available ? (
+                                <div className={`h-5 w-5 rounded-full border flex items-center justify-center transition-all ${
+                                  isSelected ? "border-accent bg-accent text-ink-inverse" : "border-border bg-transparent"
+                                }`}>
+                                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                </div>
+                              ) : (
+                                <span className="text-caption text-red-500 uppercase font-semibold tracking-wider text-[10px]">
+                                  {t("fullyBooked")}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1237,12 +931,14 @@ export default function BookingPage() {
 
               <div className="flex gap-4 pt-6 border-t border-border mt-8">
                 <button
+                  type="button"
                   onClick={() => setStep(1)}
                   className="border border-ink text-ink py-3 px-6 rounded-md transition-colors text-button font-semibold"
                 >
                   {t("back")}
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStep(3)}
                   disabled={!selectedDate || !selectedSlot}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1553,9 +1249,23 @@ export default function BookingPage() {
               </h2>
               <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
                 {vertical === "aviation" || vertical === "yacht" ? (
-                  t("thankYouAviation").replace("Thank you.", `Thank you, ${contact.name}.`).replace("Merci.", `Merci, ${contact.name}.`).replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                  t("thankYouAviation")
+                    .replace("Thank you.", `Thank you, ${contact.name}.`)
+                    .replace("Merci.", `Merci, ${contact.name}.`)
+                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
+                    .replace("Gracias.", `Gracias, ${contact.name}.`)
+                    .replace("Grazie.", `Grazie, ${contact.name}.`)
+                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
                 ) : (
-                  t("thankYouRegular").replace("Thank you.", `Thank you, ${contact.name}.`).replace("Merci.", `Merci, ${contact.name}.`).replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                  t("thankYouRegular")
+                    .replace("Thank you.", `Thank you, ${contact.name}.`)
+                    .replace("Merci.", `Merci, ${contact.name}.`)
+                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
+                    .replace("Gracias.", `Gracias, ${contact.name}.`)
+                    .replace("Grazie.", `Grazie, ${contact.name}.`)
+                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
                 )}
               </p>
               <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4 text-accent">

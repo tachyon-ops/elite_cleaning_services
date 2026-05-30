@@ -1,4 +1,4 @@
-import { getTranslationsForLocale, translate, localizeHref } from "../lib/i18n";
+import { getTranslationsForLocale, translate, localizeHref, resolveVerticalSlug } from "../lib/i18n";
 
 describe("i18n-utils", () => {
   describe("getTranslationsForLocale", () => {
@@ -53,13 +53,13 @@ describe("i18n-utils", () => {
   describe("localizeHref helper", () => {
     it("should return localized path for default locale 'de' (prefix-less but slug-localized)", () => {
       expect(localizeHref("/", "de")).toBe("/");
-      expect(localizeHref("/book/domestic", "de")).toBe("/buchen/domestic");
+      expect(localizeHref("/book/domestic", "de")).toBe("/buchen/haus");
       expect(localizeHref("/providers", "de")).toBe("/partner");
     });
 
     it("should return prefixed and slug-localized path for other locales", () => {
       expect(localizeHref("/", "pt")).toBe("/pt");
-      expect(localizeHref("/book/domestic", "pt")).toBe("/pt/reservar/domestic");
+      expect(localizeHref("/book/domestic", "pt")).toBe("/pt/reservar/domestica");
       expect(localizeHref("/providers", "pt")).toBe("/pt/parceiros");
       expect(localizeHref("/", "es")).toBe("/es");
       expect(localizeHref("/book/domestic", "en")).toBe("/en/book/domestic");
@@ -71,6 +71,34 @@ describe("i18n-utils", () => {
       expect(localizeHref("https://google.com", "pt")).toBe("https://google.com");
       expect(localizeHref("tel:+41441234567", "pt")).toBe("tel:+41441234567");
       expect(localizeHref("mailto:info@elite.ch", "pt")).toBe("mailto:info@elite.ch");
+    });
+  });
+
+  describe("Cookie Consent Banner Translations", () => {
+    it("should check that each locale has correct translation keys", () => {
+      const locales = ["de", "en", "fr", "it", "rm", "es", "pt"];
+      for (const loc of locales) {
+        const dict = getTranslationsForLocale(loc);
+        expect(dict.cookieBanner).toBeDefined();
+        expect(dict.cookieBanner.text.toLowerCase()).toContain("cook");
+        expect(dict.cookieBanner.accept).toBeDefined();
+        expect(dict.cookieBanner.necessary).toBeDefined();
+      }
+    });
+  });
+
+  describe("resolveVerticalSlug helper", () => {
+    it("should resolve localized slugs back to their internal name", () => {
+      expect(resolveVerticalSlug("domestica", "pt")).toBe("domestic");
+      expect(resolveVerticalSlug("haus", "de")).toBe("domestic");
+      expect(resolveVerticalSlug("gewerbe", "de")).toBe("commercial");
+      expect(resolveVerticalSlug("yate", "es")).toBe("yacht");
+    });
+
+    it("should return the slug as-is if already internal or unrecognized", () => {
+      expect(resolveVerticalSlug("domestic", "pt")).toBe("domestic");
+      expect(resolveVerticalSlug("aviation", "en")).toBe("aviation");
+      expect(resolveVerticalSlug("unrecognized-slug", "pt")).toBe("unrecognized-slug");
     });
   });
 });

@@ -64,6 +64,46 @@ function translateFallback(key: string): string {
   }
 }
 
+export const VERTICAL_SLUGS: Record<string, Record<string, string>> = {
+  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
+  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht" },
+  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht" },
+  rm: { domestic: "domestic", commercial: "commercial", ospitalita: "hospitality", aviada: "aviation", iaht: "yacht" },
+  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht" },
+  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht" }
+};
+
+export const INTERNAL_TO_VERTICAL: Record<string, Record<string, string>> = {
+  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
+  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht" },
+  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "ospitalita", aviation: "aviada", yacht: "iaht" },
+  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate" },
+  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate" }
+};
+
+/**
+ * Resolves a localized vertical slug back to its internal equivalent (e.g. "domestica" -> "domestic").
+ * If the slug is already an internal one or unrecognized, returns it as-is.
+ */
+export function resolveVerticalSlug(slug: string, locale: string): string {
+  if (!slug) return slug;
+  const cleanLocale = (locale || "de").toLowerCase().slice(0, 2);
+  
+  if (VERTICAL_SLUGS[cleanLocale] && VERTICAL_SLUGS[cleanLocale][slug]) {
+    return VERTICAL_SLUGS[cleanLocale][slug];
+  }
+  
+  for (const loc of Object.keys(VERTICAL_SLUGS)) {
+    if (VERTICAL_SLUGS[loc] && VERTICAL_SLUGS[loc][slug]) {
+      return VERTICAL_SLUGS[loc][slug];
+    }
+  }
+  return slug;
+}
+
 /**
  * Appends the locale prefix to a URL pathname if the locale is not the default (de).
  * Also localizes page slugs (e.g. /providers -> /partenaires).
@@ -102,13 +142,39 @@ export function localizeHref(href: string, locale: string): string {
       rm: "/legal/cookies",
       es: "/legal/cookies",
       pt: "/legal/cookies"
+    },
+    "/about": {
+      de: "/ueber-uns",
+      en: "/about",
+      fr: "/a-propos",
+      it: "/chi-siamo",
+      rm: "/davart-nus",
+      es: "/sobre-nosotros",
+      pt: "/sobre-nos"
+    },
+    "/legal/provider-terms": {
+      de: "/rechtliches/partner-agb",
+      en: "/legal/provider-terms",
+      fr: "/juridique/conditions-prestataires",
+      it: "/legale/termini-partner",
+      rm: "/legal/cundizions-partenaris",
+      es: "/legal/condiciones-socios",
+      pt: "/legal/termos-parceiros"
+    },
+    "/legal/impressum": {
+      de: "/rechtliches/impressum",
+      en: "/legal/imprint",
+      fr: "/juridique/mentions-legales",
+      it: "/legale/impressum",
+      rm: "/legal/impressum",
+      es: "/legal/aviso-legal",
+      pt: "/legal/impressum"
     }
   };
 
   if (legalMappings[href]) {
     const mapped = legalMappings[href][cleanLocale];
     if (mapped) {
-      // Note that mapped contains the slug path (with a leading slash), so we return it directly or with prefix
       return cleanLocale === "de" ? mapped : `/${cleanLocale}${mapped}`;
     }
   }
@@ -130,6 +196,14 @@ export function localizeHref(href: string, locale: string): string {
   if (firstSegment && internalToSlug[cleanLocale] && internalToSlug[cleanLocale][firstSegment]) {
     const localizedSlug = internalToSlug[cleanLocale][firstSegment];
     pathParts[1] = localizedSlug;
+    
+    // Check if it is a book path and has a vertical sub-slug
+    if (firstSegment === "book" && pathParts[2]) {
+      const internalVert = pathParts[2];
+      const localizedVert = (INTERNAL_TO_VERTICAL[cleanLocale] && INTERNAL_TO_VERTICAL[cleanLocale][internalVert]) || internalVert;
+      pathParts[2] = localizedVert;
+    }
+    
     localizedHref = pathParts.join("/");
   }
 

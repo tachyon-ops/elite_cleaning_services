@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { COMPANY_CONFIG } from "@/lib/config";
 
 const verticalMeta: Record<string, { link: string }> = {
   domestic: { link: "/book/domestic" },
@@ -82,11 +83,11 @@ export async function Footer() {
           <div className="space-y-3 text-body-sm text-ink-subtle">
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-accent" />
-              <span>+41 (0) 44 123 4567</span>
+              <span>{COMPANY_CONFIG.phone}</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-accent" />
-              <span>ops@elite-cleaning.ch</span>
+              <span>{COMPANY_CONFIG.email}</span>
             </div>
           </div>
         </div>
@@ -101,6 +102,8 @@ export async function Footer() {
             <Link href={localizeHref("/legal/privacy", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.privacy")}</Link>
             <Link href={localizeHref("/legal/terms", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.terms")}</Link>
             <Link href={localizeHref("/legal/cookies", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.cookies")}</Link>
+            <Link href={localizeHref("/legal/impressum", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.impressum")}</Link>
+            <Link href={localizeHref("/legal/provider-terms", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.providerTerms")}</Link>
           </div>
         </div>
       </div>
