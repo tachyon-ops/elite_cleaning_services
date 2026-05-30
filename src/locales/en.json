@@ -38,6 +38,7 @@
       "subtitle": "Backoffice Ops",
       "dashboard": "Dashboard",
       "bookings": "Bookings & Dispatch",
+      "recurring": "Recurring Schedules",
       "applications": "Applications Queue",
       "providers": "Providers List",
       "verticals": "Manage Verticals",
@@ -89,6 +90,145 @@
       "subtitle": "SPECIAL SERVICES",
       "description": "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
       "priceText": "PHONE ONLY"
+    }
+  },
+  "preview": {
+    "title": "METRIC PREVIEW",
+    "subtitle": "No commitment, full refunds up to 24h prior.",
+    "aviationDetailing": "Aviation detailing",
+    "yachtTeakCare": "Yacht teak care",
+    "commercialOffices": "Commercial offices"
+  },
+  "trust": {
+    "fullyInsured": "FULLY INSURED",
+    "swissBased": "SWISS-BASED",
+    "gdprCompliant": "GDPR COMPLIANT",
+    "vettedPartners": "VETTED PARTNERS",
+    "riskFreeTrial": "RISK-FREE TRIAL"
+  },
+  "how": {
+    "subtitle": "OPERATIONS PROCESS",
+    "title": "How it works",
+    "step1Title": "Tell us about your job",
+    "step1Desc": "Complete our vertical-specific intake form in under two minutes to define location, size, and custom options.",
+    "step2Title": "Get a price and time",
+    "step2Desc": "Receive instant quotes for standard jobs or detailed responses within four hours for specialty divisions.",
+    "step3Title": "Vetted dispatch",
+    "step3Desc": "We coordinate with insured, certified local teams. Receive status reminders, photos, and digital invoices."
+  },
+  "recurringSection": {
+    "subtitle": "RECURRING ADVANTAGE",
+    "title": "First clean? No commitment.",
+    "description": "Try our vetted partners once. If you are satisfied with the results, unlock recurring schedules (weekly, bi-weekly, or monthly turnovers) to save 10% on future bookings.",
+    "cta": "Book Your Trial Clean"
+  },
+  "faqSection": {
+    "subtitle": "FAQ",
+    "title": "Frequently Asked Questions",
+    "q1": "Do you do the cleaning yourselves?",
+    "a1": "No, Elite acts as a vetted brokerage layer. We manage bookings, quality audits, insurance, and payments, while dispatching the physical service to certified Swiss specialty subcontractors.",
+    "q2": "Where do you operate?",
+    "a2": "We are launching initial service dispatches in Zurich, Lake Zurich, and surrounding municipalities, planning expansion to further Swiss cantons in later phases.",
+    "q3": "What if something is damaged during a session?",
+    "a3": "All assigned subcontractors are vetted to carry liability insurance. In the rare event of damage, Elite mediates the claim and guarantees resolution through our platform pledge.",
+    "q4": "Is my data GDPR secure?",
+    "a4": "Yes. All application servers, Supabase instances, and logs are hosted in European datacenters. We do not track cookies without consent, and you can export or purge your account records at any time."
+  },
+  "footerSection": {
+    "services": "SERVICES",
+    "company": "COMPANY",
+    "aboutUs": "About Us",
+    "becomePartner": "Become a Subcontractor",
+    "partnerLogin": "Subcontractor Login",
+    "staffLogin": "Staff Login",
+    "contact": "Contact",
+    "contactHeader": "CONTACT",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "cookies": "Cookie Policy",
+    "tagline": "Precision Swiss cleaning brokerage. Confident restraint, immaculate execution.",
+    "copyright": "Elite Cleaning Services. All rights reserved."
+  },
+  "providers": {
+    "nav": {
+      "brand": "ELITE CLEANING",
+      "signIn": "Sign In",
+      "apply": "Apply to Join"
+    },
+    "hero": {
+      "subtitle": "Service Partner Network",
+      "title": "Partner with the Swiss Leader in Specialty Cleaning",
+      "description": "Access premium client accounts across aviation, marine, and commercial sectors. Fill your schedules with high-value, pre-paid jobs.",
+      "submit": "Submit Application",
+      "review": "Review Requirements"
+    },
+    "features": {
+      "f1Title": "Qualified Jobs, Not Leads",
+      "f1Desc": "Every booking is fully paid and secure. You accept pre-qualified client cleanings without competing or bidding.",
+      "f2Title": "Transparent Economics",
+      "f2Desc": "Keep up to 85% of job value. Direct weekly payouts via Stripe Connect. No registration fees or hidden subscription costs.",
+      "f3Title": "Premium Brand Association",
+      "f3Desc": "Deliver services to high-net-worth clients, flight departments, yacht management crews, and luxury rental properties."
+    },
+    "compliance": {
+      "title": "Marketplace Compliance",
+      "subtitle": "We enforce absolute compliance to protect Swiss clients.",
+      "prereqs": "Minimum Prerequisites to Apply",
+      "item1": "Registered Swiss Business (AG, GmbH, or Einzelfirma)",
+      "item2": "Business Liability Insurance (Betriebshaftpflicht) Min CHF 5M",
+      "item3": "Verified VAT ID (if turnover exceeds CHF 100K)",
+      "item4": "Clean Criminal Records for all dispatch personnel"
+    },
+    "apply": {
+      "successTitle": "Application Submitted",
+      "successDesc": "Thank you for applying. Provider Ops will review your Swiss registration status and documents.",
+      "provTitle": "PROVISIONAL CREDENTIALS:",
+      "provEmail": "Email:",
+      "provPassword": "Temp Password:",
+      "provNotice": "*Log in to the portal after administrator approval.",
+      "btnReturn": "Return to Landing Page",
+      "secureReg": "SECURE REGISTRATION",
+      "title": "Partner Application",
+      "desc": "Join the elite tier of Swiss cleaning providers.",
+      "errMandatory": "Please fill out all mandatory fields",
+      "errCategory": "Please select at least one service category",
+      "errSubmit": "Failed to submit application",
+      "labelCompany": "Company Legal Name",
+      "labelEntity": "Entity Type",
+      "labelContact": "Contact Full Name",
+      "labelEmail": "Contact Email",
+      "labelRegion": "Swiss Operation Region",
+      "labelVerticals": "Verticals Requested",
+      "labelMotivation": "Business Motivation",
+      "motivationPlaceholder": "Tell us about your team and quality benchmarks...",
+      "btnSubmitting": "SUBMITTING APPLICATION...",
+      "btnSubmit": "SUBMIT MARKETPLACE APPLICATION",
+      "catDomestic": "Domestic",
+      "catCommercial": "Commercial",
+      "catHospitality": "Hospitality",
+      "catAviation": "Aviation",
+      "catYacht": "Yacht & Marine"
+    },
+    "footer": {
+      "copyright": "Elite Cleaning Platform AG. All Swiss partner rights reserved."
+    },
+    "login": {
+      "nav": "ELITE PARTNER HUB",
+      "mfaTitle": "Multi-Factor Authentication",
+      "mfaDesc": "Enter verification token to authorize access",
+      "partnerLogin": "Partner Log In",
+      "partnerDesc": "Access your marketplace dispatch control panel",
+      "errCredentials": "Please fill in both email and password.",
+      "errInvalid": "Invalid provider credentials.",
+      "errToken": "Invalid 2FA token",
+      "labelEmail": "Partner Email",
+      "labelPassword": "Password",
+      "labelToken": "6-Digit Authenticator Code",
+      "btnLogin": "SECURE ENTER",
+      "btnLoggingIn": "LOGGING IN...",
+      "notRegistered": "Not yet registered?",
+      "submitApplication": "Submit Application",
+      "copyright": "Elite Cleaning Platform AG. Secure dispatcher access."
     }
   }
 }

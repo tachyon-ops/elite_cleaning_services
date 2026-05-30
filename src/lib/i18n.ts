@@ -1,9 +1,19 @@
 import en from "@/locales/en.json";
 import de from "@/locales/de.json";
+import fr from "@/locales/fr.json";
+import it from "@/locales/it.json";
+import rm from "@/locales/rm.json";
+import es from "@/locales/es.json";
+import pt from "@/locales/pt.json";
 
 const dictionaries: Record<string, any> = {
   en,
   de,
+  fr,
+  it,
+  rm,
+  es,
+  pt,
 };
 
 /**
@@ -53,3 +63,42 @@ function translateFallback(key: string): string {
     return key;
   }
 }
+
+/**
+ * Appends the locale prefix to a URL pathname if the locale is not the default (de).
+ * Also localizes page slugs (e.g. /providers -> /partenaires).
+ */
+export function localizeHref(href: string, locale: string): string {
+  if (!href || href.startsWith("#") || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+    return href;
+  }
+
+  const cleanLocale = (locale || "de").toLowerCase().slice(0, 2);
+  const pathParts = href.split("/");
+  const firstSegment = pathParts[1]; // e.g. "providers" or "book"
+
+  const internalToSlug: Record<string, Record<string, string>> = {
+    de: { providers: "partner", book: "buchen" },
+    en: { providers: "providers", book: "book" },
+    fr: { providers: "partenaires", book: "reserver" },
+    it: { providers: "partner", book: "prenotare" },
+    rm: { providers: "partenaris", book: "reservar" },
+    es: { providers: "proveedores", book: "reservar" },
+    pt: { providers: "parceiros", book: "reservar" }
+  };
+
+  let localizedHref = href;
+  if (firstSegment && internalToSlug[cleanLocale] && internalToSlug[cleanLocale][firstSegment]) {
+    const localizedSlug = internalToSlug[cleanLocale][firstSegment];
+    pathParts[1] = localizedSlug;
+    localizedHref = pathParts.join("/");
+  }
+
+  if (cleanLocale === "de") {
+    return localizedHref;
+  }
+
+  return `/${cleanLocale}${localizedHref === "/" ? "" : localizedHref}`;
+}
+
+

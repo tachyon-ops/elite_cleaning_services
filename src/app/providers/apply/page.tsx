@@ -3,9 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { applyProvider } from "@/app/actions/provider";
+import { useLanguage } from "@/components/LanguageProvider";
+import { localizeHref } from "@/lib/i18n";
 import { ShieldCheck, ChevronRight, CheckCircle2 } from "lucide-react";
 
 export default function ProviderApplyPage() {
+  const { locale, t } = useLanguage();
   const [formData, setFormData] = useState({
     companyName: "",
     applicantEmail: "",
@@ -37,11 +40,11 @@ export default function ProviderApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName || !formData.applicantEmail || !formData.applicantName) {
-      setError("Please fill out all mandatory fields");
+      setError(t("providers.apply.errMandatory"));
       return;
     }
     if (formData.verticalsRequested.length === 0) {
-      setError("Please select at least one service category");
+      setError(t("providers.apply.errCategory"));
       return;
     }
 
@@ -63,7 +66,7 @@ export default function ProviderApplyPage() {
     if (res.success) {
       setSuccess(true);
     } else {
-      setError(res.error || "Failed to submit application");
+      setError(res.error || t("providers.apply.errSubmit"));
     }
   };
 
@@ -71,8 +74,8 @@ export default function ProviderApplyPage() {
     <div className="min-h-screen bg-[#080808] text-[#f2f2f2] font-body flex flex-col">
       {/* Header */}
       <nav className="max-w-7xl mx-auto w-full px-6 py-6 border-b border-[#1f1f1f] flex justify-between items-center shrink-0">
-        <Link href="/providers" className="font-display font-medium text-body-lg tracking-widest text-[#f2f2f2] hover:text-accent transition-colors">
-          ELITE CLEANING
+        <Link href={localizeHref("/providers", locale)} className="font-display font-medium text-body-lg tracking-widest text-[#f2f2f2] hover:text-accent transition-colors">
+          {t("providers.nav.brand")}
         </Link>
       </nav>
 
@@ -84,22 +87,22 @@ export default function ProviderApplyPage() {
               <div className="h-16 w-16 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center border border-green-500/25 mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h2 className="text-display-sm font-display font-medium text-[#f2f2f2]">Application Submitted</h2>
+              <h2 className="text-display-sm font-display font-medium text-[#f2f2f2]">{t("providers.apply.successTitle")}</h2>
               <p className="text-body-md text-[#a6a6a6] leading-relaxed">
-                Thank you for applying. Provider Ops will review your Swiss registration status and documents.
+                {t("providers.apply.successDesc")}
               </p>
               <div className="bg-[#0d0d0d] p-4 rounded border border-[#262626] text-body-sm text-[#a6a6a6] max-w-[45ch] mx-auto text-left space-y-1 font-mono">
-                <span className="text-accent uppercase font-bold block mb-1">PROVISIONAL CREDENTIALS:</span>
-                <p>Email: <span className="text-[#f2f2f2]">{formData.applicantEmail}</span></p>
-                <p>Temp Password: <span className="text-[#f2f2f2]">partner123</span></p>
-                <p className="text-body-xs text-[#737373] mt-2 italic">*Log in to the portal after administrator approval.</p>
+                <span className="text-accent uppercase font-bold block mb-1">{t("providers.apply.provTitle")}</span>
+                <p>{t("providers.apply.provEmail")} <span className="text-[#f2f2f2]">{formData.applicantEmail}</span></p>
+                <p>{t("providers.apply.provPassword")} <span className="text-[#f2f2f2]">partner123</span></p>
+                <p className="text-body-xs text-[#737373] mt-2 italic">{t("providers.apply.provNotice")}</p>
               </div>
               <div className="pt-6">
                 <Link
-                  href="/providers"
+                  href={localizeHref("/providers", locale)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button px-6 py-3 rounded font-semibold transition-colors"
                 >
-                  Return to Landing Page
+                  {t("providers.apply.btnReturn")}
                 </Link>
               </div>
             </div>
@@ -107,10 +110,10 @@ export default function ProviderApplyPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex flex-col gap-2">
                 <span className="text-caption text-accent uppercase tracking-widest font-semibold flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4" /> SECURE REGISTRATION
+                  <ShieldCheck className="w-4 h-4" /> {t("providers.apply.secureReg")}
                 </span>
-                <h2 className="text-display-sm font-display font-medium text-[#f2f2f2] tracking-tight">Partner Application</h2>
-                <p className="text-body-xs text-[#a6a6a6]">Join the elite tier of Swiss cleaning providers.</p>
+                <h2 className="text-display-sm font-display font-medium text-[#f2f2f2] tracking-tight">{t("providers.apply.title")}</h2>
+                <p className="text-body-xs text-[#a6a6a6]">{t("providers.apply.desc")}</p>
               </div>
 
               {error && (
@@ -121,7 +124,7 @@ export default function ProviderApplyPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Company Legal Name</label>
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelCompany")}</label>
                   <input
                     type="text"
                     required
@@ -133,7 +136,7 @@ export default function ProviderApplyPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Entity Type</label>
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelEntity")}</label>
                   <select
                     value={formData.legalEntityType}
                     onChange={(e) => setFormData({ ...formData, legalEntityType: e.target.value })}
@@ -148,7 +151,7 @@ export default function ProviderApplyPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Contact Full Name</label>
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelContact")}</label>
                   <input
                     type="text"
                     required
@@ -160,7 +163,7 @@ export default function ProviderApplyPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Contact Email</label>
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelEmail")}</label>
                   <input
                     type="email"
                     required
@@ -173,7 +176,7 @@ export default function ProviderApplyPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Swiss Operation Region</label>
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelRegion")}</label>
                 <select
                   value={formData.region}
                   onChange={(e) => setFormData({ ...formData, region: e.target.value })}
@@ -187,14 +190,14 @@ export default function ProviderApplyPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-caption text-[#a6a6a6] font-semibold uppercase block">Verticals Requested</label>
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase block">{t("providers.apply.labelVerticals")}</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { id: "domestic", label: "Domestic" },
-                    { id: "commercial", label: "Commercial" },
-                    { id: "hospitality", label: "Hospitality" },
-                    { id: "aviation", label: "Aviation" },
-                    { id: "yacht", label: "Yacht & Marine" }
+                    { id: "domestic", label: t("providers.apply.catDomestic") },
+                    { id: "commercial", label: t("providers.apply.catCommercial") },
+                    { id: "hospitality", label: t("providers.apply.catHospitality") },
+                    { id: "aviation", label: t("providers.apply.catAviation") },
+                    { id: "yacht", label: t("providers.apply.catYacht") }
                   ].map((vert) => (
                     <button
                       key={vert.id}
@@ -213,12 +216,12 @@ export default function ProviderApplyPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-caption text-[#a6a6a6] font-semibold uppercase">Business Motivation</label>
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelMotivation")}</label>
                 <textarea
                   rows={3}
                   value={formData.motivation}
                   onChange={(e) => setFormData({ ...formData, motivation: e.target.value })}
-                  placeholder="Tell us about your team and quality benchmarks..."
+                  placeholder={t("providers.apply.motivationPlaceholder")}
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none resize-none"
                 />
               </div>
@@ -228,7 +231,7 @@ export default function ProviderApplyPage() {
                 disabled={loading}
                 className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3.5 rounded-md transition-colors flex items-center justify-center gap-2"
               >
-                {loading ? "SUBMITTING APPLICATION..." : "SUBMIT MARKETPLACE APPLICATION"}
+                {loading ? t("providers.apply.btnSubmitting") : t("providers.apply.btnSubmit")}
               </button>
             </form>
           )}

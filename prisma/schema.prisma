@@ -422,3 +422,29 @@ model Dispute {
 
   @@index([bookingId])
 }
+
+// 23. Dynamic localized pages (for legal, privacy, terms, cookies etc.)
+model Page {
+  id           String            @id @default(uuid())
+  key          String            @unique // e.g. "privacy", "terms", "cookies"
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  translations PageTranslation[]
+}
+
+model PageTranslation {
+  id        String   @id @default(uuid())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  locale    String   // e.g. "de", "en", "fr", "it", "rm", "es", "pt"
+  slug      String   // e.g. "legal/privacy", "juridique/confidentialite"
+  title     String
+  content   String   // Markdown or HTML content
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([locale, slug])
+  @@unique([pageId, locale])
+  @@index([pageId])
+}
+

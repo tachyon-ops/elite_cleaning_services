@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale } from "@/lib/i18n";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
@@ -28,8 +28,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const reqHeaders = await headers();
+  const localeHeader = reqHeaders.get("x-locale");
   const cookieStore = await cookies();
-  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const locale = localeHeader || cookieStore.get("NEXT_LOCALE")?.value || "de";
   const dictionary = getTranslationsForLocale(locale);
 
   return (

@@ -38,6 +38,7 @@
       "subtitle": "Backoffice Betrieb",
       "dashboard": "Dashboard",
       "bookings": "Buchungen & Disposition",
+      "recurring": "Wiederkehrende Termine",
       "applications": "Bewerbungen",
       "providers": "Partnerliste",
       "verticals": "Sparten verwalten",
@@ -89,6 +90,145 @@
       "subtitle": "SPEZIALREINIGUNG",
       "description": "Restaurierende Spezialreinigung, Unterstützung bei Unfällen und Messi-Wohnungen. Diskrete Abwicklung.",
       "priceText": "NUR TELEFONISCH"
+    }
+  },
+  "preview": {
+    "title": "PREISVORSCHAU",
+    "subtitle": "Keine Verpflichtung, volle Rückerstattung bis zu 24 Stunden vorher.",
+    "aviationDetailing": "Flugzeugaufbereitung",
+    "yachtTeakCare": "Yacht-Teakpflege",
+    "commercialOffices": "Gewerbliche Büros"
+  },
+  "trust": {
+    "fullyInsured": "VOLLSTÄNDIG VERSICHERT",
+    "swissBased": "IN DER SCHWEIZ ANSÄSSIG",
+    "gdprCompliant": "DSGVO-KONFORM",
+    "vettedPartners": "GEPRÜFTE PARTNER",
+    "riskFreeTrial": "RISIKOFREIER TEST"
+  },
+  "how": {
+    "subtitle": "BETRIEBSABLAUF",
+    "title": "So funktioniert's",
+    "step1Title": "Beschreiben Sie Ihren Auftrag",
+    "step1Desc": "Füllen Sie unser sparten-spezifisches Formular in unter zwei Minuten aus, um Ort, Größe und Optionen festzulegen.",
+    "step2Title": "Preis und Termin erhalten",
+    "step2Desc": "Erhalten Sie sofortige Offerten für Standardaufträge oder Rückmeldungen innerhalb von vier Stunden für Spezialreinigungen.",
+    "step3Title": "Geprüfter Versand",
+    "step3Desc": "Wir koordinieren uns mit versicherten, zertifizierten lokalen Teams. Erhalten Sie Status-Updates, Fotos und digitale Rechnungen."
+  },
+  "recurringSection": {
+    "subtitle": "ABONNEMENT-VORTEIL",
+    "title": "Erste Reinigung? Keine Verpflichtung.",
+    "description": "Testen Sie unsere geprüften Partner einmalig. Wenn Sie zufrieden sind, schalten Sie regelmässige Termine (wöchentlich, zweiwöchentlich oder monatlich) frei, um 10% auf zukünftige Buchungen zu sparen.",
+    "cta": "Buchen Sie Ihre Probereinigung"
+  },
+  "faqSection": {
+    "subtitle": "FAQ",
+    "title": "Häufig gestellte Fragen",
+    "q1": "Führen Sie die Reinigung selbst durch?",
+    "a1": "Nein, Elite agiert als geprüfte Vermittlungsplattform. Wir verwalten Buchungen, Qualitätsaudits, Versicherungen und Zahlungen, während wir die physische Ausführung an zertifizierte Schweizer Spezial-Subunternehmer übertragen.",
+    "q2": "Wo sind Sie tätig?",
+    "a2": "Wir starten unsere ersten Einsätze in Zürich, am Zürichsee und in den umliegenden Gemeinden. Die Expansion in weitere Schweizer Kantone ist für spätere Phasen geplant.",
+    "q3": "Was passiert, wenn während einer Reinigung etwas beschädigt wird?",
+    "a3": "Alle zugewiesenen Subunternehmer sind verpflichtet, eine Haftpflichtversicherung abzuschließen. Im seltenen Fall eines Schadens vermittelt Elite den Anspruch und garantiert eine Lösung durch unser Plattform-Versprechen.",
+    "q4": "Sind meine Daten gemäß DSGVO sicher?",
+    "a4": "Ja. Alle Anwendungsserver, Supabase-Instanzen und Protokolle werden in europäischen Rechenzentren gehostet. Wir verfolgen keine Cookies ohne Zustimmung, und Sie können Ihre Kontodaten jederzeit exportieren oder löschen."
+  },
+  "footerSection": {
+    "services": "DIENSTLEISTUNGEN",
+    "company": "UNTERNEHMEN",
+    "aboutUs": "Über uns",
+    "becomePartner": "Partner werden",
+    "partnerLogin": "Partner-Login",
+    "staffLogin": "Mitarbeiter-Login",
+    "contact": "Kontakt",
+    "contactHeader": "KONTAKT",
+    "privacy": "Datenschutzerklärung",
+    "terms": "AGB",
+    "cookies": "Cookie-Richtlinie",
+    "tagline": "Präzise Schweizer Reinigungsvermittlung. Stilsichere Zurückhaltung, makellose Ausführung.",
+    "copyright": "Elite Cleaning Services. Alle Rechte vorbehalten."
+  },
+  "providers": {
+    "nav": {
+      "brand": "ELITE REINIGUNG",
+      "signIn": "Anmelden",
+      "apply": "Bewerben"
+    },
+    "hero": {
+      "subtitle": "Service-Partnernetzwerk",
+      "title": "Werden Sie Partner des Schweizer Marktführers für Spezialreinigung",
+      "description": "Erhalten Sie Zugang zu Premium-Kundenaufträgen in der Luftfahrt, der Schifffahrt und im gewerblichen Bereich. Füllen Sie Ihren Terminkalender mit rentablen, im Voraus bezahlten Aufträgen.",
+      "submit": "Bewerbung einreichen",
+      "review": "Anforderungen prüfen"
+    },
+    "features": {
+      "f1Title": "Qualifizierte Aufträge, keine Leads",
+      "f1Desc": "Jede Buchung ist vollständig bezahlt und gesichert. Sie akzeptieren vorab qualifizierte Kundenreinigungen ohne Wettbewerb oder Gebote.",
+      "f2Title": "Transparente Konditionen",
+      "f2Desc": "Behalten Sie bis zu 85 % des Auftragswertes. Direkte wöchentliche Auszahlungen über Stripe Connect. Keine Registrierungsgebühren oder versteckten Abonnements.",
+      "f3Title": "Premium-Markenassoziation",
+      "f3Desc": "Bieten Sie Dienstleistungen für vermögende Privatkunden, Flugabteilungen, Yacht-Management-Teams und Luxusmietobjekte an."
+    },
+    "compliance": {
+      "title": "Marktplatz-Konformität",
+      "subtitle": "Wir setzen strenge Richtlinien durch, um Schweizer Kunden zu schützen.",
+      "prereqs": "Mindestanforderungen für eine Bewerbung",
+      "item1": "Registriertes Schweizer Unternehmen (AG, GmbH oder Einzelfirma)",
+      "item2": "Betriebshaftpflichtversicherung mit mindestens CHF 5 Mio. Deckung",
+      "item3": "Verifizierte MWST-Nummer (falls Umsatz CHF 100k übersteigt)",
+      "item4": "Einwandfreier Leumund (Strafregisterauszug) für das gesamte Personal"
+    },
+    "apply": {
+      "successTitle": "Bewerbung eingereicht",
+      "successDesc": "Vielen Dank für Ihre Bewerbung. Das Partner-Team wird Ihren Schweizer Registrierungsstatus und Ihre Dokumente prüfen.",
+      "provTitle": "VORLÄUFIGE ZUGANGSDATEN:",
+      "provEmail": "E-Mail:",
+      "provPassword": "Temporäres Passwort:",
+      "provNotice": "*Loggen Sie sich nach der Freigabe durch den Administrator in das Portal ein.",
+      "btnReturn": "Zurück zur Startseite",
+      "secureReg": "SICHERE REGISTRIERUNG",
+      "title": "Partner-Bewerbung",
+      "desc": "Werden Sie Teil der Elite-Liga der Schweizer Reinigungsdienstleister.",
+      "errMandatory": "Bitte füllen Sie alle Pflichtfelder aus",
+      "errCategory": "Bitte wählen Sie mindestens eine Dienstleistungskategorie",
+      "errSubmit": "Einreichen der Bewerbung fehlgeschlagen",
+      "labelCompany": "Offizieller Firmenname",
+      "labelEntity": "Rechtsform",
+      "labelContact": "Vollständiger Name des Ansprechpartners",
+      "labelEmail": "Kontakt-E-Mail",
+      "labelRegion": "Schweizer Einsatzgebiet",
+      "labelVerticals": "Gewünschte Sparten",
+      "labelMotivation": "Geschäftliche Motivation",
+      "motivationPlaceholder": "Erzählen Sie uns von Ihrem Team und Ihren Qualitätsmaßstäben...",
+      "btnSubmitting": "BEWERBUNG WIRD ÜBERMITTELT...",
+      "btnSubmit": "MARKTPLATZ-BEWERBUNG ABSENDEN",
+      "catDomestic": "Privathaushalte",
+      "catCommercial": "Gewerbe & Büros",
+      "catHospitality": "Ferienwohnungen & Airbnb",
+      "catAviation": "Luftfahrt (Jets & Helikopter)",
+      "catYacht": "Yachten & Schiffe"
+    },
+    "footer": {
+      "copyright": "Elite Cleaning Platform AG. Alle Schweizer Partnerrechte vorbehalten."
+    },
+    "login": {
+      "nav": "ELITE PARTNER HUB",
+      "mfaTitle": "Multi-Faktor-Authentifizierung",
+      "mfaDesc": "Geben Sie den Verifizierungstoken ein, um den Zugriff zu autorisieren",
+      "partnerLogin": "Partner-Login",
+      "partnerDesc": "Greifen Sie auf das Kontrollzentrum für Marktplatz-Dispositionen zu",
+      "errCredentials": "Bitte geben Sie E-Mail und Passwort ein.",
+      "errInvalid": "Ungültige Anmeldedaten.",
+      "errToken": "Ungültiger 2FA-Token",
+      "labelEmail": "Partner-E-Mail",
+      "labelPassword": "Passwort",
+      "labelToken": "6-stelliger Authenticator-Code",
+      "btnLogin": "SICHER ANMELDEN",
+      "btnLoggingIn": "ANMELDUNG LÄUFT...",
+      "notRegistered": "Noch nicht registriert?",
+      "submitApplication": "Bewerbung einreichen",
+      "copyright": "Elite Cleaning Platform AG. Sicherer Dispatcher-Zugang."
     }
   }
 }

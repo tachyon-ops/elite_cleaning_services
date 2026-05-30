@@ -1,0 +1,234 @@
+{
+  "nav": {
+    "services": "Servizi",
+    "howItWorks": "Come funziona",
+    "partnerPortal": "Portale Partner",
+    "getQuote": "RICHIEDI UN PREVENTIVO"
+  },
+  "hero": {
+    "division": "INTERMEDIAZIONE SVIZZERA SPECIALIZZATA",
+    "title": "Pulizia specializzata. Prenotata online. Eseguita da esperti.",
+    "description": "Una rete svizzera selezionata di subappaltatori specializzati in pulizie. Consegna assicurata, punto di contatto unico e abbonamenti regolari bloccati.",
+    "ctaQuote": "Richiedi un preventivo in 60s",
+    "ctaHow": "Come funziona"
+  },
+  "portfolio": {
+    "subtitle": "IL NOSTRO PORTFOLIO",
+    "title": "Divisioni di Servizio",
+    "description": "Ogni divisione specializzata opera sotto SLA personalizzati, appaltatori selezionati e strutture di inserimento specifiche per fornire precisione svizzera.",
+    "primaryService": "SERVIZIO PRINCIPALE",
+    "book": "Prenota →"
+  },
+  "concierge": {
+    "subtitle": "CANALE DIRETTO VIP",
+    "title": "Gestione su misura. Direttamente via WhatsApp.",
+    "description": "Per equipaggi di aviazione privata, capitani di yacht e gestori di proprietà di lusso, offriamo un serviço di assistenza su richiesta e personalizzato. Salta i moduli—invia le tue richieste, foto della cabina/ponte/villa, o coordinate direttamente alla nostra scrivania. Un operatore svizzero dedicato organizzerà il team e confermerà la prenotazione entro 15 minuti.",
+    "responseTime": "Tempo di risposta",
+    "coverage": "Copertura dell'operatore",
+    "matching": "Corrispondenza SLA",
+    "howToBook": "Come prenotare tramite il Concierge:",
+    "step1": "Tocca il link WhatsApp per aprire una chat diretta e sicura con il nostro ufficio di Zurigo.",
+    "step2": "Condividi i dettagli (nome dell'hangar FBO, lunghezza/posizione dello yacht o foto della villa).",
+    "step3": "Conferma le tariffe del subappaltatore su misura e blocca il tuo programma.",
+    "cta": "CONNETTI AL CONCIERGE"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "CONTROLLO ELITE",
+      "subtitle": "Operazioni Backoffice",
+      "dashboard": "Dashboard",
+      "bookings": "Prenotazioni & Invio",
+      "recurring": "Abbonamenti ricorrenti",
+      "applications": "Candidature in coda",
+      "providers": "Lista dei partner",
+      "verticals": "Gestisci divisioni",
+      "settings": "Impostazioni di sicurezza",
+      "logout": "Disconnettersi"
+    }
+  },
+  "partner": {
+    "dashboard": "Dashboard Partner",
+    "logout": "Disconnettersi",
+    "activeOffers": "Offerte di prenotazione attive",
+    "assignedBookings": "Prenotazioni specializzate assegnate",
+    "companySettings": "Configurazione aziendale",
+    "mfaSettings": "Sicurezza MFA"
+  },
+  "categories": {
+    "domestic": {
+      "title": "Pulizia di Case & Ville",
+      "subtitle": "DOMESTICO",
+      "description": "Manutenzione regolare, pulizia profonda e servizio di fine locazione per appartamentos e ville di lusso.",
+      "priceText": "A PARTIRE DA CHF 80"
+    },
+    "aviation": {
+      "title": "Jet Privati & Elicotteri",
+      "subtitle": "AVIAZIONE",
+      "description": "Lavaggio esterno, pulizia profonda degli interni e rifornimento della cabina negli hangar svizzeri e FBO.",
+      "priceText": "SU PREVENTIVO"
+    },
+    "yacht": {
+      "title": "Barche & Ponti di Yacht",
+      "subtitle": "YACHT & MARINE",
+      "description": "Pulizia del teak, dettagli interni, disarmo di fine stagione e accesso al porto turistico.",
+      "priceText": "SU PREVENTIVO"
+    },
+    "commercial": {
+      "title": "Uffici & Spazi di Co-working",
+      "subtitle": "COMMERCIALE",
+      "description": "Pulizie standard, pulizie profonde fuori orario e frequenze personalizzate per uffici aziendali.",
+      "priceText": "A PARTIRE DA CHF 150"
+    },
+    "hospitality": {
+      "title": "Turnover Airbnb & B&B",
+      "subtitle": "OSPITALITÀ",
+      "description": "Programmi di cambio rapidi, gestione della biancheria e consegna delle chiavi con smartlock.",
+      "priceText": "A PARTIRE DA CHF 120"
+    },
+    "special": {
+      "title": "Rischio Biologico & Post-Incidente",
+      "subtitle": "SERVIZI SPECIALI",
+      "description": "Pulizia di ripristino, assistenza post-incidente e supporto per accumulo patologico. Prenotazione riservata.",
+      "priceText": "SOLO TELEFONICAMENTE"
+    }
+  },
+  "preview": {
+    "title": "ANTEPRIMA PREZZI",
+    "subtitle": "Nessun impegno, rimborso completo fino a 24 ore prima.",
+    "aviationDetailing": "Dettagli aviazione",
+    "yachtTeakCare": "Cura del teak per yacht",
+    "commercialOffices": "Uffici commerciali"
+  },
+  "trust": {
+    "fullyInsured": "COMPLETAMENTE ASSICURATO",
+    "swissBased": "CON SEDE IN SVIZZERA",
+    "gdprCompliant": "CONFORME GDPR",
+    "vettedPartners": "PARTNER SELEZIONATI",
+    "riskFreeTrial": "PROVA SENZA RISCHI"
+  },
+  "how": {
+    "subtitle": "PROCESSO OPERATIVO",
+    "title": "Come funziona",
+    "step1Title": "Descrivi il tuo lavoro",
+    "step1Desc": "Completa il nostro modulo specifico in meno di due minuti per definire posizione, dimensioni e opzioni personalizzate.",
+    "step2Title": "Ricevi un preço e una data",
+    "step2Desc": "Ricevi preventivi istantanei per lavori standard o risposte dettagliate entro quattro ore per le divisioni speciali.",
+    "step3Title": "Invio controllato",
+    "step3Desc": "Ci coordiniamo con team locali assicurati e certificati. Ricevi aggiornamenti di stato, foto e fatture digitali."
+  },
+  "recurringSection": {
+    "subtitle": "VANTAGGIO DELL'ABBONAMENTO",
+    "title": "Prima pulizia? Nessun impegno.",
+    "description": "Prova i nostri partner selezionati una volta. Se sei soddisfatto del risultato, sblocca programmi ricorrenti (settimanali, bisettimanali o mensili) per risparmiare il 10% sulle prenotazioni future.",
+    "cta": "Prenota la tua pulizia di prova"
+  },
+  "faqSection": {
+    "subtitle": "FAQ",
+    "title": "Domande frequenti",
+    "q1": "Effettuate le pulizie voi stessi?",
+    "a1": "No, Elite agisce come piattaforma di intermediazione verificata. Gestiamo prenotazioni, audit di qualità, assicurazioni e pagamentos, mentre affidiamo l'esecuzione fisica a subappaltatori svizzeri certificati e specializzati.",
+    "q2": "Dove operate?",
+    "a2": "Stiamo lanciando i servizi iniziali a Zurigo, sul lago di Zurigo e nei comuni limitrofi, con piani di espansione in altri cantoni svizzeri nelle fasi successive.",
+    "q3": "Cosa succede se qualcosa viene danneggiato durante una sessione?",
+    "a3": "Tutti i subappaltatori assegnati sono tenuti ad avere un'assicurazione di responsabilità civile. Nel raro caso di danni, Elite gestisce il reclamo e garantisce una soluzione attraverso la promessa della nostra piattaforma.",
+    "q4": "I miei dati sono protetti in conformità al GDPR?",
+    "a4": "Sì. Tutti i server applicativi, le istanze di Supabase e i registri sono ospitati in data center europei. Non tracciamo i cookie senza consenso e puoi esportare o cancellare i dati del tuo account in qualsiasi momento."
+  },
+  "footerSection": {
+    "services": "SERVIZI",
+    "company": "AZIENDA",
+    "aboutUs": "Chi siamo",
+    "becomePartner": "Diventa subappaltatore",
+    "partnerLogin": "Login subappaltatore",
+    "staffLogin": "Login personale",
+    "contact": "Contatti",
+    "contactHeader": "CONTATTI",
+    "privacy": "Informativa sulla privacy",
+    "terms": "Termini di servizio",
+    "cookies": "Politica sui cookie",
+    "tagline": "Intermediazione svizzera di pulizia di precisione. Discreta eleganza, esecuzione impeccabile.",
+    "copyright": "Elite Cleaning Services. Tutti i diritti riservati."
+  },
+  "providers": {
+    "nav": {
+      "brand": "ELITE CLEANING",
+      "signIn": "Accedi",
+      "apply": "Candidati"
+    },
+    "hero": {
+      "subtitle": "Rete di Partner di Servizio",
+      "title": "Collabora con il leader svizzero nelle pulizie speciali",
+      "description": "Accedi a account di clienti premium nei settori dell'aviazione, marittimo e commerciale. Riempi il tuo calendario con lavori ad alto valore pagati in anticipo.",
+      "submit": "Invia la candidatura",
+      "review": "Verifica i requisiti"
+    },
+    "features": {
+      "f1Title": "Lavori qualificati, non contatti",
+      "f1Desc": "Ogni prenotazione è interamente pagata e sicura. Accetti pulizie pre-qualificate senza competizione o aste.",
+      "f2Title": "Economia trasparente",
+      "f2Desc": "Trattieni fino all'85% del valore del lavoro. Pagamenti settimanali diretti tramite Stripe Connect. Nessuna quota di iscrizione o costo di abbonamento nascosto.",
+      "f3Title": "Associazione a un marchio premium",
+      "f3Desc": "Offri servizi a clienti facoltosi, dipartimenti di volo, equipaggi di yacht e proprietà in affitto di lusso."
+    },
+    "compliance": {
+      "title": "Conformità del mercato",
+      "subtitle": "Applichiamo una conformità assoluta per proteggere i clienti svizzeri.",
+      "prereqs": "Requisiti minimi per candidarsi",
+      "item1": "Azienda registrata in Svizzera (SA, Sagl o ditta individuale)",
+      "item2": "Assicurazione di responsabilità civile aziendale min. CHF 5 milioni",
+      "item3": "Partita IVA verificata (se il fatturato supera CHF 100K)",
+      "item4": "Fedina penale pulita per tutto il personale operativo"
+    },
+    "apply": {
+      "successTitle": "Candidatura inviata",
+      "successDesc": "Grazie per la candidatura. Il team operazioni partner esaminerà lo stato di registrazione e i documenti svizzeri.",
+      "provTitle": "CREDENZIALI PROVVISORIE:",
+      "provEmail": "Email:",
+      "provPassword": "Password temporanea:",
+      "provNotice": "*Accedi al portale dopo l'approvazione dell'amministratore.",
+      "btnReturn": "Torna alla pagina principale",
+      "secureReg": "REGISTRAZIONE SICURA",
+      "title": "Candidatura Partner",
+      "desc": "Entra a far parte del livello elite dei fornitori di pulizie svizzeri.",
+      "errMandatory": "Si prega di compilare tutti i campi obbligatori",
+      "errCategory": "Si prega di selezionare almeno una categoria di servizio",
+      "errSubmit": "Invio della candidatura fallito",
+      "labelCompany": "Ragione sociale dell'azienda",
+      "labelEntity": "Tipo di entità legale",
+      "labelContact": "Nome completo del referente",
+      "labelEmail": "Email di contatto",
+      "labelRegion": "Regione operativa in Svizzera",
+      "labelVerticals": "Settori richiesti",
+      "labelMotivation": "Motivazione aziendale",
+      "motivationPlaceholder": "Raccontaci del tuo team e dei vostri standard di qualità...",
+      "btnSubmitting": "INVIO DELLA CANDIDATURA...",
+      "btnSubmit": "INVIA CANDIDATURA MERCATO",
+      "catDomestic": "Residenziale (Ville & Appartamenti)",
+      "catCommercial": "Commerciale & Uffici",
+      "catHospitality": "Ospitalità & Airbnb",
+      "catAviation": "Aviazione (Jet & Elicotteri)",
+      "catYacht": "Yacht & Nautica"
+    },
+    "footer": {
+      "copyright": "Elite Cleaning Platform AG. Tutti i diritti riservati ai partner svizzeri."
+    },
+    "login": {
+      "nav": "ELITE PARTNER HUB",
+      "mfaTitle": "Autenticazione a due fattori",
+      "mfaDesc": "Inserisci il token di verifica per autorizzare l'accesso",
+      "partnerLogin": "Accesso Partner",
+      "partnerDesc": "Accedi al tuo pannello di controle di invio",
+      "errCredentials": "Si prega di inserire sia l'email che la password.",
+      "errInvalid": "Credenziali partner non valide.",
+      "errToken": "Token 2FA non valido",
+      "labelEmail": "Email del partner",
+      "labelPassword": "Password",
+      "labelToken": "Codice di verifica a 6 cifre",
+      "btnLogin": "ACCESSO SICURO",
+      "btnLoggingIn": "ACCESSO IN CORSO...",
+      "notRegistered": "Non sei ancora registrato?",
+      "submitApplication": "Invia candidatura",
+      "copyright": "Elite Cleaning Platform AG. Accesso operatore sicuro."
+    }
+  }
+}

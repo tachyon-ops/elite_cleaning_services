@@ -59,7 +59,7 @@ export async function registerAdmin(payload: {
         twoFactorSecret: twoFactorSecret,
         twoFactorEnabled: true,
         twoFactorMethod: "email",
-        locale: "en",
+        locale: "de",
         loginCount: 1 // Registration acts as the first login session
       }
     });
@@ -191,7 +191,7 @@ export async function loginAdmin2FA(userId: string, token: string) {
     });
 
     const cookieStore = await cookies();
-    cookieStore.set("NEXT_LOCALE", adminUser.locale || "en", {
+    cookieStore.set("NEXT_LOCALE", adminUser.locale || "de", {
       path: "/",
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
@@ -763,7 +763,7 @@ export async function reviewApplication(payload: {
           passwordHash: hashPassword("partner123"), // default credentials
           role: "provider_staff",
           providerCompanyId: provider.id,
-          locale: "en"
+          locale: "de"
         }
       });
     }
@@ -889,6 +889,63 @@ export async function createQuote(payload: {
         targetId: bookingId,
         before: JSON.stringify({ status: booking.status, total: booking.totalAmountChf }),
         after: JSON.stringify({ status: "quote_sent", total: amountChf, deposit: depositChf }),
+        actorUserId: "admin_user"
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 16. Get list of all recurring schedules
+export async function getRecurringSchedulesList() {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    const schedules = await db.recurringSchedule.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        customer: true
+      }
+    });
+
+    return { success: true, schedules };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 17. Update recurring schedule status
+export async function updateRecurringScheduleStatus(scheduleId: string, status: string) {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    const scheduleBefore = await db.recurringSchedule.findUnique({
+      where: { id: scheduleId }
+    });
+    if (!scheduleBefore) {
+      throw new Error("Recurring schedule not found");
+    }
+
+    const updated = await db.recurringSchedule.update({
+      where: { id: scheduleId },
+      data: { status }
+    });
+
+    // Log administrative audit trail
+    await db.auditLog.create({
+      data: {
+        action: "update_recurring_schedule_status",
+        targetTable: "RecurringSchedule",
+        targetId: scheduleId,
+        before: JSON.stringify({ status: scheduleBefore.status }),
+        after: JSON.stringify({ status: updated.status }),
         actorUserId: "admin_user"
       }
     });

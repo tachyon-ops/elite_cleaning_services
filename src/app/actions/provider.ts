@@ -57,7 +57,7 @@ export async function loginProvider(email: string, passphrase: string) {
     }
  
     const cookieStore = await cookies();
-    cookieStore.set("NEXT_LOCALE", user.locale || "en", {
+    cookieStore.set("NEXT_LOCALE", user.locale || "de", {
       path: "/",
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
@@ -90,7 +90,7 @@ export async function loginProvider2FA(userId: string, token: string) {
     }
 
     const cookieStore = await cookies();
-    cookieStore.set("NEXT_LOCALE", user.locale || "en", {
+    cookieStore.set("NEXT_LOCALE", user.locale || "de", {
       path: "/",
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",

@@ -33,7 +33,30 @@ export function LanguageProvider({
     
     startTransition(async () => {
       await updateUserLocale(newLocale);
-      router.refresh();
+      
+      const pathname = window.location.pathname;
+      const parts = pathname.split("/");
+      const firstSegment = parts[1];
+      const locales = ["de", "en", "fr", "it", "rm", "es", "pt"];
+      
+      let newPathname = pathname;
+      if (locales.includes(firstSegment)) {
+        if (newLocale === "de") {
+          // Remove prefix for default locale
+          newPathname = pathname.replace(`/${firstSegment}`, "") || "/";
+        } else {
+          // Replace prefix
+          parts[1] = newLocale;
+          newPathname = parts.join("/");
+        }
+      } else {
+        if (newLocale !== "de") {
+          // Add prefix
+          newPathname = `/${newLocale}${pathname === "/" ? "" : pathname}`;
+        }
+      }
+      
+      window.location.href = newPathname;
     });
   };
 

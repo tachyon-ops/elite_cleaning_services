@@ -3,10 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
+import { localizeHref } from "@/lib/i18n";
 import { getBookingQuoteDetails, acceptQuoteAndPayDeposit } from "@/app/actions/booking";
 import { Shield, Check, Lock, CreditCard, Calendar, Clock, MapPin, Mail, AlertTriangle, ArrowRight, Plane, Ship } from "lucide-react";
 
 export default function QuoteAcceptancePage() {
+  const { locale } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
@@ -85,7 +88,7 @@ export default function QuoteAcceptancePage() {
             The requested booking or quote could not be located. It may have expired or been deleted. Please check your link or contact flight operations support.
           </p>
           <Link
-            href="/"
+            href={localizeHref("/", locale)}
             className="inline-block border border-accent bg-accent/10 text-accent hover:bg-accent/20 px-6 py-3 rounded-md transition-colors text-button font-semibold uppercase tracking-wider text-xs"
           >
             Return to Homepage
@@ -115,7 +118,7 @@ export default function QuoteAcceptancePage() {
       {/* Header */}
       <header className="border-b border-[#262626] bg-[#141414]/90 backdrop-blur-md sticky top-0 z-50 py-5">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href={localizeHref("/", locale)} className="flex items-center gap-2 group">
             <Shield className="w-6 h-6 text-accent group-hover:rotate-12 transition-transform" />
             <span className="font-display font-medium text-body-md uppercase tracking-wider text-[#f2f2f2] group-hover:text-accent transition-colors">
               Elite Cleaning Services

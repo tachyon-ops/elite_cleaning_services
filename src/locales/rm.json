@@ -1,0 +1,234 @@
+{
+  "nav": {
+    "services": "Servischs",
+    "howItWorks": "Co quai funcziuna",
+    "partnerPortal": "Portal da partenaris",
+    "getQuote": "DUMANDAR INA OFFERTA"
+  },
+  "hero": {
+    "division": "SENZIALIST SVIZZER SPECIALISÀ",
+    "title": "Pulizia spezialisada. Reservada online. Fatga da experts.",
+    "description": "Ina rait svizra selectada da sutcontracturs per pulizia spezialisada. Execuziun assicurada, in sulet punct da contact e plans da turnus bloccads.",
+    "ctaQuote": "Dumandar ina offerta en 60s",
+    "ctaHow": "Co quai funcziuna"
+  },
+  "portfolio": {
+    "subtitle": "NOS PORTFOLIO",
+    "title": "Divisiuns da servisch",
+    "description": "Mincha divisiun spezialisada lavura tenor SLAs persunaliseschs, contracturs verifikads e structuras d'intake specificas per furnir precisaziun svizra.",
+    "primaryService": "SERVISCH PRINCIPAL",
+    "book": "Reservar →"
+  },
+  "concierge": {
+    "subtitle": "CHANAL DIRECT VIP",
+    "title": "Servisch individual. Direct per WhatsApp.",
+    "description": "Per equipas d'aviaziun privata, capitans da iahts e manaders da proprietads da luxus ufrin nus in servisch da dispatch persunal. Evitai formulars—tramettei simplamain vossas pretensiuns, fotografias da la cabina/cuverta/villa u coordinatas directamain a nossa centrala. In disponent svizzer deditgà organisescha l'equipa e conferna la reservaziun infra 15 minutas.",
+    "responseTime": "Temp da reacziun",
+    "coverage": "Erreitschbaradad dal disponent",
+    "matching": "Assignaziun da SLA",
+    "howToBook": "Co reservar via concierge:",
+    "step1": "Tastai il link da WhatsApp per avrir in chat direct e segir cun nossa centrala a Turitg.",
+    "step2": "Dividi ils detagls (num dal hangar FBO, lunghezza/posiziun dal iaht u fotos da la villa).",
+    "step3": "Confermai ils pretschs da sutcontracturs ed assicurai voss termins.",
+    "cta": "CONNETTER CUN IL CONCIERGE"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "CONTROLLA ELITE",
+      "subtitle": "Operaziuns da Backoffice",
+      "dashboard": "Dashboard",
+      "bookings": "Reservaziuns & Dispatch",
+      "recurring": "Plans da turnus",
+      "applications": "Candidaturas",
+      "providers": "Lista da partenaris",
+      "verticals": "Administrar divisiuns",
+      "settings": "Pretensiuns da segirezza",
+      "logout": "Se dischassociar"
+    }
+  },
+  "partner": {
+    "dashboard": "Dashboard da partenaris",
+    "logout": "Se dischassociar",
+    "activeOffers": "Offertas da reservaziun activas",
+    "assignedBookings": "Reservaziuns spezialisadas assignadas",
+    "companySettings": "Configuraziun da la firma",
+    "mfaSettings": "Segirezza MFA"
+  },
+  "categories": {
+    "domestic": {
+      "title": "Pulizia da chasas & villas",
+      "subtitle": "DOMESTIC",
+      "description": "Mantegniment regular, pulizia profunda e servisch da transferiment per abitaziuns e villas da luxus.",
+      "priceText": "NÀ DA CHF 80"
+    },
+    "aviation": {
+      "title": "Jets privats & helicopters",
+      "subtitle": "AVIAZIUN",
+      "description": "Lavada externa, pulizia profunda dal interiur e repleniment da la cabina en hangars svizzers e FBOs.",
+      "priceText": "OFFERTA TENOR DUMANDA"
+    },
+    "yacht": {
+      "title": "Vessels & cuvertas da iaht",
+      "subtitle": "IAHT & MARINE",
+      "description": "Pulizia dal tec, detagls interiurs, decommissioning da fin da stagiun ed access a la marina.",
+      "priceText": "OFFERTA TENOR DUMANDA"
+    },
+    "commercial": {
+      "title": "Buros & logis da co-working",
+      "subtitle": "COMMERCIAL",
+      "description": "Pulizia da standard, pulizia profunda suenter las uras d'uffizi ed intervals individuals per buros.",
+      "priceText": "NÀ DA CHF 150"
+    },
+    "hospitality": {
+      "title": "Airbnb Turnover & B&Bs",
+      "subtitle": "HOSPITALITAD",
+      "description": "Schedules da turnover sperts, lavandaria ed e-key handovers.",
+      "priceText": "NÀ DA CHF 120"
+    },
+    "special": {
+      "title": "Biohazard & Tatortreinigung",
+      "subtitle": "SERVISCHS SPEZIALS",
+      "description": "Pulizia da restauraziun, sustegn tar accidents ed agid cun sindrom da Diogenes. Aburrament confidenzial.",
+      "priceText": "SULET TRAS TELEFON"
+    }
+  },
+  "preview": {
+    "title": "VISTA PRELIMINARA",
+    "subtitle": "Nagut commitments, reembursament cumplain fin 24h avant.",
+    "aviationDetailing": "Pulizia d'aviaziun",
+    "yachtTeakCare": "Mantegniment dal tec da iaht",
+    "commercialOffices": "Buros commercials"
+  },
+  "trust": {
+    "fullyInsured": "ASSICURÀ TOTALMAIN",
+    "swissBased": "BASÀ EN SVIZRA",
+    "gdprCompliant": "CONFORM CUN GDPR",
+    "vettedPartners": "PARTENARIS SEGIRADS",
+    "riskFreeTrial": "PROVA SENZA RISCHIO"
+  },
+  "how": {
+    "subtitle": "PROCESSO OPERATIV",
+    "title": "Co quai funcziuna",
+    "step1Title": "Dividi details dal mastergn",
+    "step1Desc": "Fils-ora noss formular specific en damain che duas minutas per definir il lieu, la grondezza ed opziuns persunalizadas.",
+    "step2Title": "Reitscha pretschs e termins",
+    "step2Desc": "Reitscha offertas directas per mastergns standards u respostas infurmativas infra 4 uras per divisiuns spezialisadas.",
+    "step3Title": "Dispatch verifikà",
+    "step3Desc": "Nus coordineschan cun equipas localas segiradas e verifikadas. Reitscha rapports da status, fotografias e quittanzas digitalas."
+  },
+  "recurringSection": {
+    "subtitle": "AVANTAUN DA TURNUS",
+    "title": "Emprima pulizia? Nagut commitments.",
+    "description": "Emprova in giada noss partenaris verifikads. Sche ti es cuntent cun ils resultats, sblocca plans da turnus (emnal, mintga duas emnas u mensil) per spargnar 10% sin reservaziuns futuras.",
+    "cta": "Reservar pulizia da prova"
+  },
+  "faqSection": {
+    "subtitle": "FAQ",
+    "title": "Dumandas frequentes",
+    "q1": "Fais vus la pulizia sezs?",
+    "a1": "Na, Elite acts as a vetted brokerage layer. Nus administrain las reservaziuns, ils audits da qualitad, las assicuranza ed ils pajaments, coordinond il labor corporal cun subinterprendiders svizzers spezialisads e verifikads.",
+    "q2": "Nua operais vus?",
+    "a2": "Nus cumnzain noss servischs a Turitg, a la Riva da Turitg e vischinanzas, cun l'intenziun da s'extender sin auters chantuns pli tard.",
+    "q3": "Tge schabegia sche insatge vegn donnegià durant in servisch?",
+    "a3": "Tuts subinterprendiders assignads ston avair ina assicuranza da responsabladad. En il cas rar da donns, Elite mediatescha il cas e garantescha ina schliaziun tras la promessa da nossa plattafurma.",
+    "q4": "Èn mias datas segiras tenor GDPR?",
+    "a4": "Gea. Tuts servers d'applicaziun, instanzas Supabase e protocols èn ospitads en centers da datas europeics. Nus na suandain nagins cookies senza consentiment, e ti po exportar u stidar tias datas da cont a mintga mument."
+  },
+  "footerSection": {
+    "services": "SERVISCHS",
+    "company": "FIRMA",
+    "aboutUs": "Davart nus",
+    "becomePartner": "Daventar sutcontractur",
+    "partnerLogin": "Login da partenaris",
+    "staffLogin": "Login da collavuratur",
+    "contact": "Contact",
+    "contactHeader": "CONTACT",
+    "privacy": "Declaraziun da datas",
+    "terms": "Termins da servisch",
+    "cookies": "Directivas da cookies",
+    "tagline": "Intermediaziun svizra da pulizia da precisaziun. Discreta eleganza, execuziun perfetga.",
+    "copyright": "Elite Cleaning Services. Tuts dretgs reservads."
+  },
+  "providers": {
+    "nav": {
+      "brand": "ELITE CLEANING",
+      "signIn": "S'annunziar",
+      "apply": "Candidar"
+    },
+    "hero": {
+      "subtitle": "Rait da partenaris da servetsch",
+      "title": "Partenadi cun il leader svizzer per nettegiada speziala",
+      "description": "Access a conts da clients premium en ils secturs aviatica, marina e commerzi. Empleni Voss plan cun lavurs pre-pagadas da gronda valur.",
+      "submit": "Trametter la candidatura",
+      "review": "Examinar ils basegns"
+    },
+    "features": {
+      "f1Title": "Lavurs qualifitgadas, betg be contacts",
+      "f1Desc": "Mincha reservaziun è pre-pagada e segirada. Vus acceptais nettegiadas qualifitgadas senza concurrenza u licitaziuns.",
+      "f2Title": "Economia transparenta",
+      "f2Desc": "Mantegnair enfin 85% dal valur da la lavur. Pajaments emnils directamain via Stripe Connect. Naginas tariffas da registraziun u abunaments zupads.",
+      "f3Title": "Associaziun cun ina marca premium",
+      "f3Desc": "Servetschs per clients fitg ritgs, departaments da sgol, equipas da yachts e proprietads da vacanzas da luxus."
+    },
+    "compliance": {
+      "title": "Confurmitad da la plattafurma",
+      "subtitle": "Nus applitgain ina confurmitad absoluta per proteger ils clients svizzers.",
+      "prereqs": "Cundiziuns minimalas per candidar",
+      "item1": "Firma svizra registrada (SA, Sarl u firma singula)",
+      "item2": "Assurance da risch per interpresas da min. CHF 5 milliuns",
+      "item3": "Dumber da Taglia sin la Valur Agiuntada verifitgà (sche sviezi è passa CHF 100K)",
+      "item4": "Chastier giudizial net per tut il persunal en servetsch"
+    },
+    "apply": {
+      "successTitle": "Candidatura tramessa",
+      "successDesc": "Engraziament per Vossa candidatura. L'equipa d'operaziuns da partenaris examinescha Voss status da registraziun e Voss documents.",
+      "provTitle": "ACCREDITIVS PROVISORICS:",
+      "provEmail": "E-mail:",
+      "provPassword": "Passpled temporar:",
+      "provNotice": "*S'annunziar en il portal suenter l'approvaziun da l'approvaziun da l'administratur.",
+      "btnReturn": "Enapustent a la pagina principala",
+      "secureReg": "REGISTRAZIUN SEGIRADA",
+      "title": "Candidatura da partenari",
+      "desc": "Daventai part dal nivel d'elita dals provediturs da nettegiada svizzers.",
+      "errMandatory": "Empleni per plaschair tut ils champs obligatorics",
+      "errCategory": "Tscherni per plaschair almain ina categoria da servetsch",
+      "errSubmit": "Betg reussì da trametter la candidatura",
+      "labelCompany": "Num uffizial da la firma",
+      "labelEntity": "Tip d'entitat legala",
+      "labelContact": "Num cumplain dal contact",
+      "labelEmail": "E-mail da contact",
+      "labelRegion": "Regiun d'activitad en Svizra",
+      "labelVerticals": "Secturs dumandads",
+      "labelMotivation": "Motivaziun da fatschenta",
+      "motivationPlaceholder": "Racamandai a nus Vossa equipa e Voss standards da qualitad...",
+      "btnSubmitting": "CANDIDATURA VEGN TRAMESSA...",
+      "btnSubmit": "TRAMETTER LA CANDIDATURA DA MERCÀ",
+      "catDomestic": "Residenzial (Villas & Abitaziuns)",
+      "catCommercial": "Commercial & Biros",
+      "catHospitality": "Hotellaria & Airbnb",
+      "catAviation": "Aviatica (Jets & Helicopter)",
+      "catYacht": "Yachts & Marina"
+    },
+    "footer": {
+      "copyright": "Elite Cleaning Platform AG. Tut ils dretgs da partenaris svizzers reservads."
+    },
+    "login": {
+      "nav": "ELITE PARTNER HUB",
+      "mfaTitle": "Autentificaziun multi-facturs",
+      "mfaDesc": "Endatai il token da verifikaziun per autorisar l'access",
+      "partnerLogin": "Login da partenaris",
+      "partnerDesc": "Access a Voss panel da controlla da dispatch da mercà",
+      "errCredentials": "Empleni per plaschair e-mail e passpled.",
+      "errInvalid": "Accreditivs da partenari betg valids.",
+      "errToken": "Token da 2FA betg valid",
+      "labelEmail": "E-mail da partenari",
+      "labelPassword": "Passpled",
+      "labelToken": "Code d'authentificaturs cun 6 cifras",
+      "btnLogin": "ENTRADA SEGIRADA",
+      "btnLoggingIn": "S'ANNUNZIOND...",
+      "notRegistered": "Betg anc registrà?",
+      "submitApplication": "Trametter la candidatura",
+      "copyright": "Elite Cleaning Platform AG. Access da disponent segirà."
+    }
+  }
+}

@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound } from "lucide-react";
+import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound, RefreshCw } from "lucide-react";
 import { getLoggedInAdmin } from "@/app/actions/admin";
 import { getTranslationsForLocale, translate } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -48,6 +48,12 @@ export default async function AdminLayout({
               className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
             >
               <BookOpen className="w-4 h-4" /> {t("admin.sidebar.bookings")}
+            </Link>
+            <Link
+              href="/admin/recurring"
+              className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+            >
+              <RefreshCw className="w-4 h-4" /> {t("admin.sidebar.recurring")}
             </Link>
             <Link
               href="/admin/provider-applications"

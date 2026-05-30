@@ -76,7 +76,6 @@ describe("Quote-on-Request TDD", () => {
     await db.providerListing.deleteMany({ where: { categorySlug: "yacht" } });
     await db.provider.deleteMany({ where: { slug: "test-marina-cleaners" } });
     await db.guestEmail.deleteMany({ where: { email: testEmail } });
-    await db.user.deleteMany({ where: { id: "admin_user" } });
   });
 
   it("should create a pending quote booking", async () => {

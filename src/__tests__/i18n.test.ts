@@ -1,5 +1,4 @@
-import { describe, it, expect } from "vitest";
-import { getTranslationsForLocale, translate } from "../lib/i18n";
+import { getTranslationsForLocale, translate, localizeHref } from "../lib/i18n";
 
 describe("i18n-utils", () => {
   describe("getTranslationsForLocale", () => {
@@ -10,8 +9,23 @@ describe("i18n-utils", () => {
       const deDict = getTranslationsForLocale("de");
       expect(deDict.nav.services).toBe("Dienstleistungen");
 
-      const invalidDict = getTranslationsForLocale("fr");
-      expect(invalidDict.nav.services).toBe("Services"); // fallback to English
+      const frDict = getTranslationsForLocale("fr");
+      expect(frDict.nav.getQuote).toBe("DEMANDER UN DEVIS");
+
+      const itDict = getTranslationsForLocale("it");
+      expect(itDict.nav.getQuote).toBe("RICHIEDI UN PREVENTIVO");
+
+      const rmDict = getTranslationsForLocale("rm");
+      expect(rmDict.nav.getQuote).toBe("DUMANDAR INA OFFERTA");
+
+      const esDict = getTranslationsForLocale("es");
+      expect(esDict.nav.getQuote).toBe("SOLICITAR PRESUPUESTO");
+
+      const ptDict = getTranslationsForLocale("pt");
+      expect(ptDict.nav.getQuote).toBe("SOLICITAR ORÇAMENTO");
+
+      const invalidDict = getTranslationsForLocale("ru");
+      expect(invalidDict.nav.getQuote).toBe("GET A QUOTE"); // fallback to English
     });
   });
 
@@ -33,6 +47,30 @@ describe("i18n-utils", () => {
     it("should fallback to English dictionary if key is missing in input dictionary", () => {
       expect(translate("nonexistent.key", mockDict)).toBe("nonexistent.key");
       expect(translate("nav.nonexistent", mockDict)).toBe("nav.nonexistent");
+    });
+  });
+
+  describe("localizeHref helper", () => {
+    it("should return localized path for default locale 'de' (prefix-less but slug-localized)", () => {
+      expect(localizeHref("/", "de")).toBe("/");
+      expect(localizeHref("/book/domestic", "de")).toBe("/buchen/domestic");
+      expect(localizeHref("/providers", "de")).toBe("/partner");
+    });
+
+    it("should return prefixed and slug-localized path for other locales", () => {
+      expect(localizeHref("/", "pt")).toBe("/pt");
+      expect(localizeHref("/book/domestic", "pt")).toBe("/pt/reservar/domestic");
+      expect(localizeHref("/providers", "pt")).toBe("/pt/parceiros");
+      expect(localizeHref("/", "es")).toBe("/es");
+      expect(localizeHref("/book/domestic", "en")).toBe("/en/book/domestic");
+    });
+
+
+    it("should ignore hashes, external links, and special links", () => {
+      expect(localizeHref("#how-it-works", "pt")).toBe("#how-it-works");
+      expect(localizeHref("https://google.com", "pt")).toBe("https://google.com");
+      expect(localizeHref("tel:+41441234567", "pt")).toBe("tel:+41441234567");
+      expect(localizeHref("mailto:info@elite.ch", "pt")).toBe("mailto:info@elite.ch");
     });
   });
 });

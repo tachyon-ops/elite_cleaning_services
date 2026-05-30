@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Phone, Mail, Award, Clock } from "lucide-react";
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
 import { db } from "@/lib/db";
-import { cookies } from "next/headers";
-import { getTranslationsForLocale, translate } from "@/lib/i18n";
+import { cookies, headers } from "next/headers";
+import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const dynamic = "force-dynamic";
@@ -70,8 +70,10 @@ const verticalMeta: Record<string, {
 export default async function HomePage() {
   await checkAndSeedDb();
 
+  const reqHeaders = await headers();
+  const localeHeader = reqHeaders.get("x-locale");
   const cookieStore = await cookies();
-  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const locale = localeHeader || cookieStore.get("NEXT_LOCALE")?.value || "de";
   const dictionary = getTranslationsForLocale(locale);
   const t = (key: string) => translate(key, dictionary);
 
@@ -94,7 +96,7 @@ export default async function HomePage() {
       {/* 4.6 Navigation Bar */}
       <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-6 md:px-16 sticky top-0 z-50">
         <div className="flex items-center">
-          <Link href="/" className="font-display text-display-sm font-medium tracking-[0.15em] text-ink flex items-center gap-1.5 select-none">
+          <Link href={localizeHref("/", locale)} className="font-display text-display-sm font-medium tracking-[0.15em] text-ink flex items-center gap-1.5 select-none">
             <span className="text-accent font-serif font-bold">E</span>LITE
           </Link>
         </div>
@@ -117,7 +119,7 @@ export default async function HomePage() {
                   return (
                     <Link
                       key={cat.slug}
-                      href={meta.link || `/book/${cat.slug}`}
+                      href={localizeHref(meta.link || `/book/${cat.slug}`, locale)}
                       className="flex items-center gap-3.5 px-3 py-2 rounded-md hover:bg-accent-soft/45 transition-colors group/item"
                     >
                       <div className="h-8 w-8 bg-accent-soft text-accent rounded-sm flex items-center justify-center border border-accent/10 group-hover/item:border-accent/25 transition-colors shrink-0">
@@ -138,12 +140,12 @@ export default async function HomePage() {
             </div>
           </div>
           <Link href="#how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.howItWorks")}</Link>
-          <Link href="/providers" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
+          <Link href={localizeHref("/providers", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
         </nav>
         <div className="flex items-center gap-6">
           <LanguageSwitcher />
           <Link
-            href="/book/general"
+            href={localizeHref("/book/general", locale)}
             className="bg-accent hover:bg-accent-hover text-ink-inverse text-body-xs tracking-wider uppercase font-semibold py-3 px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer"
           >
             {t("nav.getQuote")}
@@ -168,7 +170,7 @@ export default async function HomePage() {
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
-              href="/book/general"
+              href={localizeHref("/book/general", locale)}
               className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md"
             >
               {t("hero.ctaQuote")}
@@ -186,22 +188,22 @@ export default async function HomePage() {
         <div className="flex-1 bg-bg-subtle border-t lg:border-t-0 lg:border-l border-border flex items-center justify-center p-8 lg:p-16 relative overflow-hidden select-none">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#926c15_1px,transparent_1px)] [background-size:16px_16px]"></div>
           <div className="border border-border p-8 md:p-12 bg-bg max-w-md w-full relative z-10 rounded-lg shadow-md">
-            <span className="text-caption text-accent block mb-2">METRIC PREVIEW</span>
+            <span className="text-caption text-accent block mb-2">{t("preview.title")}</span>
             <span className="font-display text-display-lg text-ink font-bold block leading-none mb-1">CHF 0.00</span>
-            <span className="text-body-sm text-ink-subtle block mb-6">No commitment, full refunds up to 24h prior.</span>
+            <span className="text-body-sm text-ink-subtle block mb-6">{t("preview.subtitle")}</span>
             
             <div className="space-y-4 border-t border-border pt-6">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">Aviation detailing</span>
+                <span className="text-body-sm font-medium text-ink-muted">{t("preview.aviationDetailing")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">Yacht teak care</span>
+                <span className="text-body-sm font-medium text-ink-muted">{t("preview.yachtTeakCare")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <span className="text-body-sm font-medium text-ink-muted">Commercial offices</span>
+                <span className="text-body-sm font-medium text-ink-muted">{t("preview.commercialOffices")}</span>
               </div>
             </div>
           </div>
@@ -213,23 +215,23 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
           <div className="flex items-center justify-center gap-2">
             <Shield className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">FULLY INSURED</span>
+            <span className="text-caption text-ink-muted">{t("trust.fullyInsured")}</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             <Award className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">SWISS-BASED</span>
+            <span className="text-caption text-ink-muted">{t("trust.swissBased")}</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             <Check className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">GDPR COMPLIANT</span>
+            <span className="text-caption text-ink-muted">{t("trust.gdprCompliant")}</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             <Shield className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">VETTED PARTNERS</span>
+            <span className="text-caption text-ink-muted">{t("trust.vettedPartners")}</span>
           </div>
           <div className="flex items-center justify-center gap-2 col-span-2 md:col-span-1">
             <Clock className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">RISK-FREE TRIAL</span>
+            <span className="text-caption text-ink-muted">{t("trust.riskFreeTrial")}</span>
           </div>
         </div>
       </section>
@@ -278,7 +280,7 @@ export default async function HomePage() {
                 </div>
                 <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
                   <span className="text-caption text-ink-subtle uppercase">{cat.customPriceText || t(`categories.${cat.slug}.priceText`)}</span>
-                  <Link href={meta.link} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">{t("portfolio.book")}</Link>
+                  <Link href={localizeHref(meta.link, locale)} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">{t("portfolio.book")}</Link>
                 </div>
               </div>
             );
@@ -356,30 +358,30 @@ export default async function HomePage() {
       <section id="how-it-works" className="bg-bg-subtle border-y border-border py-24 px-6 md:px-16">
         <div className="max-w-7xl mx-auto w-full">
           <div className="text-center mb-16">
-            <span className="text-caption text-accent uppercase block mb-3">OPERATIONS PROCESS</span>
-            <h2 className="text-display-md text-ink font-display font-medium mb-4">How it works</h2>
+            <span className="text-caption text-accent uppercase block mb-3">{t("how.subtitle")}</span>
+            <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("how.title")}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
             <div className="flex flex-col">
               <span className="font-display text-display-lg text-accent-soft mb-4">01</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">Tell us about your job</h3>
+              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step1Title")}</h3>
               <p className="text-body-md text-ink-muted">
-                Complete our vertical-specific intake form in under two minutes to define location, size, and custom options.
+                {t("how.step1Desc")}
               </p>
             </div>
             <div className="flex flex-col border-t md:border-t-0 md:border-l border-border pt-8 md:pt-0 md:pl-8">
               <span className="font-display text-display-lg text-accent-soft mb-4">02</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">Get a price and time</h3>
+              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step2Title")}</h3>
               <p className="text-body-md text-ink-muted">
-                Receive instant quotes for standard jobs or detailed responses within four hours for specialty divisions.
+                {t("how.step2Desc")}
               </p>
             </div>
             <div className="flex flex-col border-t md:border-t-0 md:border-l border-border pt-8 md:pt-0 md:pl-8">
               <span className="font-display text-display-lg text-accent-soft mb-4">03</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">Vetted dispatch</h3>
+              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step3Title")}</h3>
               <p className="text-body-md text-ink-muted">
-                We coordinate with insured, certified local teams. Receive status reminders, photos, and digital invoices.
+                {t("how.step3Desc")}
               </p>
             </div>
           </div>
@@ -388,16 +390,16 @@ export default async function HomePage() {
 
       {/* Recurring Pitch Section */}
       <section className="py-24 px-6 md:px-16 max-w-4xl mx-auto w-full text-center">
-        <span className="text-caption text-accent uppercase block mb-3">RECURRING ADVANTAGE</span>
-        <h2 className="text-display-md text-ink font-display font-medium mb-4">First clean? No commitment.</h2>
+        <span className="text-caption text-accent uppercase block mb-3">{t("recurringSection.subtitle")}</span>
+        <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("recurringSection.title")}</h2>
         <p className="text-body-lg text-ink-muted mb-8 max-w-[65ch] mx-auto">
-          Try our vetted partners once. If you are satisfied with the results, unlock recurring schedules (weekly, bi-weekly, or monthly turnovers) to save 10% on future bookings.
+          {t("recurringSection.description")}
         </p>
         <Link
-          href="/book/general"
+          href={localizeHref("/book/general", locale)}
           className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors"
         >
-          Book Your Trial Clean
+          {t("recurringSection.cta")}
         </Link>
       </section>
 
@@ -405,48 +407,48 @@ export default async function HomePage() {
       <section className="bg-bg-subtle border-t border-border py-24 px-6 md:px-16">
         <div className="max-w-3xl mx-auto w-full">
           <div className="text-center mb-16">
-            <span className="text-caption text-accent uppercase block mb-3">FAQ</span>
-            <h2 className="text-display-md text-ink font-display font-medium mb-4">Frequently Asked Questions</h2>
+            <span className="text-caption text-accent uppercase block mb-3">{t("faqSection.subtitle")}</span>
+            <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("faqSection.title")}</h2>
           </div>
 
           <div className="space-y-6">
             <details className="group border-b border-border pb-6">
               <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>Do you do the cleaning yourselves?</span>
+                <span>{t("faqSection.q1")}</span>
                 <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
               </summary>
               <p className="text-body-md text-ink-muted mt-4">
-                No, Elite acts as a vetted brokerage layer. We manage bookings, quality audits, insurance, and payments, while dispatching the physical service to certified Swiss specialty subcontractors.
+                {t("faqSection.a1")}
               </p>
             </details>
 
             <details className="group border-b border-border pb-6">
               <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>Where do you operate?</span>
+                <span>{t("faqSection.q2")}</span>
                 <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
               </summary>
               <p className="text-body-md text-ink-muted mt-4">
-                We are launching initial service dispatches in Zurich, Lake Zurich, and surrounding municipalities, planning expansion to further Swiss cantons in later phases.
+                {t("faqSection.a2")}
               </p>
             </details>
 
             <details className="group border-b border-border pb-6">
               <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>What if something is damaged during a session?</span>
+                <span>{t("faqSection.q3")}</span>
                 <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
               </summary>
               <p className="text-body-md text-ink-muted mt-4">
-                All assigned subcontractors are vetted to carry liability insurance. In the rare event of damage, Elite mediates the claim and guarantees resolution through our platform pledge.
+                {t("faqSection.a3")}
               </p>
             </details>
 
             <details className="group border-b border-border pb-6">
               <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>Is my data GDPR secure?</span>
+                <span>{t("faqSection.q4")}</span>
                 <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
               </summary>
               <p className="text-body-md text-ink-muted mt-4">
-                Yes. All application servers, Supabase instances, and logs are hosted in European datacenters. We do not track cookies without consent, and you can export or purge your account records at any time.
+                {t("faqSection.a4")}
               </p>
             </details>
           </div>
@@ -460,16 +462,16 @@ export default async function HomePage() {
           <div>
             <span className="font-display text-display-sm font-bold text-ink-inverse tracking-tight">ELITE</span>
             <p className="text-body-sm text-ink-subtle mt-4 max-w-[25ch]">
-              Precision Swiss cleaning brokerage. Confident restraint, immaculate execution.
+              {t("footerSection.tagline")}
             </p>
           </div>
           {/* Col 2 */}
           <div>
-            <span className="text-caption text-accent uppercase block mb-4">SERVICES</span>
+            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.services")}</span>
             <ul className="space-y-2 text-body-sm text-ink-subtle">
               {sortedCategories.map((cat: any) => (
                 <li key={cat.slug}>
-                  <Link href={verticalMeta[cat.slug]?.link || `/book/${cat.slug}`} className="hover:text-ink-inverse transition-colors">
+                  <Link href={localizeHref(verticalMeta[cat.slug]?.link || `/book/${cat.slug}`, locale)} className="hover:text-ink-inverse transition-colors">
                     {t(`categories.${cat.slug}.title`)}
                   </Link>
                 </li>
@@ -478,18 +480,18 @@ export default async function HomePage() {
           </div>
           {/* Col 3 */}
           <div>
-            <span className="text-caption text-accent uppercase block mb-4">COMPANY</span>
+            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.company")}</span>
             <ul className="space-y-2 text-body-sm text-ink-subtle">
-              <li><Link href="/about" className="hover:text-ink-inverse transition-colors">About Us</Link></li>
-              <li><Link href="/providers" className="hover:text-ink-inverse transition-colors">Become a Subcontractor</Link></li>
-              <li><Link href="/providers/account/login" className="hover:text-ink-inverse transition-colors">Subcontractor Login</Link></li>
-              <li><Link href="/admin/login" className="hover:text-ink-inverse transition-colors">Staff Login</Link></li>
-              <li><Link href="/contact" className="hover:text-ink-inverse transition-colors">Contact</Link></li>
+              <li><Link href={localizeHref("/about", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.aboutUs")}</Link></li>
+              <li><Link href={localizeHref("/providers", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.becomePartner")}</Link></li>
+              <li><Link href={localizeHref("/providers/account/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.partnerLogin")}</Link></li>
+              <li><Link href={localizeHref("/admin/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.staffLogin")}</Link></li>
+              <li><Link href={localizeHref("/contact", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.contact")}</Link></li>
             </ul>
           </div>
           {/* Col 4 */}
           <div>
-            <span className="text-caption text-accent uppercase block mb-4">CONTACT</span>
+            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.contactHeader")}</span>
             <div className="space-y-3 text-body-sm text-ink-subtle">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-accent" />
@@ -505,13 +507,13 @@ export default async function HomePage() {
 
         {/* Bottom Strip */}
         <div className="border-t border-ink-muted/20 py-8 px-6 md:px-16 text-center text-body-sm text-ink-subtle max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <span>&copy; {new Date().getFullYear()} Elite Cleaning Services. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} {t("footerSection.copyright")}</span>
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
             <div className="flex gap-6">
-              <Link href="/legal/privacy" className="hover:text-ink-inverse transition-colors">Privacy Policy</Link>
-              <Link href="/legal/terms" className="hover:text-ink-inverse transition-colors">Terms of Service</Link>
-              <Link href="/legal/cookies" className="hover:text-ink-inverse transition-colors">Cookie Policy</Link>
+              <Link href={localizeHref("/legal/privacy", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.privacy")}</Link>
+              <Link href={localizeHref("/legal/terms", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.terms")}</Link>
+              <Link href={localizeHref("/legal/cookies", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.cookies")}</Link>
             </div>
           </div>
         </div>

@@ -242,10 +242,39 @@ export async function createBooking(payload: {
 
     const initialStatus = isQuoteVertical ? "quote_pending" : (hasMatchingProvider ? "offer_dispatched" : "confirmed");
 
+    // Resolve customer and recurring settings
+    let customerId: string | null = null;
+    const frequency = intake?.frequency;
+    const isRecurring = ["weekly", "bi-weekly", "monthly"].includes(frequency);
+
+    let user = await db.user.findUnique({
+      where: { email }
+    });
+
+    if (isRecurring) {
+      if (!user) {
+        user = await db.user.create({
+          data: {
+            email,
+            name: intake.name || email.split("@")[0],
+            role: "registered_customer"
+          }
+        });
+      }
+      customerId = user.id;
+    } else if (user) {
+      customerId = user.id;
+    }
+
+    const stripeSubscriptionId = isRecurring
+      ? `sub_sim_${Math.random().toString(36).substring(2, 11)}`
+      : null;
+
     // Create Booking
     const booking = await db.booking.create({
       data: {
-        guestEmail: email,
+        customerId,
+        guestEmail: customerId ? null : email,
         vertical,
         categorySlug,
         intake: JSON.stringify(intake),
@@ -256,9 +285,33 @@ export async function createBooking(payload: {
         totalAmountChf: pricing.total,
         depositAmountChf: pricing.deposit,
         providerTeamId: null,
-        isFirstBooking: true
+        isFirstBooking: true,
+        stripeSubscriptionId
       }
     });
+
+    if (isRecurring && customerId) {
+      let nextRunDays = 7;
+      if (frequency === "bi-weekly") {
+        nextRunDays = 14;
+      } else if (frequency === "monthly") {
+        nextRunDays = 30;
+      }
+      const nextRunAt = new Date(scheduledAt.getTime() + nextRunDays * 24 * 60 * 60 * 1000);
+
+      await db.recurringSchedule.create({
+        data: {
+          customerId,
+          categorySlug,
+          frequency,
+          dayOfWeek: scheduledAt.getDay(),
+          timeWindow: scheduledWindow,
+          stripeSubscriptionId: stripeSubscriptionId!,
+          status: "active",
+          nextRunAt
+        }
+      });
+    }
 
     if (!isQuoteVertical) {
       // Create offer if match is found
