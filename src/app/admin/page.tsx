@@ -32,12 +32,14 @@ export default async function AdminDashboardPage() {
   const whatsappLabelRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_label" } });
   const contactPhoneRes = await db.systemSetting.findUnique({ where: { key: "contact_phone" } });
   const contactEmailRes = await db.systemSetting.findUnique({ where: { key: "contact_email" } });
+  const contactAddressRes = await db.systemSetting.findUnique({ where: { key: "contact_address" } });
   const autoCheckoutRes = await db.systemSetting.findUnique({ where: { key: "auto_checkout" } });
 
   const initialWhatsappNumber = whatsappNumberRes?.value || "41791234567";
   const initialWhatsappLabel = whatsappLabelRes?.value || "+41 79 123 45 67";
   const initialContactPhone = contactPhoneRes?.value || "+41 (0) 44 123 4567";
   const initialContactEmail = contactEmailRes?.value || "ops@elite-cleaning.ch";
+  const initialContactAddress = contactAddressRes?.value || "Bahnhofstrasse 12, 8001 Zürich, Switzerland";
   const initialAutoCheckout = autoCheckoutRes ? autoCheckoutRes.value === "true" : true;
 
   return (
@@ -134,6 +136,7 @@ export default async function AdminDashboardPage() {
             initialWhatsappLabel={initialWhatsappLabel}
             initialContactPhone={initialContactPhone}
             initialContactEmail={initialContactEmail}
+            initialContactAddress={initialContactAddress}
             initialAutoCheckout={initialAutoCheckout}
           />
         </div>

@@ -17,14 +17,17 @@ interface PageProps {
 }
 
 function renderMarkdownToHtml(md: string): string {
+  // Normalize carriage returns to avoid parsing issues across OS or databases
   let html = md
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Headers (smaller and more elegant)
-  html = html.replace(/^#\s+(.+)$/gm, '<h1 class="text-body-xl font-display font-bold text-ink uppercase tracking-wider mb-6 border-b border-border/30 pb-4">$1</h1>');
-  html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-body-md font-bold text-ink uppercase tracking-wider mt-8 mb-3">$1</h2>');
+  // Headers (smaller, elegant, and using valid Tailwind classes from our typography scale)
+  html = html.replace(/^#\s+(.+)$/gm, '<h1 class="text-display-sm font-display font-bold text-ink uppercase tracking-wider mb-6 border-b border-border/30 pb-4">$1</h1>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-body-lg font-bold text-ink uppercase tracking-wider mt-8 mb-3">$1</h2>');
   html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-body-sm font-semibold text-accent uppercase tracking-wider mt-6 mb-2">$1</h3>');
 
   // Bullet Lists
@@ -80,7 +83,7 @@ export default async function DynamicStaticPage({ params }: PageProps) {
   const locale = localeHeader || cookieStore.get("NEXT_LOCALE")?.value || DEFAULT_LOCALE;
 
   // 1. Attempt exact lookup for this slug and locale
-  let translation = await db.pageTranslation.findFirst({
+  const translation = await db.pageTranslation.findFirst({
     where: {
       slug: rawPath,
       locale: locale

@@ -115,6 +115,7 @@
       "displayLabel": "Etichetta d'indicaziun",
       "contactPhoneLabel": "Numero da telefon da contact",
       "contactEmailLabel": "Adressa dad e-mail da contact",
+      "contactAddressLabel": "Adressa da la firma",
       "saveSettings": "CONSERVAR LAS CONFIGURAZIUNS",
       "whatsappSuccess": "Configuraziun da la fatschenta actualisada cun success.",
       "whatsappError": "Inseresch in numero da WhatsApp valid (be cifras).",

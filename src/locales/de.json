@@ -115,6 +115,7 @@
       "displayLabel": "Anzeigename / Label",
       "contactPhoneLabel": "Kontakt-Telefonnummer",
       "contactEmailLabel": "Kontakt-E-Mail-Adresse",
+      "contactAddressLabel": "Firmenadresse",
       "saveSettings": "EINSTELLUNGEN SPEICHERN",
       "whatsappSuccess": "Firmeneinstellungen erfolgreich aktualisiert.",
       "whatsappError": "Bitte geben Sie eine gültige WhatsApp-Nummer ein (nur Ziffern).",

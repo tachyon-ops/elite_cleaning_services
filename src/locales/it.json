@@ -115,6 +115,7 @@
       "displayLabel": "Etichetta di visualizzazione",
       "contactPhoneLabel": "Numero di telefono di contatto",
       "contactEmailLabel": "Indirizzo e-mail di contatto",
+      "contactAddressLabel": "Indirizzo dell'azienda",
       "saveSettings": "SALVA IMPOSTAZIONI",
       "whatsappSuccess": "Impostazioni aziendali aggiornate con successo.",
       "whatsappError": "Inserisci un numero WhatsApp valido (solo cifre).",

@@ -36,6 +36,7 @@ export default function AdminSettingsPage() {
   const [autoCheckout, setAutoCheckout] = useState(true);
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [contactAddress, setContactAddress] = useState("");
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const [whatsappSuccess, setWhatsappSuccess] = useState("");
   const [whatsappError, setWhatsappError] = useState("");
@@ -52,6 +53,7 @@ export default function AdminSettingsPage() {
       const resAuto = await getSystemSetting("auto_checkout");
       const resPhone = await getSystemSetting("contact_phone");
       const resEmail = await getSystemSetting("contact_email");
+      const resAddress = await getSystemSetting("contact_address");
       if (resNum.success && resNum.value) {
         setWhatsappNumber(resNum.value);
       }
@@ -66,6 +68,9 @@ export default function AdminSettingsPage() {
       }
       if (resEmail.success && resEmail.value) {
         setContactEmail(resEmail.value);
+      }
+      if (resAddress.success && resAddress.value) {
+        setContactAddress(resAddress.value);
       }
     } else {
       setError("Failed to load administrative session. Please log in.");
@@ -156,13 +161,22 @@ export default function AdminSettingsPage() {
     const resAuto = await updateSystemSetting("auto_checkout", autoCheckout ? "true" : "false");
     const resPhone = await updateSystemSetting("contact_phone", contactPhone);
     const resEmail = await updateSystemSetting("contact_email", contactEmail);
+    const resAddress = await updateSystemSetting("contact_address", contactAddress);
     
     setSavingWhatsapp(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success) {
       setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
-      setWhatsappError(resNum.error || resLab.error || resAuto.error || resPhone.error || resEmail.error || "Failed to update settings.");
+      setWhatsappError(
+        resNum.error || 
+        resLab.error || 
+        resAuto.error || 
+        resPhone.error || 
+        resEmail.error || 
+        resAddress.error || 
+        "Failed to update settings."
+      );
     }
   };
 
@@ -278,6 +292,19 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="e.g. ops@elite-cleaning.ch"
                   className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  {t("admin.settings.contactAddressLabel")}
+                </label>
+                <textarea
+                  value={contactAddress}
+                  onChange={(e) => setContactAddress(e.target.value)}
+                  placeholder="e.g. Bahnhofstrasse 12, 8001 Zürich"
+                  rows={3}
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold resize-none"
                 />
               </div>
 

@@ -115,6 +115,7 @@
       "displayLabel": "Etiqueta de visualización",
       "contactPhoneLabel": "Número de teléfono de contacto",
       "contactEmailLabel": "Dirección de correo electrónico de contacto",
+      "contactAddressLabel": "Dirección de la empresa",
       "saveSettings": "GUARDAR AJUSTES",
       "whatsappSuccess": "Ajustes de empresa actualizados con éxito.",
       "whatsappError": "Por favor, introduzca un número de WhatsApp válido (solo dígitos).",

@@ -912,13 +912,11 @@ Este contrato é regido pela lei suíça. O foro exclusivo de jurisdição é Zu
 
 ## Diensteanbieter
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zürich  
-Schweiz  
+{{CONTACT_ADDRESS}}  
 
 ## Kontakt
-E-Mail: ops@elite-cleaning.ch  
-Telefon: +41 (0) 44 123 4567  
+E-Mail: {{CONTACT_EMAIL}}  
+Telefon: {{CONTACT_PHONE}}  
 Webseite: www.elite-cleaning.ch  
 
 ## Handelsregister & MWST
@@ -939,13 +937,11 @@ Die Elite Cleaning Platform AG ist Plattformbetreiberin und Vermittlerin. Elite 
 
 ## Service Provider
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zürich  
-Switzerland  
+{{CONTACT_ADDRESS}}  
 
 ## Contact Information
-Email: ops@elite-cleaning.ch  
-Phone: +41 (0) 44 123 4567  
+Email: {{CONTACT_EMAIL}}  
+Phone: {{CONTACT_PHONE}}  
 Website: www.elite-cleaning.ch  
 
 ## Commercial Registration & VAT
@@ -966,13 +962,11 @@ Elite Cleaning Platform AG is the platform operator and broker. Elite does not p
 
 ## Fournisseur de services
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zurich  
-Suisse  
+{{CONTACT_ADDRESS}}  
 
 ## Contact
-E-mail: ops@elite-cleaning.ch  
-Téléphone: +41 (0) 44 123 4567  
+E-mail: {{CONTACT_EMAIL}}  
+Téléphone: {{CONTACT_PHONE}}  
 Web: www.elite-cleaning.ch  
 
 ## Registre du commerce et TVA
@@ -993,13 +987,11 @@ Elite Cleaning Platform AG est l'exploitant et le courtier de la plateforme. Eli
 
 ## Fornitore di servizi
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zurigo  
-Svizzera  
+{{CONTACT_ADDRESS}}  
 
 ## Contatti
-E-mail: ops@elite-cleaning.ch  
-Telefono: +41 (0) 44 123 4567  
+E-mail: {{CONTACT_EMAIL}}  
+Telefono: {{CONTACT_PHONE}}  
 Sito web: www.elite-cleaning.ch  
 
 ## Registro di commercio & IVA
@@ -1020,13 +1012,11 @@ Elite Cleaning Platform AG è il gestore e l'intermediario della piattaforma. El
 
 ## Post responsabel
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Turitg  
-Svizra  
+{{CONTACT_ADDRESS}}  
 
 ## Contact
-E-mail: ops@elite-cleaning.ch  
-Telefon: +41 (0) 44 123 4567  
+E-mail: {{CONTACT_EMAIL}}  
+Telefon: {{CONTACT_PHONE}}  
 Web: www.elite-cleaning.ch  
 
 ## Register commercial
@@ -1047,13 +1037,11 @@ Elite Cleaning Platform AG è la plattafurma d'intermediaziun. Elite na fa nagin
 
 ## Proveedor del servicio
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zúrich  
-Suiza  
+{{CONTACT_ADDRESS}}  
 
 ## Contacto
-E-mail: ops@elite-cleaning.ch  
-Teléfono: +41 (0) 44 123 4567  
+E-mail: {{CONTACT_EMAIL}}  
+Teléfono: {{CONTACT_PHONE}}  
 Sitio web: www.elite-cleaning.ch  
 
 ## Registro mercantil e IVA
@@ -1074,13 +1062,11 @@ Elite Cleaning Platform AG es el operador y corredor de la plataforma. Elite no 
 
 ## Prestador de Serviços
 **Elite Cleaning Platform AG**  
-Bahnhofstrasse 12  
-8001 Zurique  
-Suíça  
+{{CONTACT_ADDRESS}}  
 
 ## Contacto
-E-mail: ops@elite-cleaning.ch  
-Telefone: +41 (0) 44 123 4567  
+E-mail: {{CONTACT_EMAIL}}  
+Telefone: {{CONTACT_PHONE}}  
 Website: www.elite-cleaning.ch  
 
 ## Registo Comercial e IVA

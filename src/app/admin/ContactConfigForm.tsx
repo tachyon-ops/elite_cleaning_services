@@ -9,6 +9,7 @@ interface ContactConfigFormProps {
   initialWhatsappLabel: string;
   initialContactPhone: string;
   initialContactEmail: string;
+  initialContactAddress: string;
   initialAutoCheckout: boolean;
 }
 
@@ -17,6 +18,7 @@ export function ContactConfigForm({
   initialWhatsappLabel,
   initialContactPhone,
   initialContactEmail,
+  initialContactAddress,
   initialAutoCheckout
 }: ContactConfigFormProps) {
   const { t } = useLanguage();
@@ -25,6 +27,7 @@ export function ContactConfigForm({
   const [whatsappLabel, setWhatsappLabel] = useState(initialWhatsappLabel);
   const [contactPhone, setContactPhone] = useState(initialContactPhone);
   const [contactEmail, setContactEmail] = useState(initialContactEmail);
+  const [contactAddress, setContactAddress] = useState(initialContactAddress);
   const [autoCheckout, setAutoCheckout] = useState(initialAutoCheckout);
   
   const [saving, setSaving] = useState(false);
@@ -50,9 +53,10 @@ export function ContactConfigForm({
     const resAuto = await updateSystemSetting("auto_checkout", autoCheckout ? "true" : "false");
     const resPhone = await updateSystemSetting("contact_phone", contactPhone);
     const resEmail = await updateSystemSetting("contact_email", contactEmail);
+    const resAddress = await updateSystemSetting("contact_address", contactAddress);
 
     setSaving(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success) {
       setSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -62,6 +66,7 @@ export function ContactConfigForm({
         resAuto.error || 
         resPhone.error || 
         resEmail.error || 
+        resAddress.error || 
         "Failed to update settings."
       );
     }
@@ -134,6 +139,19 @@ export function ContactConfigForm({
             onChange={(e) => setContactEmail(e.target.value)}
             placeholder="e.g. ops@elite-cleaning.ch"
             className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+          />
+        </div>
+
+        <div>
+          <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+            {t("admin.settings.contactAddressLabel")}
+          </label>
+          <textarea
+            value={contactAddress}
+            onChange={(e) => setContactAddress(e.target.value)}
+            placeholder="e.g. Bahnhofstrasse 12, 8001 Zürich"
+            rows={3}
+            className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold resize-none"
           />
         </div>
 
