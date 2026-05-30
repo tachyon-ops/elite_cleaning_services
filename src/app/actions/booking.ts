@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email-utils";
 
 // 1. Get availability slots
 export async function getAvailableSlots(categorySlug: string, dateStr: string) {
@@ -57,7 +58,7 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string) {
   }
 }
 
-// 2. Send Simulated OTP
+// 2. Send OTP
 export async function sendOtp(email: string) {
   try {
     if (!email || !email.includes("@")) {
@@ -85,10 +86,31 @@ export async function sendOtp(email: string) {
       }
     });
 
-    console.log(`[SIMULATED EMAIL SERVICE] OTP for ${email}: ${otpCode}`);
+    // Send SMTP email
+    await sendEmail({
+      to: email,
+      subject: "Elite Cleaning Services - Verification OTP",
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">ELITE CLEANING GATEWAY</h2>
+          <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the verification code below to confirm your guest email address:</p>
+          <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
+            <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otpCode}</span>
+          </div>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 10 minutes. If you did not request this code, you can ignore this message.</p>
+        </div>
+      `
+    });
+
+    console.log(`[GUEST EMAIL SERVICE] OTP for ${email}: ${otpCode}`);
+
+    const isProduction = process.env.NODE_ENV === "production";
 
     // Return the code for local development ease of validation
-    return { success: true, code: otpCode };
+    return {
+      success: true,
+      code: isProduction ? undefined : otpCode
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -139,7 +161,7 @@ export async function verifyOtp(email: string, code: string) {
 }
 
 // Helper to calculate pricing strictly server-side (prevent tampering)
-function calculatePrice(categorySlug: string, intake: any) {
+function calculatePrice(categorySlug: string, intake: any, scheduledAt?: Date) {
   let basePrice = 0;
   let sizeAdjustment = 0;
   let frequencyDiscount = 0;
@@ -154,7 +176,18 @@ function calculatePrice(categorySlug: string, intake: any) {
     const freq = intake.frequency;
     if (freq === "weekly") frequencyDiscount = 0.15; // 15%
     else if (freq === "bi-weekly") frequencyDiscount = 0.10; // 10%
-    else if (freq === "monthly") frequencyDiscount = 0.05; // 5%
+    else if (freq === "monthly") {
+      const prepay = intake.prepayPeriod || "1";
+      if (prepay === "3") frequencyDiscount = 0.15; // 15%
+      else if (prepay === "6") frequencyDiscount = 0.20; // 20%
+      else frequencyDiscount = 0.05; // 5%
+    }
+    // Preferred time surcharges for commercial
+    if (intake.preferredTime === "after-hours") {
+      addons += 50.00;
+    } else if (intake.preferredTime === "weekends") {
+      addons += 80.00;
+    }
   } else if (categorySlug === "hospitality") {
     basePrice = 120.00;
     const bedrooms = Number(intake.bedrooms) || 1;
@@ -173,10 +206,27 @@ function calculatePrice(categorySlug: string, intake: any) {
     const freq = intake.frequency;
     if (freq === "weekly") frequencyDiscount = 0.15; // 15%
     else if (freq === "bi-weekly") frequencyDiscount = 0.10; // 10%
-    else if (freq === "monthly") frequencyDiscount = 0.05; // 5%
+    else if (freq === "monthly") {
+      const prepay = intake.prepayPeriod || "1";
+      if (prepay === "3") frequencyDiscount = 0.15; // 15%
+      else if (prepay === "6") frequencyDiscount = 0.20; // 20%
+      else frequencyDiscount = 0.05; // 5%
+    }
+    // Weekend surcharge for domestic based on actual date
+    if (scheduledAt) {
+      const day = scheduledAt.getDay();
+      if (day === 0 || day === 6) {
+        addons += 30.00;
+      }
+    }
   }
 
-  const subtotal = basePrice + sizeAdjustment + addons;
+  const singleSubtotal = basePrice + sizeAdjustment + addons;
+  const prepayFactor = (categorySlug === "commercial" || categorySlug === "domestic") && intake.frequency === "monthly"
+    ? Number(intake.prepayPeriod || "1")
+    : 1;
+
+  const subtotal = singleSubtotal * prepayFactor;
   const discountAmount = subtotal * frequencyDiscount;
   const total = subtotal - discountAmount;
   // 30% deposit
@@ -216,7 +266,7 @@ export async function createBooking(payload: {
     }
 
     // Secure price calculation
-    const pricing = calculatePrice(categorySlug, intake);
+    const pricing = calculatePrice(categorySlug, intake, scheduledAt);
 
     const isQuoteVertical = ["aviation", "yacht", "special"].includes(categorySlug);
 

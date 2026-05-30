@@ -1,12 +1,83 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X } from "lucide-react";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
+
+interface CustomSelectProps {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (val: string) => void;
+}
+
+function CustomSelect({ label, value, options, onChange }: CustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOpt = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div className="flex flex-col gap-2 relative w-full" ref={dropdownRef}>
+      <label className="text-caption text-ink font-semibold uppercase">{label}</label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="border border-border bg-bg p-3 rounded-md text-body-md text-left flex justify-between items-center focus:border-accent outline-none hover:border-accent/50 cursor-pointer select-none transition-all duration-200"
+      >
+        <span className="truncate">{selectedOpt?.label}</span>
+        <svg
+          className={`w-4 h-4 text-ink-subtle transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[102%] left-0 right-0 z-50 bg-bg/95 backdrop-blur-md border border-border rounded-md shadow-lg py-1 max-h-60 overflow-y-auto animate-popover-in">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2.5 text-body-sm transition-colors cursor-pointer flex justify-between items-center ${
+                  isSelected
+                    ? "bg-accent-soft/30 text-accent font-semibold"
+                    : "text-ink-muted hover:bg-bg-subtle hover:text-ink"
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <Check className="w-3.5 h-3.5 text-accent stroke-[3]" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BookingPage() {
   const { locale, t: baseT } = useLanguage();
@@ -31,6 +102,7 @@ export default function BookingPage() {
     rooms: 3,
     floors: 1,
     frequency: "one-off",
+    prepayPeriod: "1",
     preferredTime: "after-hours",
     specialRequirements: "",
     
@@ -58,6 +130,145 @@ export default function BookingPage() {
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [selectedWeekday, setSelectedWeekday] = useState<number | null>(null);
+  const [viewDate, setViewDate] = useState(() => {
+    const d = new Date();
+    d.setDate(1);
+    return d;
+  });
+
+  const tomorrow = React.useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const maxSelectableDate = React.useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, []);
+
+  const handlePrevMonth = () => {
+    setViewDate(prev => {
+      const next = new Date(prev);
+      next.setMonth(next.getMonth() - 1);
+      return next;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setViewDate(prev => {
+      const next = new Date(prev);
+      next.setMonth(next.getMonth() + 1);
+      return next;
+    });
+  };
+
+  const isPrevMonthDisabled = React.useMemo(() => {
+    const currentMonthStart = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), 1);
+    return viewDate.getTime() <= currentMonthStart.getTime();
+  }, [viewDate, tomorrow]);
+
+  const isNextMonthDisabled = React.useMemo(() => {
+    const maxMonthStart = new Date(maxSelectableDate.getFullYear(), maxSelectableDate.getMonth(), 1);
+    return viewDate.getTime() >= maxMonthStart.getTime();
+  }, [viewDate, maxSelectableDate]);
+
+  const calendarDays = React.useMemo(() => {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDayInstance = new Date(year, month, 1);
+    const firstDayIndex = firstDayInstance.getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    
+    const daysList = [];
+    for (let i = 0; i < firstDayIndex; i++) {
+      daysList.push(null);
+    }
+    for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+      daysList.push(new Date(year, month, dayNum));
+    }
+    return daysList;
+  }, [viewDate]);
+
+  const isDateDisabled = (dayDate: Date) => {
+    const dTime = dayDate.getTime();
+    const tTime = tomorrow.getTime();
+    const mTime = maxSelectableDate.getTime();
+    if (dTime < tTime || dTime > mTime) {
+      return true;
+    }
+    
+    // Check commercial preferredTime restrictions first
+    if (vertical === "commercial") {
+      const dayOfWeek = dayDate.getDay(); // 0 is Sunday, 6 is Saturday
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      if (intake.preferredTime === "weekends") {
+        if (!isWeekend) return true;
+      } else if (intake.preferredTime === "business-hours" || intake.preferredTime === "after-hours") {
+        if (isWeekend) return true;
+      }
+    }
+
+    // Check preferredWeekday restrictions for recurring weekly/bi-weekly plans
+    const isWeeklyOrBiweekly = intake.frequency === "weekly" || intake.frequency === "bi-weekly";
+    if (isWeeklyOrBiweekly && selectedWeekday !== null) {
+      if (dayDate.getDay() !== selectedWeekday) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const formatDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const getWeekdays = (loc: string) => {
+    const baseDate = new Date(2026, 4, 3); // May 3, 2026 is Sunday
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() + i);
+      days.push(d.toLocaleDateString(loc, { weekday: "short" }));
+    }
+    return days;
+  };
+
+  const getWeekdayOptions = (loc: string) => {
+    const baseDate = new Date(2026, 4, 3); // May 3, 2026 is Sunday
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() + i);
+      days.push({
+        value: d.getDay(),
+        label: d.toLocaleDateString(loc, { weekday: "long" })
+      });
+    }
+    const sunday = days.shift()!;
+    days.push(sunday);
+    return days;
+  };
+
+  const getFilteredWeekdayOptions = (loc: string) => {
+    const allDays = getWeekdayOptions(loc);
+    if (vertical === "commercial") {
+      if (intake.preferredTime === "weekends") {
+        return allDays.filter(d => d.value === 0 || d.value === 6);
+      } else if (intake.preferredTime === "business-hours" || intake.preferredTime === "after-hours") {
+        return allDays.filter(d => d.value !== 0 && d.value !== 6);
+      }
+    }
+    return allDays;
+  };
 
   // Contact State
   const [contact, setContact] = useState({
@@ -128,6 +339,9 @@ export default function BookingPage() {
     let frequencyDiscount = 0;
     let addons = 0;
 
+    let hasAfterHoursSurcharge = false;
+    let hasWeekendSurcharge = false;
+
     if (vertical === "commercial") {
       basePrice = 150.00;
       const area = Number(intake.surfaceArea) || 0;
@@ -137,7 +351,19 @@ export default function BookingPage() {
       const freq = intake.frequency;
       if (freq === "weekly") frequencyDiscount = 0.15;
       else if (freq === "bi-weekly") frequencyDiscount = 0.10;
-      else if (freq === "monthly") frequencyDiscount = 0.05;
+      else if (freq === "monthly") {
+        const prepay = intake.prepayPeriod || "1";
+        if (prepay === "3") frequencyDiscount = 0.15;
+        else if (prepay === "6") frequencyDiscount = 0.20;
+        else frequencyDiscount = 0.05;
+      }
+      if (intake.preferredTime === "after-hours") {
+        addons += 50.00;
+        hasAfterHoursSurcharge = true;
+      } else if (intake.preferredTime === "weekends") {
+        addons += 80.00;
+        hasWeekendSurcharge = true;
+      }
     } else if (vertical === "hospitality") {
       basePrice = 120.00;
       const bedrooms = Number(intake.bedrooms) || 1;
@@ -156,19 +382,41 @@ export default function BookingPage() {
       const freq = intake.frequency;
       if (freq === "weekly") frequencyDiscount = 0.15;
       else if (freq === "bi-weekly") frequencyDiscount = 0.10;
-      else if (freq === "monthly") frequencyDiscount = 0.05;
+      else if (freq === "monthly") {
+        const prepay = intake.prepayPeriod || "1";
+        if (prepay === "3") frequencyDiscount = 0.15;
+        else if (prepay === "6") frequencyDiscount = 0.20;
+        else frequencyDiscount = 0.05;
+      }
+      if (selectedDate) {
+        const d = new Date(selectedDate);
+        const day = d.getDay();
+        if (day === 0 || day === 6) {
+          addons += 30.00;
+          hasWeekendSurcharge = true;
+        }
+      }
     }
 
-    const subtotal = basePrice + sizeAdjustment + addons;
+    const singleSubtotal = basePrice + sizeAdjustment + addons;
+    const prepayFactor = (vertical === "commercial" || vertical === "domestic") && intake.frequency === "monthly"
+      ? Number(intake.prepayPeriod || "1")
+      : 1;
+
+    const subtotal = singleSubtotal * prepayFactor;
     const discountAmount = subtotal * frequencyDiscount;
     const total = subtotal - discountAmount;
     const deposit = total * 0.30;
 
     return {
+      singleSubtotal: Math.round(singleSubtotal * 100) / 100,
+      prepayFactor,
       subtotal: Math.round(subtotal * 100) / 100,
       discount: Math.round(discountAmount * 100) / 100,
       total: Math.round(total * 100) / 100,
-      deposit: Math.round(deposit * 100) / 100
+      deposit: Math.round(deposit * 100) / 100,
+      hasAfterHoursSurcharge,
+      hasWeekendSurcharge
     };
   };
 
@@ -177,6 +425,11 @@ export default function BookingPage() {
   // Handlers
   const handleIntakeChange = (field: string, val: any) => {
     setIntake((prev: any) => ({ ...prev, [field]: val }));
+    if (field === "preferredTime" || field === "frequency") {
+      setSelectedDate("");
+      setSelectedSlot("");
+      setSelectedWeekday(null);
+    }
   };
 
   const triggerSendOtp = async () => {
@@ -188,8 +441,8 @@ export default function BookingPage() {
     setLoading(true);
     const res = await sendOtp(contact.email);
     setLoading(false);
-    if (res.success && res.code) {
-      setOtpCode(res.code);
+    if (res.success) {
+      setOtpCode(res.code || "");
       setOtpSent(true);
     } else {
       setError(res.error || t("failedSendCode"));
@@ -240,16 +493,7 @@ export default function BookingPage() {
     }
   };
 
-  // Helper arrays for dates (next 14 days)
-  const getNext14Days = () => {
-    const dates = [];
-    for (let i = 1; i <= 14; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      dates.push(d.toISOString().split("T")[0]);
-    }
-    return dates;
-  };
+
 
   if (!isValidVertical) {
     if (vertical === "general") {
@@ -269,9 +513,9 @@ export default function BookingPage() {
         <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
           {/* Header */}
           <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center px-6 md:px-16 justify-between sticky top-0 z-50">
-            <Link href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
+            <a href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
               <span className="text-accent font-serif font-bold">E</span>LITE
-            </Link>
+            </a>
             <span className="text-caption text-accent uppercase font-semibold">
               {t("selectDivision")}
             </span>
@@ -396,9 +640,9 @@ export default function BookingPage() {
           <p className="text-body-sm text-ink-muted">
             {t("bespokeInquiryDesc")}
           </p>
-          <Link href={localizeHref("/", locale)} className="block w-full bg-accent hover:bg-accent-hover text-ink-inverse py-3 rounded-md font-semibold transition-colors">
+          <a href={localizeHref("/", locale)} className="block w-full bg-accent hover:bg-accent-hover text-ink-inverse py-3 rounded-md font-semibold transition-colors text-center">
             {t("returnConciergeChat")}
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -407,9 +651,9 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
       <header className="h-[80px] bg-bg border-b border-border flex items-center px-6 md:px-16 justify-between">
-        <Link href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
+        <a href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
           <span className="text-accent font-serif font-bold">E</span>LITE
-        </Link>
+        </a>
         <span className="text-caption text-accent uppercase font-semibold">
           {vertical} {t("bookingFlow")}
         </span>
@@ -435,29 +679,83 @@ export default function BookingPage() {
           </div>
         )}
 
-        <div className="bg-bg border border-border p-8 rounded-lg shadow-sm">
-          {/* STEP 1: INTAKE */}
-          {step === 1 && (
+        {step === 6 ? (
+          <div className="bg-bg border border-border p-8 rounded-lg shadow-sm">
+            <div className="space-y-6 text-center py-8">
+              <div className="h-16 w-16 bg-accent-soft text-accent rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/25">
+                <Check className="w-8 h-8" />
+              </div>
+              <h2 className="text-display-md font-display font-medium text-ink">
+                {vertical === "aviation" || vertical === "yacht" ? t("requestSubmitted") : t("bookingConfirmed")}
+              </h2>
+              <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
+                {vertical === "aviation" || vertical === "yacht" ? (
+                  t("thankYouAviation")
+                    .replace("Thank you.", `Thank you, ${contact.name}.`)
+                    .replace("Merci.", `Merci, ${contact.name}.`)
+                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
+                    .replace("Gracias.", `Gracias, ${contact.name}.`)
+                    .replace("Grazie.", `Grazie, ${contact.name}.`)
+                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
+                ) : (
+                  t("thankYouRegular")
+                    .replace("Thank you.", `Thank you, ${contact.name}.`)
+                    .replace("Merci.", `Merci, ${contact.name}.`)
+                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
+                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
+                    .replace("Gracias.", `Gracias, ${contact.name}.`)
+                    .replace("Grazie.", `Grazie, ${contact.name}.`)
+                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
+                )}
+              </p>
+              <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4 text-accent">
+                {address}<br />
+                {t("scheduled")} {selectedDate} ({selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")})
+              </div>
+              <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
+                {vertical === "aviation" || vertical === "yacht" ? (
+                  (() => {
+                    const parts = t("quoteSentEmail").split("{email}");
+                    return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
+                  })()
+                ) : (
+                  (() => {
+                    const parts = t("pdfReceiptSent").split("{email}");
+                    return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
+                  })()
+                )}
+              </p>
+              <div className="pt-8">
+                <a href={localizeHref("/", locale)} className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-8 py-3 rounded-md transition-colors text-button text-center block sm:inline-block">
+                  {t("returnHome")}
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 bg-bg border border-border p-8 rounded-lg shadow-sm">
+              {/* STEP 1: INTAKE */}
+              {step === 1 && (
             <div className="space-y-6">
               <h2 className="text-display-sm font-display font-medium text-ink">{t("describeReqs")}</h2>
               <p className="text-body-sm text-ink-muted">{t("defineScope")}</p>
 
               {vertical === "commercial" ? (
                 <div className="space-y-4 pt-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("officeType")}</label>
-                    <select
-                      value={intake.officeType}
-                      onChange={(e) => handleIntakeChange("officeType", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                    >
-                      <option value="office">{t("corporateOffice")}</option>
-                      <option value="studio">{t("studioCreative")}</option>
-                      <option value="retail">{t("retailShowroom")}</option>
-                      <option value="gym">{t("gymFitness")}</option>
-                      <option value="restaurant">{t("restaurantKitchen")}</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("officeType")}
+                    value={intake.officeType}
+                    onChange={(val) => handleIntakeChange("officeType", val)}
+                    options={[
+                      { value: "office", label: t("corporateOffice") },
+                      { value: "studio", label: t("studioCreative") },
+                      { value: "retail", label: t("retailShowroom") },
+                      { value: "gym", label: t("gymFitness") },
+                      { value: "restaurant", label: t("restaurantKitchen") }
+                    ]}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
@@ -471,20 +769,33 @@ export default function BookingPage() {
                         className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">{t("frequencies")}</label>
-                      <select
-                        value={intake.frequency}
-                        onChange={(e) => handleIntakeChange("frequency", e.target.value)}
-                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                      >
-                        <option value="one-off">{t("oneOffClean")}</option>
-                        <option value="weekly">{t("weeklySave15")}</option>
-                        <option value="bi-weekly">{t("biWeeklySave10")}</option>
-                        <option value="monthly">{t("monthlySave5")}</option>
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label={t("frequencies")}
+                      value={intake.frequency}
+                      onChange={(val) => handleIntakeChange("frequency", val)}
+                      options={[
+                        { value: "one-off", label: t("oneOffClean") },
+                        { value: "weekly", label: t("weeklySave15") },
+                        { value: "bi-weekly", label: t("biWeeklySave10") },
+                        { value: "monthly", label: t("monthlySave5") }
+                      ]}
+                    />
                   </div>
+
+                  {intake.frequency === "monthly" && (
+                    <div className="pt-2 animate-popover-in">
+                      <CustomSelect
+                        label={t("prepaymentCommitment")}
+                        value={intake.prepayPeriod || "1"}
+                        onChange={(val) => handleIntakeChange("prepayPeriod", val)}
+                        options={[
+                          { value: "1", label: t("prepay1Month") },
+                          { value: "3", label: t("prepay3Months") },
+                          { value: "6", label: t("prepay6Months") }
+                        ]}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2">
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
@@ -523,18 +834,16 @@ export default function BookingPage() {
                 </div>
               ) : vertical === "hospitality" ? (
                 <div className="space-y-4 pt-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("propertyType")}</label>
-                    <select
-                      value={intake.propertyType}
-                      onChange={(e) => handleIntakeChange("propertyType", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                    >
-                      <option value="Airbnb">{t("airbnbApartment")}</option>
-                      <option value="B&B">{t("bedBreakfast")}</option>
-                      <option value="HolidayLet">{t("holidayLetChalet")}</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("propertyType")}
+                    value={intake.propertyType}
+                    onChange={(val) => handleIntakeChange("propertyType", val)}
+                    options={[
+                      { value: "Airbnb", label: t("airbnbApartment") },
+                      { value: "B&B", label: t("bedBreakfast") },
+                      { value: "HolidayLet", label: t("holidayLetChalet") }
+                    ]}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex flex-col gap-2">
@@ -559,17 +868,15 @@ export default function BookingPage() {
                         className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">{t("turnoverFreq")}</label>
-                      <select
-                        value={intake.frequency}
-                        onChange={(e) => handleIntakeChange("frequency", e.target.value)}
-                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                      >
-                        <option value="one-off">{t("turnoverAsRequested")}</option>
-                        <option value="weekly">{t("weeklySave10")}</option>
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label={t("turnoverFreq")}
+                      value={intake.frequency}
+                      onChange={(val) => handleIntakeChange("frequency", val)}
+                      options={[
+                        { value: "one-off", label: t("turnoverAsRequested") },
+                        { value: "weekly", label: t("weeklySave10") }
+                      ]}
+                    />
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">
@@ -585,36 +892,32 @@ export default function BookingPage() {
                     </label>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("keyHandling")}</label>
-                    <select
-                      value={intake.keyHandling}
-                      onChange={(e) => handleIntakeChange("keyHandling", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                    >
-                      <option value="lockbox">{t("lockboxOnSite")}</option>
-                      <option value="smartlock">{t("smartlockApi")}</option>
-                      <option value="in-person">{t("inPersonHandoff")}</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("keyHandling")}
+                    value={intake.keyHandling}
+                    onChange={(val) => handleIntakeChange("keyHandling", val)}
+                    options={[
+                      { value: "lockbox", label: t("lockboxOnSite") },
+                      { value: "smartlock", label: t("smartlockApi") },
+                      { value: "in-person", label: t("inPersonHandoff") }
+                    ]}
+                  />
                 </div>
               ) : vertical === "aviation" ? (
                 <div className="space-y-4 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">{t("aircraftType")}</label>
-                      <select
-                        value={intake.aircraftType}
-                        onChange={(e) => handleIntakeChange("aircraftType", e.target.value)}
-                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
-                      >
-                        <option value="light_jet">{t("lightJet")}</option>
-                        <option value="mid_size_jet">{t("midSizeJet")}</option>
-                        <option value="heavy_jet">{t("heavyJet")}</option>
-                        <option value="turboprop">{t("turboprop")}</option>
-                        <option value="helicopter">{t("helicopter")}</option>
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label={t("aircraftType")}
+                      value={intake.aircraftType}
+                      onChange={(val) => handleIntakeChange("aircraftType", val)}
+                      options={[
+                        { value: "light_jet", label: t("lightJet") },
+                        { value: "mid_size_jet", label: t("midSizeJet") },
+                        { value: "heavy_jet", label: t("heavyJet") },
+                        { value: "turboprop", label: t("turboprop") },
+                        { value: "helicopter", label: t("helicopter") }
+                      ]}
+                    />
                     <div className="flex flex-col gap-2">
                       <label className="text-caption text-ink font-semibold uppercase font-body">{t("tailNumber")}</label>
                       <input
@@ -628,20 +931,18 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("airportFbo")}</label>
-                    <select
-                      value={intake.fboLocation}
-                      onChange={(e) => handleIntakeChange("fboLocation", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
-                    >
-                      <option value="Zürich (LSZH) - Cat Air Service FBO">Zürich (LSZH) - Cat Air Service FBO</option>
-                      <option value="Zürich (LSZH) - Jet Aviation FBO">Zürich (LSZH) - Jet Aviation FBO</option>
-                      <option value="Geneva (LSGG) - Signature FBO">Geneva (LSGG) - Signature FBO</option>
-                      <option value="Dübendorf (LSMD) - Private Hangar">Dübendorf (LSMD) - Private Hangar</option>
-                      <option value="St. Gallen-Altenrhein (LSZR) - FBO">St. Gallen-Altenrhein (LSZR) - FBO</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("airportFbo")}
+                    value={intake.fboLocation}
+                    onChange={(val) => handleIntakeChange("fboLocation", val)}
+                    options={[
+                      { value: "Zürich (LSZH) - Cat Air Service FBO", label: "Zürich (LSZH) - Cat Air Service FBO" },
+                      { value: "Zürich (LSZH) - Jet Aviation FBO", label: "Zürich (LSZH) - Jet Aviation FBO" },
+                      { value: "Geneva (LSGG) - Signature FBO", label: "Geneva (LSGG) - Signature FBO" },
+                      { value: "Dübendorf (LSMD) - Private Hangar", label: "Dübendorf (LSMD) - Private Hangar" },
+                      { value: "St. Gallen-Altenrhein (LSZR) - FBO", label: "St. Gallen-Altenrhein (LSZR) - FBO" }
+                    ]}
+                  />
 
                   <div className="space-y-2">
                     <label className="text-caption text-ink font-semibold uppercase block">{t("detScope")}</label>
@@ -687,19 +988,17 @@ export default function BookingPage() {
               ) : vertical === "yacht" ? (
                 <div className="space-y-4 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-caption text-ink font-semibold uppercase">{t("vesselType")}</label>
-                      <select
-                        value={intake.vesselType}
-                        onChange={(e) => handleIntakeChange("vesselType", e.target.value)}
-                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
-                      >
-                        <option value="motor_yacht">{t("motorYacht")}</option>
-                        <option value="sailing_yacht">{t("sailingYacht")}</option>
-                        <option value="catamaran">{t("catamaranYacht")}</option>
-                        <option value="tender">{t("tenderYacht")}</option>
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label={t("vesselType")}
+                      value={intake.vesselType}
+                      onChange={(val) => handleIntakeChange("vesselType", val)}
+                      options={[
+                        { value: "motor_yacht", label: t("motorYacht") },
+                        { value: "sailing_yacht", label: t("sailingYacht") },
+                        { value: "catamaran", label: t("catamaranYacht") },
+                        { value: "tender", label: t("tenderYacht") }
+                      ]}
+                    />
                     <div className="flex flex-col gap-2">
                       <label className="text-caption text-ink font-semibold uppercase">{t("vesselLength")}</label>
                       <input
@@ -713,20 +1012,18 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("marinaLoc")}</label>
-                    <select
-                      value={intake.marinaLocation}
-                      onChange={(e) => handleIntakeChange("marinaLocation", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
-                    >
-                      <option value="Zürich Wollishofen Marina">Zürich Wollishofen Marina</option>
-                      <option value="Horgen Harbor">Horgen Harbor</option>
-                      <option value="Rapperswil Harbor">Rapperswil Harbor</option>
-                      <option value="Geneva Port Noir">Geneva Port Noir</option>
-                      <option value="Zug Lake Marina">Zug Lake Marina</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("marinaLoc")}
+                    value={intake.marinaLocation}
+                    onChange={(val) => handleIntakeChange("marinaLocation", val)}
+                    options={[
+                      { value: "Zürich Wollishofen Marina", label: "Zürich Wollishofen Marina" },
+                      { value: "Horgen Harbor", label: "Horgen Harbor" },
+                      { value: "Rapperswil Harbor", label: "Rapperswil Harbor" },
+                      { value: "Geneva Port Noir", label: "Geneva Port Noir" },
+                      { value: "Zug Lake Marina", label: "Zug Lake Marina" }
+                    ]}
+                  />
 
                   <div className="space-y-2">
                     <label className="text-caption text-ink font-semibold uppercase block font-body">{t("servScope")}</label>
@@ -797,19 +1094,32 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("frequencies")}</label>
-                    <select
-                      value={intake.frequency}
-                      onChange={(e) => handleIntakeChange("frequency", e.target.value)}
-                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
-                    >
-                      <option value="one-off">{t("oneOffClean")}</option>
-                      <option value="weekly">{t("weeklySave15")}</option>
-                      <option value="bi-weekly">{t("biWeeklySave10")}</option>
-                      <option value="monthly">{t("monthlySave5")}</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label={t("frequencies")}
+                    value={intake.frequency}
+                    onChange={(val) => handleIntakeChange("frequency", val)}
+                    options={[
+                      { value: "one-off", label: t("oneOffClean") },
+                      { value: "weekly", label: t("weeklySave15") },
+                      { value: "bi-weekly", label: t("biWeeklySave10") },
+                      { value: "monthly", label: t("monthlySave5") }
+                    ]}
+                  />
+
+                  {intake.frequency === "monthly" && (
+                    <div className="pt-2 animate-popover-in">
+                      <CustomSelect
+                        label={t("prepaymentCommitment")}
+                        value={intake.prepayPeriod || "1"}
+                        onChange={(val) => handleIntakeChange("prepayPeriod", val)}
+                        options={[
+                          { value: "1", label: t("prepay1Month") },
+                          { value: "3", label: t("prepay3Months") },
+                          { value: "6", label: t("prepay6Months") }
+                        ]}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2">
                     <label className="text-caption text-ink font-semibold uppercase">{t("specialInstructionsPets")}</label>
@@ -843,37 +1153,113 @@ export default function BookingPage() {
               </div>
 
               <div className="space-y-6 pt-4">
+                {(intake.frequency === "weekly" || intake.frequency === "bi-weekly") && (
+                  <div className="space-y-3 pb-2 max-w-md mx-auto animate-popover-in">
+                    <label className="text-caption text-ink font-semibold uppercase tracking-wider block">
+                      {t("preferredWeekday")}
+                    </label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {getFilteredWeekdayOptions(locale).map((day) => {
+                        const isSelected = selectedWeekday === day.value;
+                        return (
+                          <button
+                            key={day.value}
+                            type="button"
+                            onClick={() => {
+                              setSelectedWeekday(day.value);
+                              if (selectedDate) {
+                                const d = new Date(selectedDate);
+                                if (d.getDay() !== day.value) {
+                                  setSelectedDate("");
+                                  setSelectedSlot("");
+                                }
+                              }
+                            }}
+                            className={`px-4 py-2 rounded-full border text-body-sm transition-all duration-200 cursor-pointer select-none ${
+                              isSelected
+                                ? "border-accent bg-accent text-ink-inverse font-semibold"
+                                : "border-border bg-bg hover:border-accent/50 text-ink-muted"
+                            }`}
+                          >
+                            <span className="capitalize">{day.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-caption text-ink font-semibold uppercase tracking-wider block mb-3">
                     {t("serviceDate")}
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                    {getNext14Days().map((d) => {
-                      const dateObj = new Date(d);
-                      const isSelected = selectedDate === d;
-                      return (
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => setSelectedDate(d)}
-                          className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all select-none ${
-                            isSelected
-                              ? "border-accent bg-accent-soft/40 shadow-sm text-ink ring-1 ring-accent scale-[1.02]"
-                              : "border-border hover:border-accent/40 bg-bg hover:bg-bg-subtle text-ink-muted hover:text-ink hover:scale-[1.01]"
-                          }`}
-                        >
-                          <span className="text-[10px] uppercase font-semibold tracking-wider opacity-75">
-                            {dateObj.toLocaleDateString(locale, { weekday: "short" })}
-                          </span>
-                          <span className="text-display-xs font-bold font-serif my-1">
-                            {dateObj.getDate()}
-                          </span>
-                          <span className="text-[10px] uppercase font-medium tracking-wide">
-                            {dateObj.toLocaleDateString(locale, { month: "short" })}
-                          </span>
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-4 max-w-md mx-auto">
+                    {/* Month Pagination Header */}
+                    <div className="flex items-center justify-between border border-border/60 bg-bg p-2 rounded-lg shadow-sm">
+                      <button
+                        type="button"
+                        disabled={isPrevMonthDisabled}
+                        onClick={handlePrevMonth}
+                        className="p-2 border border-border/60 hover:border-accent rounded-md hover:bg-accent-soft/20 text-ink disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                        aria-label="Previous Month"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <span className="font-display font-semibold text-body-md text-ink uppercase tracking-wider">
+                        {viewDate.toLocaleDateString(locale, { month: "long", year: "numeric" })}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isNextMonthDisabled}
+                        onClick={handleNextMonth}
+                        className="p-2 border border-border/60 hover:border-accent rounded-md hover:bg-accent-soft/20 text-ink disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                        aria-label="Next Month"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Weekdays Grid */}
+                    <div className="grid grid-cols-7 gap-2 text-center text-[10px] uppercase font-bold tracking-wider text-ink-subtle">
+                      {getWeekdays(locale).map((wd, i) => (
+                        <div key={i} className="py-1">
+                          {wd}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Days Grid */}
+                    <div className="grid grid-cols-7 gap-2">
+                      {calendarDays.map((dayDate, i) => {
+                        if (!dayDate) {
+                          return <div key={`empty-${i}`} className="aspect-square" />;
+                        }
+
+                        const formatted = formatDateString(dayDate);
+                        const isSelected = selectedDate === formatted;
+                        const disabled = isDateDisabled(dayDate);
+
+                        return (
+                          <button
+                            key={formatted}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => setSelectedDate(formatted)}
+                            className={`aspect-square flex flex-col items-center justify-center border rounded-lg transition-all select-none ${
+                              disabled
+                                ? "border-border/20 opacity-20 bg-bg-subtle cursor-not-allowed"
+                                : isSelected
+                                ? "border-accent bg-accent-soft/40 shadow-sm text-ink ring-1 ring-accent scale-[1.02]"
+                                : "border-border hover:border-accent/40 bg-bg hover:bg-bg-subtle text-ink hover:scale-[1.01]"
+                            }`}
+                          >
+                            <span className="text-body-sm font-semibold font-serif">
+                              {dayDate.getDate()}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -949,10 +1335,10 @@ export default function BookingPage() {
             </div>
           )}
 
-          {/* STEP 3: QUOTE */}
+          {/* STEP 3: QUOTE / REVIEW */}
           {step === 3 && (
             <div className="space-y-6">
-              {vertical === "aviation" || vertical === "yacht" ? (
+              {vertical === "aviation" || vertical === "yacht" || vertical === "special" ? (
                 <div className="space-y-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("bespokeQuoteRequired")}</h2>
                   <p className="text-body-sm text-ink-muted">{t("aviationYachtQuoteDesc")}</p>
@@ -973,55 +1359,75 @@ export default function BookingPage() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <h2 className="text-display-sm font-display font-medium text-ink">{t("lockedInQuote")}</h2>
-                  <p className="text-body-sm text-ink-muted">{t("qualityPledgeNote")}</p>
+                <div className="space-y-6">
+                  <h2 className="text-display-sm font-display font-medium text-ink">{t("reviewDetailsTitle")}</h2>
+                  <p className="text-body-sm text-ink-muted">{t("reviewDetailsSubtitle")}</p>
 
-                  <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6">
-                    <div className="flex justify-between text-body-sm text-ink-muted">
-                      <span>{t("baseFee")}</span>
-                      <span>CHF {vertical === "commercial" ? "150.00" : vertical === "hospitality" ? "120.00" : "80.00"}</span>
+                  <div className="border border-border p-6 rounded-md bg-bg-subtle/50 space-y-4 pt-6 text-body-sm leading-relaxed">
+                    <div className="flex justify-between py-2 border-b border-border/40">
+                      <span className="font-semibold text-ink-muted">{t("selectedService")}</span>
+                      <span className="text-ink font-medium capitalize">{t(`categories.${vertical}.title`)}</span>
                     </div>
-                    {pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
-                      <div className="flex justify-between text-body-sm text-ink-muted">
-                        <span>{t("sizeAdjustment")}</span>
-                        <span>+CHF {Math.round((pricing.subtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * 100) / 100}</span>
+                    {intake.officeType && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("officeType")}</span>
+                        <span className="text-ink font-medium capitalize">{t(intake.officeType === "office" ? "corporateOffice" : intake.officeType === "studio" ? "studioCreative" : intake.officeType === "retail" ? "retailShowroom" : intake.officeType === "gym" ? "gymFitness" : intake.officeType === "restaurant" ? "restaurantKitchen" : intake.officeType)}</span>
                       </div>
                     )}
-                    {intake.linenChange && (
-                      <div className="flex justify-between text-body-sm text-ink-muted">
-                        <span>{t("linenLaundry")}</span>
-                        <span>+CHF 35.00</span>
+                    {intake.surfaceArea && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("surfaceArea")}</span>
+                        <span className="text-ink font-medium">{intake.surfaceArea} m²</span>
                       </div>
                     )}
-                    {pricing.discount > 0 && (
-                      <div className="flex justify-between text-body-sm text-green-600 font-medium">
-                        <span>{t("frequencyDiscount")}</span>
-                        <span>-CHF {pricing.discount}</span>
+                    {intake.bedrooms && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("bedrooms")}</span>
+                        <span className="text-ink font-medium">{intake.bedrooms}</span>
                       </div>
                     )}
-
-                    <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
-                      <span>{t("totalAmount")}</span>
-                      <span>CHF {pricing.total}</span>
+                    {intake.bathrooms && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("bathrooms")}</span>
+                        <span className="text-ink font-medium">{intake.bathrooms}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between py-2 border-b border-border/40">
+                      <span className="font-semibold text-ink-muted">{t("frequencies")}</span>
+                      <span className="text-ink font-medium capitalize">{t(intake.frequency)}</span>
                     </div>
-
-                    <div className="border-t border-border border-dashed pt-4 flex justify-between text-body-md text-accent font-semibold">
-                      <span>{t("stripeDeposit")}</span>
-                      <span>CHF {pricing.deposit}</span>
-                    </div>
+                    {intake.frequency === "monthly" && intake.prepayPeriod && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("prepaymentCommitment")}</span>
+                        <span className="text-ink font-medium">{intake.prepayPeriod} {t("months")}</span>
+                      </div>
+                    )}
+                    {selectedDate && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("selectedDate")}</span>
+                        <span className="text-ink font-medium">{selectedDate}</span>
+                      </div>
+                    )}
+                    {selectedSlot && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("selectedSlot")}</span>
+                        <span className="text-ink font-medium capitalize">{selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
               <div className="flex gap-4 pt-6">
                 <button
+                  type="button"
                   onClick={() => setStep(2)}
                   className="border border-ink text-ink py-3 px-6 rounded-md transition-colors text-button font-semibold"
                 >
                   {t("back")}
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStep(4)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors"
                 >
@@ -1238,61 +1644,88 @@ export default function BookingPage() {
             </div>
           )}
 
-          {/* STEP 6: CONFIRMATION */}
-          {step === 6 && (
-            <div className="space-y-6 text-center py-8">
-              <div className="h-16 w-16 bg-accent-soft text-accent rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/25">
-                <Check className="w-8 h-8" />
-              </div>
-              <h2 className="text-display-md font-display font-medium text-ink">
-                {vertical === "aviation" || vertical === "yacht" ? t("requestSubmitted") : t("bookingConfirmed")}
-              </h2>
-              <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" ? (
-                  t("thankYouAviation")
-                    .replace("Thank you.", `Thank you, ${contact.name}.`)
-                    .replace("Merci.", `Merci, ${contact.name}.`)
-                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
-                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
-                    .replace("Gracias.", `Gracias, ${contact.name}.`)
-                    .replace("Grazie.", `Grazie, ${contact.name}.`)
-                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
-                ) : (
-                  t("thankYouRegular")
-                    .replace("Thank you.", `Thank you, ${contact.name}.`)
-                    .replace("Merci.", `Merci, ${contact.name}.`)
-                    .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
-                    .replace("Obrigado.", `Obrigado, ${contact.name}.`)
-                    .replace("Gracias.", `Gracias, ${contact.name}.`)
-                    .replace("Grazie.", `Grazie, ${contact.name}.`)
-                    .replace("Grazia fitg.", `Grazia fitg, ${contact.name}.`)
-                )}
-              </p>
-              <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4 text-accent">
-                {address}<br />
-                {t("scheduled")} {selectedDate} ({selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")})
-              </div>
-              <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" ? (
-                  (() => {
-                    const parts = t("quoteSentEmail").split("{email}");
-                    return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
-                  })()
-                ) : (
-                  (() => {
-                    const parts = t("pdfReceiptSent").split("{email}");
-                    return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
-                  })()
-                )}
-              </p>
-              <div className="pt-8">
-                <Link href={localizeHref("/", locale)} className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-8 py-3 rounded-md transition-colors text-button">
-                  {t("returnHome")}
-                </Link>
-              </div>
             </div>
-          )}
-        </div>
+
+            {/* Pricing / Booking Summary Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
+              {vertical === "aviation" || vertical === "yacht" || vertical === "special" ? (
+                <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
+                  <h3 className="text-body-md font-display font-medium text-ink tracking-wide uppercase border-b border-border pb-2">
+                    {t("bespokeInquiry")}
+                  </h3>
+                  <div className="space-y-4 text-body-sm leading-relaxed text-ink-muted">
+                    <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
+                      <Clock className="w-4 h-4" /> {t("reviewPending")}
+                    </span>
+                    <p>{t("subcontractorNetworkNote")}</p>
+                    <p>{t("dispatchDeskNote")}</p>
+                    <div className="border-t border-border pt-4 text-caption uppercase text-accent font-semibold flex justify-between">
+                      <span>{t("quoteStatus")}</span>
+                      <span>{t("quotePending")}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
+                  <h3 className="text-body-sm font-semibold text-ink uppercase tracking-wide border-b border-border/60 pb-2">
+                    {t("quoteSummaryTitle")}
+                  </h3>
+                  <div className="space-y-3 pt-2">
+                    {pricing.prepayFactor > 1 && (
+                      <div className="text-body-xs font-semibold uppercase text-accent tracking-wider pb-2 border-b border-border/50">
+                        {t("prepaymentCommitment")}: {pricing.prepayFactor} {t("months")}
+                      </div>
+                    )}
+                    <div className="flex justify-between text-body-sm text-ink-muted">
+                      <span>{t("baseFee")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                      <span>CHF {((vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) * pricing.prepayFactor).toFixed(2)}</span>
+                    </div>
+                    {pricing.singleSubtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("sizeAdjustment")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                        <span>+CHF {((pricing.singleSubtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * pricing.prepayFactor).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {intake.linenChange && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("linenLaundry")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                        <span>+CHF {(35 * pricing.prepayFactor).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.hasAfterHoursSurcharge && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("afterHoursSurcharge")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                        <span>+CHF {(50 * pricing.prepayFactor).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.hasWeekendSurcharge && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("weekendSurcharge")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                        <span>+CHF {((vertical === "commercial" ? 80 : 30) * pricing.prepayFactor).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.discount > 0 && (
+                      <div className="flex justify-between text-body-sm text-green-600 font-medium">
+                        <span>{t("frequencyDiscount")}</span>
+                        <span>-CHF {pricing.discount.toFixed(2)}</span>
+                      </div>
+                    )}
+
+                    <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
+                      <span>{t("totalAmount")}</span>
+                      <span>CHF {pricing.total.toFixed(2)}</span>
+                    </div>
+
+                    <div className="border-t border-border border-dashed pt-4 flex justify-between text-body-md text-accent font-semibold">
+                      <span>{t("stripeDeposit")}</span>
+                      <span>CHF {pricing.deposit.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

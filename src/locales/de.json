@@ -431,7 +431,20 @@
     "failedSendCode": "Fehler beim Senden des Codes",
     "enterVerificationCodeError": "Bitte geben Sie den Verifizierungscode ein",
     "verificationFailed": "Verifizierung fehlgeschlagen",
-    "enterAddressError": "Bitte geben Sie die Adresse des Einsatzortes ein",
-    "failedFinalizeBooking": "Fehler beim Abschliessen der Buchung"
+    "failedFinalizeBooking": "Fehler beim Abschliessen der Buchung",
+    "prepaymentCommitment": "Vorauszahlungsvereinbarung",
+    "prepay1Month": "1 Monat (Sparen Sie 5%)",
+    "prepay3Months": "3 Monate Vorauszahlung (Sparen Sie 15%)",
+    "prepay6Months": "6 Monate Vorauszahlung (Sparen Sie 20%)",
+    "months": "Monate",
+    "preferredWeekday": "Bevorzugter Wochentag",
+    "afterHoursSurcharge": "Spätzuschlag",
+    "weekendSurcharge": "Wochenendzuschlag",
+    "reviewDetailsTitle": "Buchungsdetails überprüfen",
+    "reviewDetailsSubtitle": "Bitte überprüfen Sie Ihre Buchungsdetails, bevor Sie mit der Verifizierung fortfahren.",
+    "selectedService": "Servicebereich",
+    "selectedDate": "Datum",
+    "selectedSlot": "Zeitfenster",
+    "quoteSummaryTitle": "Aktuelle Preisaufstellung"
   }
 }

@@ -431,7 +431,20 @@
     "failedSendCode": "Failed to send code",
     "enterVerificationCodeError": "Please enter the verification code",
     "verificationFailed": "Verification failed",
-    "enterAddressError": "Please enter the service location address",
-    "failedFinalizeBooking": "Failed to finalize booking"
+    "failedFinalizeBooking": "Failed to finalize booking",
+    "prepaymentCommitment": "Prepayment Commitment",
+    "prepay1Month": "1 Month (Save 5%)",
+    "prepay3Months": "3 Months Prepaid (Save 15%)",
+    "prepay6Months": "6 Months Prepaid (Save 20%)",
+    "months": "months",
+    "preferredWeekday": "Preferred Day of the Week",
+    "afterHoursSurcharge": "After-hours surcharge",
+    "weekendSurcharge": "Weekend surcharge",
+    "reviewDetailsTitle": "Review Booking Details",
+    "reviewDetailsSubtitle": "Please review your booking details before proceeding to verification.",
+    "selectedService": "Service Division",
+    "selectedDate": "Date",
+    "selectedSlot": "Time Slot",
+    "quoteSummaryTitle": "Live Quote Breakdown"
   }
 }

@@ -431,7 +431,20 @@
     "failedSendCode": "Impossibile inviare il codice",
     "enterVerificationCodeError": "Inserisci il codice di verifica",
     "verificationFailed": "Verifica fallita",
-    "enterAddressError": "Inserisci l'indirizzo dell'intervento",
-    "failedFinalizeBooking": "Impossibile completare la prenotazione"
+    "failedFinalizeBooking": "Impossibile completare la prenotazione",
+    "prepaymentCommitment": "Impegno di pagamento anticipato",
+    "prepay1Month": "1 mese (Risparmia il 5%)",
+    "prepay3Months": "3 mesi anticipati (Risparmia il 15%)",
+    "prepay6Months": "6 mesi anticipati (Risparmia il 20%)",
+    "months": "mesi",
+    "preferredWeekday": "Giorno della settimana preferito",
+    "afterHoursSurcharge": "Supplemento fuori orario",
+    "weekendSurcharge": "Supplemento fine settimana",
+    "reviewDetailsTitle": "Rivedi i dettagli della prenotazione",
+    "reviewDetailsSubtitle": "Si prega di verificare i dettagli della prenotazione prima di procedere alla verifica.",
+    "selectedService": "Divisione del servizio",
+    "selectedDate": "Data",
+    "selectedSlot": "Fascia oraria",
+    "quoteSummaryTitle": "Riepilogo del preventivo"
   }
 }

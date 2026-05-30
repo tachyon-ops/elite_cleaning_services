@@ -431,7 +431,20 @@
     "failedSendCode": "Falha ao enviar o código",
     "enterVerificationCodeError": "Por favor, insira o código de verificação",
     "verificationFailed": "Falha na verificação",
-    "enterAddressError": "Por favor, insira o endereço de localização do serviço",
-    "failedFinalizeBooking": "Falha ao finalizar a reserva"
+    "failedFinalizeBooking": "Falha ao finalizar a reserva",
+    "prepaymentCommitment": "Compromisso de Pré-pagamento",
+    "prepay1Month": "1 Mês (Poupe 5%)",
+    "prepay3Months": "3 Meses Pré-pagos (Poupe 15%)",
+    "prepay6Months": "6 Meses Pré-pagos (Poupe 20%)",
+    "months": "meses",
+    "preferredWeekday": "Dia da semana preferido",
+    "afterHoursSurcharge": "Taxa de fora de horas",
+    "weekendSurcharge": "Taxa de fim de semana",
+    "reviewDetailsTitle": "Rever Detalhes da Reserva",
+    "reviewDetailsSubtitle": "Por favor rever os detalhes da sua reserva antes de proceder para a verificação.",
+    "selectedService": "Divisão de Serviço",
+    "selectedDate": "Data",
+    "selectedSlot": "Horário",
+    "quoteSummaryTitle": "Resumo do Orçamento"
   }
 }

@@ -431,7 +431,20 @@
     "failedSendCode": "Échec de l'envoi du code",
     "enterVerificationCodeError": "Veuillez saisir le code de vérification",
     "verificationFailed": "Échec de la vérification",
-    "enterAddressError": "Veuillez saisir l'adresse de l'intervention",
-    "failedFinalizeBooking": "Échec de la finalisation de la réservation"
+    "failedFinalizeBooking": "Échec de la finalisation de la réservation",
+    "prepaymentCommitment": "Engagement de prépaiement",
+    "prepay1Month": "1 mois (Économisez 5%)",
+    "prepay3Months": "3 mois prépayés (Économisez 15%)",
+    "prepay6Months": "6 mois prépayés (Économisez 20%)",
+    "months": "mois",
+    "preferredWeekday": "Jour de la semaine préféré",
+    "afterHoursSurcharge": "Supplément heures tardives",
+    "weekendSurcharge": "Supplément week-end",
+    "reviewDetailsTitle": "Vérifier les détails de la réservation",
+    "reviewDetailsSubtitle": "Veuillez vérifier les détails de votre réservation avant de procéder à la vérification.",
+    "selectedService": "Division de service",
+    "selectedDate": "Date",
+    "selectedSlot": "Créneau horaire",
+    "quoteSummaryTitle": "Détail du devis en direct"
   }
 }

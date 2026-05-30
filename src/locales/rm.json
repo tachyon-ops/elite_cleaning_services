@@ -431,7 +431,20 @@
     "failedSendCode": "Fehler trametter code",
     "enterVerificationCodeError": "Endatai il code da verificaziun",
     "verificationFailed": "Verificaziun errada",
-    "enterAddressError": "Endatai il lieu dal servetsch",
-    "failedFinalizeBooking": "Process da buchur na reussì"
+    "failedFinalizeBooking": "Process da buchur na reussì",
+    "prepaymentCommitment": "Obligaziun da precapitalisaziun",
+    "prepay1Month": "1 mais (Spargi 5%)",
+    "prepay3Months": "3 mais precapitalisads (Spargi 15%)",
+    "prepay6Months": "6 mais precapitalisads (Spargi 20%)",
+    "months": "mais",
+    "preferredWeekday": "Di preferì",
+    "afterHoursSurcharge": "Suplement per uras tardivas",
+    "weekendSurcharge": "Suplement per la fin d'emna",
+    "reviewDetailsTitle": "Controllar ils detagls da la reservaziun",
+    "reviewDetailsSubtitle": "San datti controllar ils detagls da Vossa reservaziun avant da far la verificaziun.",
+    "selectedService": "Sectur da servetsch",
+    "selectedDate": "Data",
+    "selectedSlot": "Interval da temp",
+    "quoteSummaryTitle": "Detagl dal preventiv actual"
   }
 }
