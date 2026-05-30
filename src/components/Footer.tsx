@@ -1,0 +1,109 @@
+import React from "react";
+import Link from "next/link";
+import { Phone, Mail } from "lucide-react";
+import { db } from "@/lib/db";
+import { cookies, headers } from "next/headers";
+import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
+const verticalMeta: Record<string, { link: string }> = {
+  domestic: { link: "/book/domestic" },
+  aviation: { link: "/book/aviation" },
+  yacht: { link: "/book/yacht" },
+  commercial: { link: "/book/commercial" },
+  hospitality: { link: "/book/hospitality" },
+  special: { link: "/book/special-services" }
+};
+
+interface CategoryType {
+  slug: string;
+  customPriceText: string | null;
+}
+
+export async function Footer() {
+  const reqHeaders = await headers();
+  const localeHeader = reqHeaders.get("x-locale");
+  const cookieStore = await cookies();
+  const locale = localeHeader || cookieStore.get("NEXT_LOCALE")?.value || "de";
+  const dictionary = getTranslationsForLocale(locale);
+  const t = (key: string) => translate(key, dictionary);
+
+  const activeCategories = await db.serviceCategory.findMany({
+    where: { active: true }
+  }) as CategoryType[];
+
+  const displayOrder = ["domestic", "aviation", "yacht", "commercial", "hospitality", "special"];
+
+  const sortedCategories = activeCategories.sort((a: CategoryType, b: CategoryType) => {
+    const indexA = displayOrder.indexOf(a.slug);
+    const indexB = displayOrder.indexOf(b.slug);
+    const orderA = indexA === -1 ? 999 : indexA;
+    const orderB = indexB === -1 ? 999 : indexB;
+    return orderA - orderB;
+  });
+
+  return (
+    <footer className="bg-ink text-ink-inverse mt-auto border-t border-ink-muted/20">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+        {/* Col 1 */}
+        <div>
+          <span className="font-display text-display-sm font-bold text-ink-inverse tracking-tight">ELITE</span>
+          <p className="text-body-sm text-ink-subtle mt-4 max-w-[25ch]">
+            {t("footerSection.tagline")}
+          </p>
+        </div>
+        {/* Col 2 */}
+        <div>
+          <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.services")}</span>
+          <ul className="space-y-2 text-body-sm text-ink-subtle">
+            {sortedCategories.map((cat: CategoryType) => (
+              <li key={cat.slug}>
+                <Link href={localizeHref(verticalMeta[cat.slug]?.link || `/book/${cat.slug}`, locale)} className="hover:text-ink-inverse transition-colors">
+                  {t(`categories.${cat.slug}.title`)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Col 3 */}
+        <div>
+          <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.company")}</span>
+          <ul className="space-y-2 text-body-sm text-ink-subtle">
+            <li><Link href={localizeHref("/about", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.aboutUs")}</Link></li>
+            <li><Link href={localizeHref("/providers", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.becomePartner")}</Link></li>
+            <li><Link href={localizeHref("/providers/account/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.partnerLogin")}</Link></li>
+            <li><Link href={localizeHref("/admin/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.staffLogin")}</Link></li>
+            <li><Link href={localizeHref("/contact", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.contact")}</Link></li>
+          </ul>
+        </div>
+        {/* Col 4 */}
+        <div>
+          <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.contactHeader")}</span>
+          <div className="space-y-3 text-body-sm text-ink-subtle">
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-accent" />
+              <span>+41 (0) 44 123 4567</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-accent" />
+              <span>ops@elite-cleaning.ch</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Strip */}
+      <div className="border-t border-ink-muted/20 py-8 px-6 md:px-16 text-center text-body-sm text-ink-subtle max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <span>&copy; {new Date().getFullYear()} {t("footerSection.copyright")}</span>
+        <div className="flex items-center gap-6">
+          <LanguageSwitcher />
+          <div className="flex gap-6">
+            <Link href={localizeHref("/legal/privacy", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.privacy")}</Link>
+            <Link href={localizeHref("/legal/terms", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.terms")}</Link>
+            <Link href={localizeHref("/legal/cookies", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.cookies")}</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

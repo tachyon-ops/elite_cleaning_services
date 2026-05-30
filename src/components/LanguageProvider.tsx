@@ -4,6 +4,7 @@ import React, { createContext, useContext, useTransition } from "react";
 import { translate } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { updateUserLocale } from "@/app/actions/locale";
+import { resolveAlternateLocaleUrl } from "@/app/actions/page-translations";
 
 interface LanguageContextProps {
   locale: string;
@@ -21,6 +22,7 @@ export function LanguageProvider({
 }: {
   children: React.ReactNode;
   locale: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dictionary: any;
 }) {
   const router = useRouter();
@@ -35,26 +37,7 @@ export function LanguageProvider({
       await updateUserLocale(newLocale);
       
       const pathname = window.location.pathname;
-      const parts = pathname.split("/");
-      const firstSegment = parts[1];
-      const locales = ["de", "en", "fr", "it", "rm", "es", "pt"];
-      
-      let newPathname = pathname;
-      if (locales.includes(firstSegment)) {
-        if (newLocale === "de") {
-          // Remove prefix for default locale
-          newPathname = pathname.replace(`/${firstSegment}`, "") || "/";
-        } else {
-          // Replace prefix
-          parts[1] = newLocale;
-          newPathname = parts.join("/");
-        }
-      } else {
-        if (newLocale !== "de") {
-          // Add prefix
-          newPathname = `/${newLocale}${pathname === "/" ? "" : pathname}`;
-        }
-      }
+      const newPathname = await resolveAlternateLocaleUrl(pathname, newLocale);
       
       window.location.href = newPathname;
     });

@@ -1,16 +1,17 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Phone, Mail, Award, Clock } from "lucide-react";
+import { Sparkles, Plane, Ship, Building2, Home, Shield, Check, ChevronDown, Award, Clock } from "lucide-react";
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
 import { db } from "@/lib/db";
 import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
 const verticalMeta: Record<string, {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   subtitle: string;
   title: string;
   description: string;
@@ -67,6 +68,11 @@ const verticalMeta: Record<string, {
   }
 };
 
+interface CategoryType {
+  slug: string;
+  customPriceText: string | null;
+}
+
 export default async function HomePage() {
   await checkAndSeedDb();
 
@@ -79,11 +85,11 @@ export default async function HomePage() {
 
   const activeCategories = await db.serviceCategory.findMany({
     where: { active: true }
-  });
+  }) as CategoryType[];
 
   const displayOrder = ["domestic", "aviation", "yacht", "commercial", "hospitality", "special"];
 
-  const sortedCategories = activeCategories.sort((a: any, b: any) => {
+  const sortedCategories = activeCategories.sort((a: CategoryType, b: CategoryType) => {
     const indexA = displayOrder.indexOf(a.slug);
     const indexB = displayOrder.indexOf(b.slug);
     const orderA = indexA === -1 ? 999 : indexA;
@@ -94,64 +100,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
       {/* 4.6 Navigation Bar */}
-      <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-6 md:px-16 sticky top-0 z-50">
-        <div className="flex items-center">
-          <Link href={localizeHref("/", locale)} className="font-display text-display-sm font-medium tracking-[0.15em] text-ink flex items-center gap-1.5 select-none">
-            <span className="text-accent font-serif font-bold">E</span>LITE
-          </Link>
-        </div>
-        <nav className="hidden md:flex gap-8 items-center">
-          {/* Services Dropdown */}
-          <div className="relative group/dropdown py-2">
-            <button className="flex items-center gap-1.5 text-body-sm font-medium text-ink-muted hover:text-ink transition-colors cursor-pointer">
-              {t("nav.services")}
-              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover/dropdown:rotate-180 text-ink-subtle" />
-            </button>
-            <div className="absolute top-[calc(100%-4px)] left-1/2 -translate-x-1/2 pt-3 opacity-0 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:pointer-events-auto transition-all duration-300 ease-out translate-y-2 group-hover/dropdown:translate-y-0 z-50">
-              <div className="bg-bg/95 backdrop-blur-md border border-border/60 rounded-lg shadow-xl p-4 w-72 grid grid-cols-1 gap-1">
-                <span className="text-[10px] text-accent font-semibold tracking-wider px-3 pb-2 uppercase border-b border-border/20 mb-1 block">
-                  Elite Divisions
-                </span>
-                {sortedCategories.map((cat: any) => {
-                  const meta = verticalMeta[cat.slug];
-                  if (!meta) return null;
-                  const IconComponent = meta.icon;
-                  return (
-                    <Link
-                      key={cat.slug}
-                      href={localizeHref(meta.link || `/book/${cat.slug}`, locale)}
-                      className="flex items-center gap-3.5 px-3 py-2 rounded-md hover:bg-accent-soft/45 transition-colors group/item"
-                    >
-                      <div className="h-8 w-8 bg-accent-soft text-accent rounded-sm flex items-center justify-center border border-accent/10 group-hover/item:border-accent/25 transition-colors shrink-0">
-                        <IconComponent className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-body-sm font-semibold text-ink group-hover/item:text-accent transition-colors">
-                          {t(`categories.${cat.slug}.title`)}
-                        </span>
-                        <span className="text-[10px] text-ink-subtle uppercase tracking-wider group-hover/item:text-accent/70 transition-colors">
-                          {t(`categories.${cat.slug}.subtitle`)} • {cat.customPriceText || t(`categories.${cat.slug}.priceText`)}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          <Link href="#how-it-works" className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.howItWorks")}</Link>
-          <Link href={localizeHref("/providers", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
-        </nav>
-        <div className="flex items-center gap-6">
-          <LanguageSwitcher />
-          <Link
-            href={localizeHref("/book/general", locale)}
-            className="bg-accent hover:bg-accent-hover text-ink-inverse text-body-xs tracking-wider uppercase font-semibold py-3 px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer"
-          >
-            {t("nav.getQuote")}
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       {/* 5.1 Hero Section */}
       <section className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] lg:min-h-[720px] bg-bg border-b border-border">
@@ -248,7 +197,7 @@ export default async function HomePage() {
 
         {/* Dynamic Cards Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedCategories.map((cat: any, idx: number) => {
+          {sortedCategories.map((cat: CategoryType, idx: number) => {
             const meta = verticalMeta[cat.slug];
             if (!meta) return null;
             const IconComponent = meta.icon;
@@ -456,68 +405,7 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-ink text-ink-inverse mt-auto border-t border-ink-muted/20">
-        <div className="max-w-7xl mx-auto px-6 py-16 md:px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Col 1 */}
-          <div>
-            <span className="font-display text-display-sm font-bold text-ink-inverse tracking-tight">ELITE</span>
-            <p className="text-body-sm text-ink-subtle mt-4 max-w-[25ch]">
-              {t("footerSection.tagline")}
-            </p>
-          </div>
-          {/* Col 2 */}
-          <div>
-            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.services")}</span>
-            <ul className="space-y-2 text-body-sm text-ink-subtle">
-              {sortedCategories.map((cat: any) => (
-                <li key={cat.slug}>
-                  <Link href={localizeHref(verticalMeta[cat.slug]?.link || `/book/${cat.slug}`, locale)} className="hover:text-ink-inverse transition-colors">
-                    {t(`categories.${cat.slug}.title`)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* Col 3 */}
-          <div>
-            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.company")}</span>
-            <ul className="space-y-2 text-body-sm text-ink-subtle">
-              <li><Link href={localizeHref("/about", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.aboutUs")}</Link></li>
-              <li><Link href={localizeHref("/providers", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.becomePartner")}</Link></li>
-              <li><Link href={localizeHref("/providers/account/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.partnerLogin")}</Link></li>
-              <li><Link href={localizeHref("/admin/login", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.staffLogin")}</Link></li>
-              <li><Link href={localizeHref("/contact", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.contact")}</Link></li>
-            </ul>
-          </div>
-          {/* Col 4 */}
-          <div>
-            <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.contactHeader")}</span>
-            <div className="space-y-3 text-body-sm text-ink-subtle">
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-accent" />
-                <span>+41 (0) 44 123 4567</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-accent" />
-                <span>ops@elite-cleaning.ch</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Strip */}
-        <div className="border-t border-ink-muted/20 py-8 px-6 md:px-16 text-center text-body-sm text-ink-subtle max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <span>&copy; {new Date().getFullYear()} {t("footerSection.copyright")}</span>
-          <div className="flex items-center gap-6">
-            <LanguageSwitcher />
-            <div className="flex gap-6">
-              <Link href={localizeHref("/legal/privacy", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.privacy")}</Link>
-              <Link href={localizeHref("/legal/terms", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.terms")}</Link>
-              <Link href={localizeHref("/legal/cookies", locale)} className="hover:text-ink-inverse transition-colors">{t("footerSection.cookies")}</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Floating WhatsApp Concierge Widget */}
       <div className="fixed bottom-6 right-6 z-50">

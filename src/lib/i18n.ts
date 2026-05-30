@@ -74,6 +74,45 @@ export function localizeHref(href: string, locale: string): string {
   }
 
   const cleanLocale = (locale || "de").toLowerCase().slice(0, 2);
+
+  const legalMappings: Record<string, Record<string, string>> = {
+    "/legal/privacy": {
+      de: "/rechtliches/datenschutz",
+      en: "/legal/privacy",
+      fr: "/juridique/confidentialite",
+      it: "/legale/privacy",
+      rm: "/legal/datas",
+      es: "/legal/privacidad",
+      pt: "/legal/privacidade"
+    },
+    "/legal/terms": {
+      de: "/rechtliches/agb",
+      en: "/legal/terms",
+      fr: "/juridique/conditions-generales",
+      it: "/legale/termini",
+      rm: "/legal/cundizions",
+      es: "/legal/condiciones",
+      pt: "/legal/termos"
+    },
+    "/legal/cookies": {
+      de: "/rechtliches/cookies",
+      en: "/legal/cookies",
+      fr: "/juridique/cookies",
+      it: "/legale/cookie",
+      rm: "/legal/cookies",
+      es: "/legal/cookies",
+      pt: "/legal/cookies"
+    }
+  };
+
+  if (legalMappings[href]) {
+    const mapped = legalMappings[href][cleanLocale];
+    if (mapped) {
+      // Note that mapped contains the slug path (with a leading slash), so we return it directly or with prefix
+      return cleanLocale === "de" ? mapped : `/${cleanLocale}${mapped}`;
+    }
+  }
+
   const pathParts = href.split("/");
   const firstSegment = pathParts[1]; // e.g. "providers" or "book"
 
