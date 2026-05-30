@@ -61,24 +61,23 @@ describe("Middleware i18n Browser Detection and Cookie Persistence", () => {
     expect(setCookieHeader).toContain("NEXT_LOCALE=fr");
   });
 
-  it("should detect German from Accept-Language when no cookie is set, proceed with prefixless rewrite, and set cookie to de", async () => {
+  it("should detect German from Accept-Language when no cookie is set and redirect to /de", async () => {
     const req = createRequest("/", { "accept-language": "de-CH,de;q=0.9,en;q=0.5" });
     const res = await middleware(req);
     
-    expect(res.status).toBe(200);
-    expect(res.headers.get("location")).toBeNull();
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3000/de");
     
     const setCookieHeader = res.headers.get("set-cookie");
     expect(setCookieHeader).toContain("NEXT_LOCALE=de");
   });
 
-  it("should use cookie value if cookie is present, overriding Accept-Language", async () => {
+  it("should redirect root / to the cookie value if cookie is present, overriding Accept-Language", async () => {
     const req = createRequest("/", { "accept-language": "fr-CH,fr;q=0.9" }, { NEXT_LOCALE: "de" });
     const res = await middleware(req);
     
-    expect(res.status).toBe(200);
-    expect(res.headers.get("location")).toBeNull();
-    expect(res.headers.get("x-locale")).toBe("de");
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3000/de");
   });
 
   it("should respect URL prefix even if it contradicts cookie and browser headers, updating the cookie", async () => {
@@ -91,6 +90,22 @@ describe("Middleware i18n Browser Detection and Cookie Persistence", () => {
     const setCookieHeader = res.headers.get("set-cookie");
     expect(setCookieHeader).toContain("NEXT_LOCALE=fr");
     expect(res.headers.get("x-locale")).toBe("fr");
+  });
+
+  it("should redirect a prefixless URL to the prefixed canonical URL matching user's preferred locale", async () => {
+    const req = createRequest("/partner", {}, { NEXT_LOCALE: "en" });
+    const res = await middleware(req);
+    
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3000/en/providers");
+  });
+
+  it("should redirect a prefixless URL to the prefixed default locale URL if no preference is set", async () => {
+    const req = createRequest("/partner", { "accept-language": "de-CH,de;q=0.9" });
+    const res = await middleware(req);
+    
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3000/de/partner");
   });
 
   it("should bypass redirects and cookie setting on POST requests (Server Actions)", async () => {

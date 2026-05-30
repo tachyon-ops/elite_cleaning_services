@@ -51,10 +51,10 @@ describe("i18n-utils", () => {
   });
 
   describe("localizeHref helper", () => {
-    it("should return localized path for default locale 'de' (prefix-less but slug-localized)", () => {
-      expect(localizeHref("/", "de")).toBe("/");
-      expect(localizeHref("/book/domestic", "de")).toBe("/buchen/haus");
-      expect(localizeHref("/providers", "de")).toBe("/partner");
+    it("should return localized path for default locale 'de' (prefixed and slug-localized)", () => {
+      expect(localizeHref("/", "de")).toBe("/de");
+      expect(localizeHref("/book/domestic", "de")).toBe("/de/buchen/haus");
+      expect(localizeHref("/providers", "de")).toBe("/de/partner");
     });
 
     it("should return prefixed and slug-localized path for other locales", () => {

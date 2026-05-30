@@ -175,7 +175,7 @@ export function localizeHref(href: string, locale: string): string {
   if (legalMappings[href]) {
     const mapped = legalMappings[href][cleanLocale];
     if (mapped) {
-      return cleanLocale === "de" ? mapped : `/${cleanLocale}${mapped}`;
+      return `/${cleanLocale}${mapped}`;
     }
   }
 
@@ -205,10 +205,6 @@ export function localizeHref(href: string, locale: string): string {
     }
     
     localizedHref = pathParts.join("/");
-  }
-
-  if (cleanLocale === "de") {
-    return localizedHref;
   }
 
   return `/${cleanLocale}${localizedHref === "/" ? "" : localizedHref}`;

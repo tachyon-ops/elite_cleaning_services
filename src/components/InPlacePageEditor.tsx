@@ -263,7 +263,7 @@ export function InPlacePageEditor({
               </label>
               <div className="flex items-center bg-[#0c0c0c] border border-[#262626] rounded px-4 py-2.5 focus-within:border-accent/50 transition-colors">
                 <span className="text-ink-subtle text-body-sm font-mono select-none pr-1">
-                  {activeTab === "de" ? "/" : `/${activeTab}/`}
+                  {`/${activeTab}/`}
                 </span>
                 <input
                   type="text"

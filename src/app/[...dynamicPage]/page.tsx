@@ -99,9 +99,7 @@ export default async function DynamicStaticPage({ params }: PageProps) {
       if (targetTranslation) {
         // Redirect to the correct localized canonical slug
         const redirectSlug = targetTranslation.slug;
-        const redirectUrl = locale === DEFAULT_LOCALE 
-          ? `/${redirectSlug}`
-          : `/${locale}/${redirectSlug}`;
+        const redirectUrl = `/${locale}/${redirectSlug}`;
         
         return redirect(redirectUrl);
       }

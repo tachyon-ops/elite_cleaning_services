@@ -162,12 +162,7 @@ function getLocalizationInfo(pathname: string) {
 
   const internalPathname = "/" + internalParts.filter(Boolean).join("/");
   const canonicalPathnameParts = canonicalParts.filter(Boolean);
-  let canonicalPathname = "";
-  if (urlLocale === DEFAULT_LOCALE) {
-    canonicalPathname = "/" + canonicalPathnameParts.join("/");
-  } else {
-    canonicalPathname = `/${urlLocale}` + (canonicalPathnameParts.length ? "/" + canonicalPathnameParts.join("/") : "");
-  }
+  const canonicalPathname = `/${urlLocale}` + (canonicalPathnameParts.length ? "/" + canonicalPathnameParts.join("/") : "");
 
   return {
     urlLocale,
@@ -199,11 +194,7 @@ function getCanonicalPathname(internalPathname: string, targetLocale: string) {
   }
   
   const finalPath = remaining.filter(Boolean);
-  if (targetLocale === DEFAULT_LOCALE) {
-    return "/" + finalPath.join("/");
-  } else {
-    return `/${targetLocale}` + (finalPath.length ? "/" + finalPath.join("/") : "");
-  }
+  return `/${targetLocale}` + (finalPath.length ? "/" + finalPath.join("/") : "");
 }
 
 export async function middleware(request: NextRequest) {
@@ -243,41 +234,49 @@ export async function middleware(request: NextRequest) {
     return rewriteResp;
   }
 
-  // If the path contains the DEFAULT locale prefix (e.g. /de/...), redirect to the prefixless URL
-  if (locInfo.urlLocale === DEFAULT_LOCALE && locInfo.hasPrefix) {
-    const cleanPath = pathname.replace(`/${DEFAULT_LOCALE}`, "") || "/";
-    const redirectUrl = new URL(cleanPath, request.url);
+  // Redirect root / to the browser/cookie locale
+  if (pathname === "/") {
+    const hasCookie = request.cookies.has("NEXT_LOCALE");
+    const rawLocale = request.cookies.get("NEXT_LOCALE")?.value || getBrowserLocale(request) || DEFAULT_LOCALE;
+    const cookieLocale = LOCALES.includes(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+
+    const redirectUrl = new URL(`/${cookieLocale}`, request.url);
+    redirectUrl.search = request.nextUrl.search;
+    
     const redirectResp = NextResponse.redirect(redirectUrl);
     applySessionState(redirectResp);
-    redirectResp.cookies.set("NEXT_LOCALE", DEFAULT_LOCALE, COOKIE_OPTIONS);
+    if (!hasCookie) {
+      redirectResp.cookies.set("NEXT_LOCALE", cookieLocale, COOKIE_OPTIONS);
+    }
+    return redirectResp;
+  }
+
+  // If the path DOES NOT have a locale prefix (e.g. /partner or /book/domestic)
+  if (!locInfo.hasPrefix) {
+    const hasCookie = request.cookies.has("NEXT_LOCALE");
+    const rawLocale = request.cookies.get("NEXT_LOCALE")?.value || getBrowserLocale(request) || DEFAULT_LOCALE;
+    const cookieLocale = LOCALES.includes(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+
+    const canonicalPath = getCanonicalPathname(locInfo.internalPathname, cookieLocale);
+    const redirectUrl = new URL(canonicalPath, request.url);
+    redirectUrl.search = request.nextUrl.search;
+    
+    const redirectResp = NextResponse.redirect(redirectUrl);
+    applySessionState(redirectResp);
+    if (!hasCookie) {
+      redirectResp.cookies.set("NEXT_LOCALE", cookieLocale, COOKIE_OPTIONS);
+    }
     return redirectResp;
   }
 
   // If the requested pathname is not in its canonical form for its active locale (e.g. /fr/providers instead of /fr/partenaires)
   if (pathname !== locInfo.canonicalPathname) {
     const redirectUrl = new URL(locInfo.canonicalPathname, request.url);
+    redirectUrl.search = request.nextUrl.search;
     const redirectResp = NextResponse.redirect(redirectUrl);
     applySessionState(redirectResp);
     redirectResp.cookies.set("NEXT_LOCALE", locInfo.urlLocale, COOKIE_OPTIONS);
     return redirectResp;
-  }
-
-  // If the path DOES NOT have a locale prefix (e.g. /book/domestic or /)
-  if (!locInfo.hasPrefix) {
-    const hasCookie = request.cookies.has("NEXT_LOCALE");
-    const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value || getBrowserLocale(request) || DEFAULT_LOCALE;
-
-    // If the cookie locale is not the default locale, redirect to the prefixed canonical URL
-    if (cookieLocale !== DEFAULT_LOCALE && LOCALES.includes(cookieLocale)) {
-      const canonicalPath = getCanonicalPathname(locInfo.internalPathname, cookieLocale);
-      const redirectUrl = new URL(canonicalPath, request.url);
-      const redirectResp = NextResponse.redirect(redirectUrl);
-      applySessionState(redirectResp);
-      if (!hasCookie) {
-        redirectResp.cookies.set("NEXT_LOCALE", cookieLocale, COOKIE_OPTIONS);
-      }
-      return redirectResp;
-    }
   }
 
   // Rewrite to the internal route path (e.g. /providers/apply)
