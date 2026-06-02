@@ -1140,8 +1140,21 @@ A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualid
       console.log("Domestic cleaning seeded successfully.");
     }
 
+    // Check if moveout is missing and seed it
+    const moveoutCat = await db.serviceCategory.findUnique({
+      where: { slug: "moveout" }
+    });
+
+    if (!moveoutCat) {
+      console.log("Moveout category missing. Seeding moveout category...");
+      await db.serviceCategory.create({
+        data: { slug: "moveout", name: "Move-Out & End Clean", vertical: "moveout", pricingModel: "quote_on_request", active: true }
+      });
+      console.log("Moveout cleaning seeded successfully.");
+    }
+
     const count = await db.serviceCategory.count();
-    if (count > 1) { // 1 if only domestic was just seeded, but normally it should seed everything if completely empty
+    if (count > 2) { // 2 if only domestic and moveout exist, but normally it should seed everything if completely empty
       console.log("Database already seeded. Categories count:", count);
       return;
     }
@@ -1153,7 +1166,8 @@ A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualid
       { slug: "hospitality", name: "Hospitality & Turnovers", vertical: "hospitality", pricingModel: "instant", active: true },
       { slug: "aviation", name: "Aviation Detailing", vertical: "aviation", pricingModel: "quote_on_request", active: true },
       { slug: "yacht", name: "Yacht & Marine Care", vertical: "yacht", pricingModel: "quote_on_request", active: true },
-      { slug: "special", name: "Biohazard & Post-Incident", vertical: "special", pricingModel: "quote_on_request", active: true }
+      { slug: "special", name: "Biohazard & Post-Incident", vertical: "special", pricingModel: "quote_on_request", active: true },
+      { slug: "moveout", name: "Move-Out & End Clean", vertical: "moveout", pricingModel: "quote_on_request", active: true }
     ];
 
     for (const cat of categories) {

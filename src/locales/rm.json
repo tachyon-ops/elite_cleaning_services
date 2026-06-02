@@ -166,9 +166,15 @@
     },
     "special": {
       "title": "Biohazard & Tatortreinigung",
-      "subtitle": "SERVISCHS SPEZIALS",
-      "description": "Pulizia da restauraziun, sustegn tar accidents ed agid cun sindrom da Diogenes. Aburrament confidenzial.",
-      "priceText": "SULET TRAS TELEFON"
+      "subtitle": "NETSCHIDADAS SPEZIALAS",
+      "description": "Netschidadas da restauraziun, sustegn tar accidents u syndrome da Diogene. Tractament discret.",
+      "priceText": "EXCLUSIV TELEFONIC"
+    },
+    "moveout": {
+      "title": "Netschidadas da midada",
+      "subtitle": "MIDADA DA HABITAZIUN",
+      "description": "Netschidadas profundas cun garanzia da surdada per la midada da habitaziun.",
+      "priceText": "OFFERTA TRAS INQUISTA"
     }
   },
   "preview": {
@@ -212,7 +218,7 @@
     "q2": "Nua operais vus?",
     "a2": "Nus cumnzain noss servischs a Turitg, a la Riva da Turitg e vischinanzas, cun l'intenziun da s'extender sin auters chantuns pli tard.",
     "q3": "Tge schabegia sche insatge vegn donnegià durant in servisch?",
-    "a3": "Tuts subinterprendiders assignads ston avair ina assicuranza da responsabladad. En il cas rar da donns, Elite mediatescha il cas e garantescha ina schliaziun tras la promessa da nossa plattafurma.",
+    "a3": "Tuts subinterprendiders assignads ston avair ina assicuranza da responsabladad. En il cas rar da donns, Elite mediatescha il cas e garantescha ina schliaziun tras la promessa da nostra plattafurma.",
     "q4": "Èn mias datas segiras tenor GDPR?",
     "a4": "Gea. Tuts servers d'applicaziun, instanzas Supabase e protocols èn ospitads en centers da datas europeics. Nus na suandain nagins cookies senza consentiment, e ti po exportar u stidar tias datas da cont a mintga mument."
   },
@@ -290,8 +296,9 @@
       "catDomestic": "Residenzial (Villas & Abitaziuns)",
       "catCommercial": "Commercial & Biros",
       "catHospitality": "Hotellaria & Airbnb",
-      "catAviation": "Aviatica (Jets & Helicopter)",
-      "catYacht": "Yachts & Marina"
+      "catAviation": "Luftfahrt (Jets & Helikopter)",
+      "catYacht": "Yachts & Marina",
+      "catMoveout": "Netschidadas da midada"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Tut ils dretgs da partenaris svizzers reservads."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SERVS SPEZIALS",
     "catSpecialDesc": "Nettegiada da restauraziun, agiuda post-traumatica e stgamiada da Messi-wohnung. Discreziun totala.",
     "catSpecialPrice": "EXCLUSIV TELEFONIC",
+    "catMoveoutTitle": "Netschidadas da midada",
+    "catMoveoutSub": "MIDADA DA HABITAZIUN",
+    "catMoveoutDesc": "Netschidadas profundas cun garanzia da surdada per la midada da habitaziun.",
+    "catMoveoutPrice": "OFFERTA TRAS INQUISTA",
+    "moveoutQuoteDesc": "Netschidadas da midada basegnan ina controlla manuala ed ina calculaziun individuala.",
+    "thankYouMoveout": "Engraziel fitg. Vossa dumonda per netschidadas da midada è vegnida tramessa per controlla. Nus As infurmain sut:",
+    "moveoutLocationPlaceholder": "p. ex. Seestrasse 10, 8002 Zürich",
+    "handoverGuaranteeOption": "Cun garanzia da surdada (Handover Guarantee)",
+    "windowShuttersOption": "Netschidadas da fanestras e stailas",
+    "ovenDeepCleanOption": "Netschidadas profundas da furn e capiergnas",
+    "balconyTerraceOption": "Netschidadas da balcun u terrassa",
+    "carpetSteamOption": "Netschidadas a vapur da teppichs",
+    "moveoutRooms": "Dumber da stanzas (inclusiv stanza da viver)",
     "bookingFlow": "Process da Reservaziun",
     "intake": "Angabas",
     "schedule": "Termin",

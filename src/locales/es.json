@@ -165,10 +165,16 @@
       "priceText": "A PARTIR DE CHF 120"
     },
     "special": {
-      "title": "Riesgo Biológico y Post-Incidentes",
-      "subtitle": "SERVICIOS ESPECIALES",
-      "description": "Limpieza restauradora, asistencia post-incidentes y apoyo en casos de síndrome de Diógenes. Reserva confidencial.",
-      "priceText": "SOLO POR TELÉFONO"
+      "title": "Biohazard & Limpieza forense",
+      "subtitle": "LIMPIEZA ESPECIAL",
+      "description": "Limpieza de restauración especializada, asistencia post-incidente y soporte por acumulación compulsiva. Discreción absoluta.",
+      "priceText": "SÓLO POR TELÉFONO"
+    },
+    "moveout": {
+      "title": "Limpieza de fin de alquiler",
+      "subtitle": "FIN DE ALQUILER",
+      "description": "Limpieza profunda con garantía de entrega para la devolución de viviendas.",
+      "priceText": "PRESUPUESTO BAJO PETICIÓN"
     }
   },
   "preview": {
@@ -290,8 +296,9 @@
       "catDomestic": "Residencial (Villas y Apartamentos)",
       "catCommercial": "Comercial y Oficinas",
       "catHospitality": "Hostelería y Airbnb",
-      "catAviation": "Aviación (Jets y Helicópteros)",
-      "catYacht": "Yates y Marina"
+      "catAviation": "Aviación (Jets & Helicópteros)",
+      "catYacht": "Yates y Marina",
+      "catMoveout": "Limpieza de fin de alquiler"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Reservados todos los derechos de los socios suizos."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SERVICIOS ESPECIALES",
     "catSpecialDesc": "Limpieza restauradora, asistencia post-trauma y soporte para acumulación. Reserva confidencial.",
     "catSpecialPrice": "SÓLO POR TELÉFONO",
+    "catMoveoutTitle": "Limpieza de fin de alquiler",
+    "catMoveoutSub": "FIN DE ALQUILER",
+    "catMoveoutDesc": "Limpieza profunda con garantía de entrega para la devolución de viviendas.",
+    "catMoveoutPrice": "PRESUPUESTO BAJO PETICIÓN",
+    "moveoutQuoteDesc": "Las limpiezas de fin de alquiler requieren una revisión manual y presupuesto personalizado.",
+    "thankYouMoveout": "Gracias. Su solicitud de limpieza de fin de alquiler ha sido enviada para su revisión. Le informaremos en:",
+    "moveoutLocationPlaceholder": "p. ej. Seestrasse 10, 8002 Zúrich",
+    "handoverGuaranteeOption": "Con garantía de entrega (Handover Guarantee)",
+    "windowShuttersOption": "Limpieza de ventanas y persianas",
+    "ovenDeepCleanOption": "Limpieza profunda de horno y campana",
+    "balconyTerraceOption": "Limpieza de balcón o terraza",
+    "carpetSteamOption": "Limpieza a vapor de alfombras",
+    "moveoutRooms": "Número de habitaciones (incluyendo salón)",
     "bookingFlow": "Flujo de Reserva",
     "intake": "Datos Iniciales",
     "schedule": "Calendario",

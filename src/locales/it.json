@@ -165,10 +165,16 @@
       "priceText": "A PARTIRE DA CHF 120"
     },
     "special": {
-      "title": "Rischio Biologico & Post-Incidente",
-      "subtitle": "SERVIZI SPECIALI",
-      "description": "Pulizia di ripristino, assistenza post-incidente e supporto per accumulo patologico. Prenotazione riservata.",
+      "title": "Biohazard & Pulizia scene del crimine",
+      "subtitle": "PULIZIA SPECIALE",
+      "description": "Pulizia di ripristino specialistica, assistenza post-incidente e supporto per sindrome di Diogene. Discrezione assoluta.",
       "priceText": "SOLO TELEFONICAMENTE"
+    },
+    "moveout": {
+      "title": "Pulizia di fine locazione",
+      "subtitle": "FINE LOCAZIONE",
+      "description": "Pulizia profonda con garanzia di consegna per la riconsegna dell'appartamento.",
+      "priceText": "PREVENTIVO SU RICHIESTA"
     }
   },
   "preview": {
@@ -291,7 +297,8 @@
       "catCommercial": "Commerciale & Uffici",
       "catHospitality": "Ospitalità & Airbnb",
       "catAviation": "Aviazione (Jet & Elicotteri)",
-      "catYacht": "Yacht & Nautica"
+      "catYacht": "Yacht & Nautica",
+      "catMoveout": "Pulizia fine locazione"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Tutti i diritti riservati ai partner svizzeri."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SERVIZI SPECIALI",
     "catSpecialDesc": "Pulizia di ripristino, assistenza post-trauma e supporto per accumulo. Prenotazione riservata.",
     "catSpecialPrice": "SOLO TELEFONICAMENTE",
+    "catMoveoutTitle": "Pulizia di fine locazione",
+    "catMoveoutSub": "FINE LOCAZIONE",
+    "catMoveoutDesc": "Pulizia profonda con garanzia di consegna per la riconsegna dell'appartamento.",
+    "catMoveoutPrice": "PREVENTIVO SU RICHIESTA",
+    "moveoutQuoteDesc": "Le pulizie di fine locazione richiedono una revisione manuale e un preventivo personalizzato.",
+    "thankYouMoveout": "Grazie. La vostra richiesta di pulizia di fine locazione è stata inoltrata per la revisione. Vi informeremo a:",
+    "moveoutLocationPlaceholder": "es. Seestrasse 10, 8002 Zurigo",
+    "handoverGuaranteeOption": "Con garanzia di consegna (Handover Guarantee)",
+    "windowShuttersOption": "Pulizia finestre e tapparelle",
+    "ovenDeepCleanOption": "Pulizia profonda forno e cappa aspirante",
+    "balconyTerraceOption": "Pulizia balcone o terrazza",
+    "carpetSteamOption": "Pulizia a vapore dei tappeti",
+    "moveoutRooms": "Numero di stanze (salotto incluso)",
     "bookingFlow": "Flusso di Prenotazione",
     "intake": "Dati Iniziali",
     "schedule": "Calendario",

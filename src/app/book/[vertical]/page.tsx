@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare } from "lucide-react";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
 
@@ -167,7 +167,12 @@ export default function BookingPage() {
     vesselType: "motor_yacht",
     vesselLength: 30,
     marinaLocation: "Zürich Wollishofen Marina",
-    yachtScope: ["deck_wash"]
+    yachtScope: ["deck_wash"],
+
+    // Move-out fields
+    moveoutRooms: 3,
+    moveoutArea: 80,
+    moveoutScope: ["handover_guarantee"]
   });
 
   // Schedule State
@@ -350,7 +355,7 @@ export default function BookingPage() {
   }, []);
 
   // Validate Vertical
-  const isValidVertical = ["commercial", "hospitality", "domestic", "aviation", "yacht"].includes(vertical) && activeSlugs.includes(vertical);
+  const isValidVertical = ["commercial", "hospitality", "domestic", "aviation", "yacht", "moveout"].includes(vertical) && activeSlugs.includes(vertical);
 
   // Auto-redirect if invalid vertical is requested
   useEffect(() => {
@@ -524,6 +529,8 @@ export default function BookingPage() {
       detailsText = `Aircraft Type: ${intake.aircraftType || "N/A"}\nTail Number: ${intake.tailNumber || "N/A"}\nFBO Hangar: ${intake.airportFbo || "N/A"}`;
     } else if (vertical === "yacht") {
       detailsText = `Vessel Type: ${intake.vesselType || "N/A"}\nLength: ${intake.vesselLength || 0} ft\nMarina: ${intake.marinaLocation || "N/A"}`;
+    } else if (vertical === "moveout") {
+      detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
     } else if (vertical === "special") {
       detailsText = `Special service request details.`;
     }
@@ -564,7 +571,7 @@ Please help me schedule this service manually. Thank you!`;
 
     setLoading(false);
     if (res.success && res.bookingId) {
-      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht") {
+      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout") {
         // Build WhatsApp message template
         const formattedDate = selectedDate || "Not scheduled";
         const formattedSlot = selectedSlot === "morning" ? "Morning Slot" : selectedSlot === "afternoon" ? "Afternoon Slot" : "Not specified";
@@ -577,6 +584,8 @@ Please help me schedule this service manually. Thank you!`;
           detailsText = `Office Type: ${intake.officeType || "N/A"}\nSurface Area: ${intake.surfaceArea || 0} m²\nRooms: ${intake.rooms || 0}\nFloors: ${intake.floors || 0}`;
         } else if (vertical === "hospitality") {
           detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
+        } else if (vertical === "moveout") {
+          detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
         } else if (vertical === "special") {
           detailsText = `Special service request details.`;
         }
@@ -617,6 +626,7 @@ Please verify and confirm my dispatch request. Thank you!`;
     if (vertical === "general") {
       const categoriesList = [
         { slug: "domestic", icon: Sparkles },
+        { slug: "moveout", icon: Key },
         { slug: "commercial", icon: Building2 },
         { slug: "hospitality", icon: Home },
         { slug: "aviation", icon: Plane },
@@ -804,11 +814,11 @@ Please verify and confirm my dispatch request. Thank you!`;
                 <Check className="w-8 h-8" />
               </div>
               <h2 className="text-display-md font-display font-medium text-ink">
-                {vertical === "aviation" || vertical === "yacht" ? t("requestSubmitted") : t("bookingConfirmed")}
+                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? t("requestSubmitted") : t("bookingConfirmed")}
               </h2>
               <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" ? (
-                  t("thankYouAviation")
+                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? (
+                  t(vertical === "moveout" ? "thankYouMoveout" : "thankYouAviation")
                     .replace("Thank you.", `Thank you, ${contact.name}.`)
                     .replace("Merci.", `Merci, ${contact.name}.`)
                     .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
@@ -832,7 +842,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                 {t("scheduled")} {selectedDate} ({selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")})
               </div>
               <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" ? (
+                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? (
                   (() => {
                     const parts = t("quoteSentEmail").split("{email}");
                     return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
@@ -1184,6 +1194,100 @@ Please verify and confirm my dispatch request. Thank you!`;
                     />
                   </div>
                 </div>
+              ) : vertical === "moveout" ? (
+                <div className="space-y-4 pt-4">
+                  {/* Move-out Intake Form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("bedrooms")}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        value={intake.bedrooms || 0}
+                        onChange={(e) => handleIntakeChange("bedrooms", parseInt(e.target.value) || 0)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("bathrooms")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={intake.bathrooms || 1}
+                        onChange={(e) => handleIntakeChange("bathrooms", parseInt(e.target.value) || 1)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("moveoutRooms")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="15"
+                        value={intake.moveoutRooms || 3}
+                        onChange={(e) => handleIntakeChange("moveoutRooms", parseInt(e.target.value) || 3)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("surfaceArea")}</label>
+                      <input
+                        type="number"
+                        min="10"
+                        max="500"
+                        value={intake.moveoutArea || 80}
+                        onChange={(e) => handleIntakeChange("moveoutArea", parseInt(e.target.value) || 80)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-caption text-ink font-semibold uppercase block font-body">{t("servScope")}</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
+                      {[
+                        { id: "handover_guarantee", label: t("handoverGuaranteeOption") },
+                        { id: "windows_shutters", label: t("windowShuttersOption") },
+                        { id: "oven_deep_clean", label: t("ovenDeepCleanOption") },
+                        { id: "balcony_terrace", label: t("balconyTerraceOption") },
+                        { id: "carpet_steam", label: t("carpetSteamOption") }
+                      ].map((item) => {
+                        const isChecked = intake.moveoutScope?.includes(item.id);
+                        return (
+                          <label key={item.id} className="flex items-center gap-2.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const nextScope = e.target.checked
+                                  ? [...(intake.moveoutScope || []), item.id]
+                                  : (intake.moveoutScope || []).filter((id: string) => id !== item.id);
+                                handleIntakeChange("moveoutScope", nextScope);
+                              }}
+                              className="accent-accent h-4 w-4"
+                            />
+                            {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase font-body">{t("specInstructions")}</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder={t("specialInstructionsPetsPlaceholder")}
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-20 resize-none"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4 pt-4">
                   {/* Domestic Intake Form */}
@@ -1240,7 +1344,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                   )}
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-caption text-ink font-semibold uppercase">{t("specialInstructionsPets")}</label>
+                    <label className="text-caption text-ink font-semibold uppercase">{t("specialInstructions")}</label>
                     <textarea
                       value={intake.specialRequirements}
                       onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
@@ -1462,10 +1566,12 @@ Please verify and confirm my dispatch request. Thank you!`;
           {/* STEP 3: QUOTE / REVIEW */}
           {step === 3 && (
             <div className="space-y-6">
-              {vertical === "aviation" || vertical === "yacht" || vertical === "special" ? (
-                <div className="space-y-4">
+              {vertical === "aviation" || vertical === "yacht" || vertical === "special" || vertical === "moveout" ? (
+                <div className="space-y-4 pt-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("bespokeQuoteRequired")}</h2>
-                  <p className="text-body-sm text-ink-muted">{t("aviationYachtQuoteDesc")}</p>
+                  <p className="text-body-sm text-ink-muted">
+                    {vertical === "moveout" ? t("moveoutQuoteDesc") : t("aviationYachtQuoteDesc")}
+                  </p>
                   <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6 text-body-sm leading-relaxed">
                     <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
                       <Clock className="w-4 h-4" /> {t("reviewPending")}
@@ -1659,7 +1765,7 @@ Please verify and confirm my dispatch request. Thank you!`;
           {/* STEP 5: PAYMENT */}
           {step === 5 && (
             <div className="space-y-6">
-              {vertical === "aviation" || vertical === "yacht" ? (
+              {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? (
                 <div className="space-y-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("confirmRequestSubmission")}</h2>
                   <p className="text-body-sm text-ink-muted">{t("specifyCoordinatesNote")}</p>
@@ -1670,7 +1776,13 @@ Please verify and confirm my dispatch request. Thank you!`;
                       type="text"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder={vertical === "aviation" ? t("aviationLocationPlaceholder") : t("yachtLocationPlaceholder")}
+                      placeholder={
+                        vertical === "aviation"
+                          ? t("aviationLocationPlaceholder")
+                          : vertical === "yacht"
+                          ? t("yachtLocationPlaceholder")
+                          : t("moveoutLocationPlaceholder")
+                      }
                       className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-sans"
                     />
                   </div>
@@ -1785,12 +1897,12 @@ Please verify and confirm my dispatch request. Thank you!`;
                 </button>
                 <button
                   onClick={submitBooking}
-                  disabled={loading || !address || (autoCheckout && vertical !== "aviation" && vertical !== "yacht" && !cardName)}
+                  disabled={loading || !address || (autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && !cardName)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50 cursor-pointer font-body"
                 >
                   {loading 
                     ? t("processing") 
-                    : vertical === "aviation" || vertical === "yacht" 
+                    : vertical === "aviation" || vertical === "yacht" || vertical === "moveout"
                       ? t("submitBespoke") 
                       : !autoCheckout
                         ? t("booking.confirmSendWhatsapp")
@@ -1804,7 +1916,7 @@ Please verify and confirm my dispatch request. Thank you!`;
 
             {/* Pricing / Booking Summary Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              {vertical === "aviation" || vertical === "yacht" || vertical === "special" ? (
+              {vertical === "aviation" || vertical === "yacht" || vertical === "special" || vertical === "moveout" ? (
                 <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
                   <h3 className="text-body-md font-display font-medium text-ink tracking-wide uppercase border-b border-border pb-2">
                     {t("bespokeInquiry")}

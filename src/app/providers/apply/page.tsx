@@ -197,7 +197,8 @@ export default function ProviderApplyPage() {
                     { id: "commercial", label: t("providers.apply.catCommercial") },
                     { id: "hospitality", label: t("providers.apply.catHospitality") },
                     { id: "aviation", label: t("providers.apply.catAviation") },
-                    { id: "yacht", label: t("providers.apply.catYacht") }
+                    { id: "yacht", label: t("providers.apply.catYacht") },
+                    { id: "moveout", label: t("providers.apply.catMoveout") }
                   ].map((vert) => (
                     <button
                       key={vert.id}

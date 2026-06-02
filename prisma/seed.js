@@ -34,7 +34,8 @@ async function main() {
     { slug: 'hospitality', name: 'Hospitality & Turnovers', vertical: 'hospitality', pricingModel: 'instant', active: true },
     { slug: 'aviation', name: 'Aviation Detailing', vertical: 'aviation', pricingModel: 'quote_on_request', active: true },
     { slug: 'yacht', name: 'Yacht & Marine Care', vertical: 'yacht', pricingModel: 'quote_on_request', active: true },
-    { slug: 'special', name: 'Biohazard & Post-Incident', vertical: 'special', pricingModel: 'quote_on_request', active: true }
+    { slug: 'special', name: 'Biohazard & Post-Incident', vertical: 'special', pricingModel: 'quote_on_request', active: true },
+    { slug: 'moveout', name: 'Move-Out & End Clean', vertical: 'moveout', pricingModel: 'quote_on_request', active: true }
   ];
 
   for (const cat of categories) {

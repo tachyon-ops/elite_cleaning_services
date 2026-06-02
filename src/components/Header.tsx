@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Plane, Ship, Building2, Home, Shield, ChevronDown } from "lucide-react";
+import { Sparkles, Plane, Ship, Building2, Home, Shield, ChevronDown, Key } from "lucide-react";
 import { db } from "@/lib/db";
 import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
@@ -21,6 +21,14 @@ const verticalMeta: Record<string, {
     description: "Regular upkeep, deep cleaning, and move-out servicing for premium apartments and villas.",
     priceText: "FROM CHF 80",
     link: "/book/domestic",
+  },
+  moveout: {
+    icon: Key,
+    subtitle: "END OF TENANCY",
+    title: "Move-Out & End Clean",
+    description: "Deep cleaning with a handover guarantee for apartment and house returns to landlords.",
+    priceText: "QUOTE ON REQUEST",
+    link: "/book/moveout",
   },
   aviation: {
     icon: Plane,
@@ -81,7 +89,7 @@ export async function Header() {
     where: { active: true }
   }) as CategoryType[];
 
-  const displayOrder = ["domestic", "aviation", "yacht", "commercial", "hospitality", "special"];
+  const displayOrder = ["domestic", "moveout", "aviation", "yacht", "commercial", "hospitality", "special"];
 
   const sortedCategories = activeCategories.sort((a: CategoryType, b: CategoryType) => {
     const indexA = displayOrder.indexOf(a.slug);

@@ -54,15 +54,18 @@ describe("i18n-utils", () => {
     it("should return localized path for default locale 'de' (prefixed and slug-localized)", () => {
       expect(localizeHref("/", "de")).toBe("/de");
       expect(localizeHref("/book/domestic", "de")).toBe("/de/buchen/haus");
+      expect(localizeHref("/book/moveout", "de")).toBe("/de/buchen/endreinigung");
       expect(localizeHref("/providers", "de")).toBe("/de/partner");
     });
 
     it("should return prefixed and slug-localized path for other locales", () => {
       expect(localizeHref("/", "pt")).toBe("/pt");
       expect(localizeHref("/book/domestic", "pt")).toBe("/pt/reservar/domestica");
+      expect(localizeHref("/book/moveout", "pt")).toBe("/pt/reservar/limpeza-mudanca");
       expect(localizeHref("/providers", "pt")).toBe("/pt/parceiros");
       expect(localizeHref("/", "es")).toBe("/es");
       expect(localizeHref("/book/domestic", "en")).toBe("/en/book/domestic");
+      expect(localizeHref("/book/moveout", "en")).toBe("/en/book/end-cleaning");
     });
 
 
@@ -93,6 +96,8 @@ describe("i18n-utils", () => {
       expect(resolveVerticalSlug("haus", "de")).toBe("domestic");
       expect(resolveVerticalSlug("gewerbe", "de")).toBe("commercial");
       expect(resolveVerticalSlug("yate", "es")).toBe("yacht");
+      expect(resolveVerticalSlug("endreinigung", "de")).toBe("moveout");
+      expect(resolveVerticalSlug("end-cleaning", "en")).toBe("moveout");
     });
 
     it("should return the slug as-is if already internal or unrecognized", () => {

@@ -169,6 +169,12 @@
       "subtitle": "SERVIÇOS ESPECIAIS",
       "description": "Limpeza restauradora, assistência pós-incidentes e apoio em casos de síndrome de Diógenes. Reserva confidencial.",
       "priceText": "APENAS POR TELEFONE"
+    },
+    "moveout": {
+      "title": "Limpeza de fim de contrato",
+      "subtitle": "FIM DE CONTRATO",
+      "description": "Limpeza profunda com garantia de entrega para devolução de apartamentos e moradias.",
+      "priceText": "ORÇAMENTO SOB CONSULTA"
     }
   },
   "preview": {
@@ -291,7 +297,8 @@
       "catCommercial": "Comercial e Escritórios",
       "catHospitality": "Alojamento Local e Airbnb",
       "catAviation": "Aviação (Jatos e Helicópteros)",
-      "catYacht": "Iates e Náutica"
+      "catYacht": "Iates e Náutica",
+      "catMoveout": "Limpeza de fim de contrato"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Todos os direitos de parceiros suíços reservados."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SERVIÇOS ESPECIAIS",
     "catSpecialDesc": "Limpeza restauradora, assistência pós-trauma e suporte a acumulação. Reserva confidencial.",
     "catSpecialPrice": "APENAS POR TELEFONE",
+    "catMoveoutTitle": "Limpeza de fim de contrato",
+    "catMoveoutSub": "FIM DE CONTRATO",
+    "catMoveoutDesc": "Limpeza profunda com garantia de entrega para devolução de apartamentos e moradias.",
+    "catMoveoutPrice": "ORÇAMENTO SOB CONSULTA",
+    "moveoutQuoteDesc": "As limpiezas de fim de contrato exigem uma revisão manual e um orçamento personalizado.",
+    "thankYouMoveout": "Obrigado. O seu pedido de limpeza de fim de contrato foi encaminhado para revisão. Iremos notificá-lo em:",
+    "moveoutLocationPlaceholder": "ex. Seestrasse 10, 8002 Zurique",
+    "handoverGuaranteeOption": "Com garantia de entrega (Handover Guarantee)",
+    "windowShuttersOption": "Limpeza de janelas e estores",
+    "ovenDeepCleanOption": "Limpeza profunda de forno e exaustor",
+    "balconyTerraceOption": "Limpeza de varanda ou terraço",
+    "carpetSteamOption": "Limpeza a vapor de carpetes",
+    "moveoutRooms": "Número de divisões (incluindo sala de estar)",
     "bookingFlow": "Fluxo de Reserva",
     "intake": "Dados Iniciais",
     "schedule": "Agenda",

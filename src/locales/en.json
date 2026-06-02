@@ -169,6 +169,12 @@
       "subtitle": "SPECIAL SERVICES",
       "description": "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
       "priceText": "PHONE ONLY"
+    },
+    "moveout": {
+      "title": "Move-Out & End Clean",
+      "subtitle": "END OF TENANCY",
+      "description": "Deep cleaning with a handover guarantee for apartment and house returns to landlords.",
+      "priceText": "QUOTE ON REQUEST"
     }
   },
   "preview": {
@@ -291,7 +297,8 @@
       "catCommercial": "Commercial",
       "catHospitality": "Hospitality",
       "catAviation": "Aviation",
-      "catYacht": "Yacht & Marine"
+      "catYacht": "Yacht & Marine",
+      "catMoveout": "Move-Out Cleaning"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. All Swiss partner rights reserved."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SPECIAL SERVICES",
     "catSpecialDesc": "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
     "catSpecialPrice": "PHONE ONLY",
+    "catMoveoutTitle": "Move-Out & End Clean",
+    "catMoveoutSub": "END OF TENANCY",
+    "catMoveoutDesc": "Deep cleaning with a handover guarantee for apartment and house returns to landlords.",
+    "catMoveoutPrice": "QUOTE ON REQUEST",
+    "moveoutQuoteDesc": "End of tenancy cleanings require manual review and custom price calculation.",
+    "thankYouMoveout": "Thank you. Your custom move-out cleaning request has been forwarded to our desk for review. We will notify you at:",
+    "moveoutLocationPlaceholder": "e.g. Seestrasse 10, 8002 Zürich",
+    "handoverGuaranteeOption": "Includes Handover Guarantee (Abgabegarantie)",
+    "windowShuttersOption": "Windows & shutters/blinds cleaning",
+    "ovenDeepCleanOption": "Oven & cooker hood deep clean",
+    "balconyTerraceOption": "Balcony or terrace high-pressure clean",
+    "carpetSteamOption": "Carpet steam clean",
+    "moveoutRooms": "Total Rooms (including living room)",
     "bookingFlow": "Booking Flow",
     "intake": "Intake",
     "schedule": "Schedule",

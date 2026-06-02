@@ -165,10 +165,16 @@
       "priceText": "À PARTIR DE CHF 120"
     },
     "special": {
-      "title": "Risques Biologiques & Post-Incident",
-      "subtitle": "SERVICES SPÉCIAUX",
-      "description": "Nettoyage restaurateur, assistance post-incident et soutien au syndrome de Diogène. Réservation confidentielle.",
+      "title": "Biohazard & Nettoyage de scènes de crime",
+      "subtitle": "NETTOYAGE SPÉCIALISÉ",
+      "description": "Nettoyage de restauration spécialisé, assistance après sinistre et syndrome de Diogène. Discrétion absolue.",
       "priceText": "PAR TÉLÉPHONE UNIQUEMENT"
+    },
+    "moveout": {
+      "title": "Nettoyage de remise de bail",
+      "subtitle": "FIN DE BAIL",
+      "description": "Nettoyage en profondeur avec garantie de remise pour la restitution de votre logement.",
+      "priceText": "DEVIS SUR DEMANDE"
     }
   },
   "preview": {
@@ -291,7 +297,8 @@
       "catCommercial": "Commercial & Bureaux",
       "catHospitality": "Hôtellerie & Airbnb",
       "catAviation": "Aviation (Jets & Hélicoptères)",
-      "catYacht": "Yachts & Marine"
+      "catYacht": "Yachts & Marine",
+      "catMoveout": "Nettoyage de fin de bail"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Tous droits réservés aux partenaires suisses."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SERVICES SPÉCIAUX",
     "catSpecialDesc": "Nettoyage de sinistres, aide en cas de syndrome de Diogène et après incident. Discrétion absolue.",
     "catSpecialPrice": "PAR TÉLÉPHONE UNIQUEMENT",
+    "catMoveoutTitle": "Nettoyage de remise de bail",
+    "catMoveoutSub": "FIN DE BAIL",
+    "catMoveoutDesc": "Nettoyage en profondeur avec garantie de remise pour la restitution de votre logement.",
+    "catMoveoutPrice": "DEVIS SUR DEMANDE",
+    "moveoutQuoteDesc": "Les nettoyages de fin de bail nécessitent un examen manuel et un calcul de devis personnalisé.",
+    "thankYouMoveout": "Merci. Votre demande de nettoyage de fin de bail a été transmise à notre bureau pour examen. Nous vous informerons à l'adresse :",
+    "moveoutLocationPlaceholder": "p. ex. Seestrasse 10, 8002 Zürich",
+    "handoverGuaranteeOption": "Avec garantie de remise (Handover Guarantee)",
+    "windowShuttersOption": "Nettoyage des vitres et stores",
+    "ovenDeepCleanOption": "Nettoyage en profondeur du four et de la hotte",
+    "balconyTerraceOption": "Nettoyage du balcon ou de la terrasse",
+    "carpetSteamOption": "Nettoyage à la vapeur des moquettes",
+    "moveoutRooms": "Nombre de pièces (salon inclus)",
     "bookingFlow": "Flux de réservation",
     "intake": "Saisie",
     "schedule": "Planification",

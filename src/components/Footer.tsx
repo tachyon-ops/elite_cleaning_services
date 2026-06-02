@@ -9,6 +9,7 @@ import { COMPANY_CONFIG } from "@/lib/config";
 
 const verticalMeta: Record<string, { link: string }> = {
   domestic: { link: "/book/domestic" },
+  moveout: { link: "/book/moveout" },
   aviation: { link: "/book/aviation" },
   yacht: { link: "/book/yacht" },
   commercial: { link: "/book/commercial" },
@@ -43,7 +44,7 @@ export async function Footer() {
     where: { active: true }
   }) as CategoryType[];
 
-  const displayOrder = ["domestic", "aviation", "yacht", "commercial", "hospitality", "special"];
+  const displayOrder = ["domestic", "moveout", "aviation", "yacht", "commercial", "hospitality", "special"];
 
   const sortedCategories = activeCategories.sort((a: CategoryType, b: CategoryType) => {
     const indexA = displayOrder.indexOf(a.slug);

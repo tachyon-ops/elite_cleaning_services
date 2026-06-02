@@ -169,6 +169,12 @@
       "subtitle": "SPEZIALREINIGUNG",
       "description": "Restaurierende Spezialreinigung, Unterstützung bei Unfällen und Messi-Wohnungen. Diskrete Abwicklung.",
       "priceText": "NUR TELEFONISCH"
+    },
+    "moveout": {
+      "title": "Umzugs- & Endreinigung",
+      "subtitle": "ENDREINIGUNG",
+      "description": "Gründliche Tiefenreinigung inklusive Abgabegarantie für Ihre Wohnungs- oder Hausübergabe.",
+      "priceText": "OFFERTE AUF ANFRAGE"
     }
   },
   "preview": {
@@ -291,7 +297,8 @@
       "catCommercial": "Gewerbe & Büros",
       "catHospitality": "Ferienwohnungen & Airbnb",
       "catAviation": "Luftfahrt (Jets & Helikopter)",
-      "catYacht": "Yachten & Schiffe"
+      "catYacht": "Yachten & Schiffe",
+      "catMoveout": "Umzugsreinigung"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Alle Schweizer Partnerrechte vorbehalten."
@@ -358,6 +365,19 @@
     "catSpecialSub": "SPEZIALREINIGUNG",
     "catSpecialDesc": "Restaurierende Spezialreinigung, Unterstützung bei Unfällen und Messi-Wohnungen. Diskrete Abwicklung.",
     "catSpecialPrice": "NUR TELEFONISCH",
+    "catMoveoutTitle": "Umzugs- & Endreinigung",
+    "catMoveoutSub": "ENDREINIGUNG",
+    "catMoveoutDesc": "Gründliche Tiefenreinigung inklusive Abgabegarantie für Ihre Wohnungs- oder Hausübergabe.",
+    "catMoveoutPrice": "OFFERTE AUF ANFRAGE",
+    "moveoutQuoteDesc": "Endreinigungen erfordern eine manuelle Zuweisungs- und Preiskalkulationsprüfung.",
+    "thankYouMoveout": "Vielen Dank. Ihre Umzugsreinigungs-Anfrage wurde zur Prüfung weitergeleitet. Wir informieren Sie unter:",
+    "moveoutLocationPlaceholder": "z.B. Seestrasse 10, 8002 Zürich",
+    "handoverGuaranteeOption": "Mit Abgabegarantie (Handover Guarantee)",
+    "windowShuttersOption": "Fenster- & Storenreinigung",
+    "ovenDeepCleanOption": "Backofen & Dampfabzug intensiv",
+    "balconyTerraceOption": "Balkon / Terrasse reinigen",
+    "carpetSteamOption": "Teppich-Extraktion (Shampoonieren)",
+    "moveoutRooms": "Anzahl Zimmer (inkl. Wohnzimmer)",
     "bookingFlow": "Buchungsablauf",
     "intake": "Angaben",
     "schedule": "Termin",

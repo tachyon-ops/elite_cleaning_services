@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getServiceCategoriesList, toggleServiceCategoryActive, getLoggedInAdmin, updateServiceCategoryPriceText } from "@/app/actions/admin";
-import { Sliders, CheckCircle2, AlertTriangle, ShieldAlert, Sparkles, Plane, Ship, Building2, Home, Shield, Edit2, Check, X } from "lucide-react";
+import { Sliders, CheckCircle2, AlertTriangle, ShieldAlert, Sparkles, Plane, Ship, Building2, Home, Shield, Edit2, Check, X, Key } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // Map slugs to icons
@@ -12,7 +12,8 @@ const iconMap: Record<string, any> = {
   yacht: Ship,
   commercial: Building2,
   hospitality: Home,
-  special: Shield
+  special: Shield,
+  moveout: Key
 };
 
 export default function AdminVerticalsPage() {
