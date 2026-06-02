@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 const verticalMeta: Record<string, {
   icon: React.ComponentType<{ className?: string }>;
+  image: string;
   subtitle: string;
   title: string;
   description: string;
@@ -23,6 +24,7 @@ const verticalMeta: Record<string, {
 }> = {
   domestic: {
     icon: Sparkles,
+    image: "/images/domestic.png",
     subtitle: "DOMESTIC",
     title: "Home & Villa Cleaning",
     description: "Regular upkeep, deep cleaning, and move-out servicing for premium apartments and villas.",
@@ -31,6 +33,7 @@ const verticalMeta: Record<string, {
   },
   moveout: {
     icon: Key,
+    image: "/images/moveout.png",
     subtitle: "END OF TENANCY",
     title: "Move-Out & End Clean",
     description: "Deep cleaning with a handover guarantee for apartment and house returns to landlords.",
@@ -39,6 +42,7 @@ const verticalMeta: Record<string, {
   },
   aviation: {
     icon: Plane,
+    image: "/images/aviation.png",
     subtitle: "AVIATION",
     title: "Private Jets & Helicopters",
     description: "Exterior wash, deep interior detailing, and cabin restocking in Swiss hangars and FBOs.",
@@ -47,6 +51,7 @@ const verticalMeta: Record<string, {
   },
   yacht: {
     icon: Ship,
+    image: "/images/yacht.png",
     subtitle: "YACHT & MARINE",
     title: "Vessels & Yacht Decks",
     description: "Teak cleaning, interior detail, end-of-season decommissioning, and marina access.",
@@ -55,6 +60,7 @@ const verticalMeta: Record<string, {
   },
   commercial: {
     icon: Building2,
+    image: "/images/commercial.png",
     subtitle: "COMMERCIAL",
     title: "Offices & Co-working",
     description: "Standard cleanups, after-hours deep cleans, and tailored frequencies for office suites.",
@@ -63,6 +69,7 @@ const verticalMeta: Record<string, {
   },
   hospitality: {
     icon: Home,
+    image: "/images/hospitality.png",
     subtitle: "HOSPITALITY",
     title: "Airbnb Turnover & B&Bs",
     description: "Fast turnover schedules, linen management, and smartlock key handovers.",
@@ -71,6 +78,7 @@ const verticalMeta: Record<string, {
   },
   special: {
     icon: Shield,
+    image: "/images/special.png",
     subtitle: "SPECIAL SERVICES",
     title: "Biohazard & Post-Incident",
     description: "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
@@ -117,30 +125,40 @@ export default async function HomePage() {
       <Header />
 
       {/* 5.1 Hero Section */}
-      <section className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] lg:min-h-[720px] bg-bg border-b border-border">
+      <section className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] lg:min-h-[720px] bg-bg border-b border-border relative overflow-hidden">
+        {/* Glow blobs for hero layout */}
+        <div className="absolute top-[10%] left-[15%] w-[350px] h-[350px] rounded-full bg-accent/4 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[15%] right-[10%] w-[450px] h-[450px] rounded-full bg-accent/6 blur-[150px] pointer-events-none" />
+        
         {/* Left Half: Copy */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-16 lg:py-0 max-w-4xl">
-          <span className="text-caption text-accent uppercase mb-3">{t("hero.division")}</span>
-          <h1 className="text-display-md md:text-display-xl text-ink font-display font-medium leading-none tracking-tight mb-6">
+        <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-16 lg:py-0 max-w-4xl relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-accent/20 bg-accent-soft/40 text-accent text-[10px] tracking-wider uppercase font-semibold mb-6 w-fit backdrop-blur-xs select-none shadow-xs hover:border-accent/35 transition-all">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            <span>{t("hero.division")}</span>
+          </div>
+          
+          <h1 className="text-display-md md:text-display-xl text-ink font-display font-medium leading-[1.1] tracking-tight mb-6">
             {t("hero.title").split(". ").map((s, i) => (
-              <React.Fragment key={i}>
-                {s}{i < 2 ? "." : ""}<br />
-              </React.Fragment>
+              <span key={i} className="block">
+                {s}{i < 2 ? "." : ""}
+              </span>
             ))}
           </h1>
-          <p className="text-body-lg text-ink-muted mb-8 max-w-[55ch]">
+          
+          <p className="text-body-lg text-ink-muted mb-8 max-w-[55ch] leading-relaxed">
             {t("hero.description")}
           </p>
+          
           <div className="flex flex-wrap gap-4">
             <Link
               href={localizeHref("/book/general", locale)}
-              className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md"
+              className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] active:translate-y-0 active:shadow-sm cursor-pointer"
             >
               {t("hero.ctaQuote")}
             </Link>
             <Link
               href="#how-it-works"
-              className="border border-ink hover:bg-ink hover:text-ink-inverse text-ink text-button font-semibold py-3 px-8 rounded-md transition-all"
+              className="border border-border bg-transparent hover:bg-ink hover:text-ink-inverse text-ink text-button font-semibold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
               {t("hero.ctaHow")}
             </Link>
@@ -148,34 +166,36 @@ export default async function HomePage() {
         </div>
 
         {/* Right Half: Editorial Imagery Block / Interactive Calculator */}
-        <div className="flex-1 bg-bg-subtle border-t lg:border-t-0 lg:border-l border-border flex items-center justify-center p-8 lg:p-16 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div className="flex-1 border-t lg:border-t-0 lg:border-l border-border flex items-center justify-center p-8 lg:p-16 relative overflow-hidden min-h-[500px]">
+          {/* Background image of luxury Swiss villa */}
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.png')" }}></div>
+          <div className="absolute inset-0 bg-ink/15 backdrop-blur-[1px]"></div>
           <HeroQuoteCalculator />
         </div>
       </section>
 
       {/* Trust Strip */}
-      <section className="bg-bg-subtle border-b border-border py-6 px-6 md:px-16">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">{t("trust.fullyInsured")}</span>
+      <section className="bg-bg-subtle/80 backdrop-blur-md border-b border-border/80 py-8 px-6 md:px-16 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 text-center md:divide-x md:divide-border/40">
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <Shield className="w-4 h-4 text-accent/80 shrink-0" />
+            <span className="text-[10px] tracking-wider uppercase font-semibold text-ink-muted/80">{t("trust.fullyInsured")}</span>
           </div>
-          <div className="flex items-center justify-center gap-2">
-            <Award className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">{t("trust.swissBased")}</span>
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <Award className="w-4 h-4 text-accent/80 shrink-0" />
+            <span className="text-[10px] tracking-wider uppercase font-semibold text-ink-muted/80">{t("trust.swissBased")}</span>
           </div>
-          <div className="flex items-center justify-center gap-2">
-            <Check className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">{t("trust.gdprCompliant")}</span>
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <Check className="w-4 h-4 text-accent/80 shrink-0" />
+            <span className="text-[10px] tracking-wider uppercase font-semibold text-ink-muted/80">{t("trust.gdprCompliant")}</span>
           </div>
-          <div className="flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">{t("trust.vettedPartners")}</span>
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <Shield className="w-4 h-4 text-accent/80 shrink-0" />
+            <span className="text-[10px] tracking-wider uppercase font-semibold text-ink-muted/80">{t("trust.vettedPartners")}</span>
           </div>
-          <div className="flex items-center justify-center gap-2 col-span-2 md:col-span-1">
-            <Clock className="w-4 h-4 text-accent" />
-            <span className="text-caption text-ink-muted">{t("trust.riskFreeTrial")}</span>
+          <div className="flex items-center justify-center gap-2.5 px-2 col-span-2 md:col-span-1">
+            <Clock className="w-4 h-4 text-accent/80 shrink-0" />
+            <span className="text-[10px] tracking-wider uppercase font-semibold text-ink-muted/80">{t("trust.riskFreeTrial")}</span>
           </div>
         </div>
       </section>
@@ -183,9 +203,9 @@ export default async function HomePage() {
       {/* Vertical Grid Section */}
       <section className="py-24 px-6 md:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center mb-16">
-          <span className="text-caption text-accent uppercase block mb-3">{t("portfolio.subtitle")}</span>
+          <span className="text-caption text-accent uppercase block mb-3 font-semibold tracking-wider">{t("portfolio.subtitle")}</span>
           <h2 className="text-display-md text-ink font-display font-medium mb-4">{sortedCategories.length} {t("portfolio.title")}</h2>
-          <p className="text-body-md text-ink-muted max-w-[60ch] mx-auto">
+          <p className="text-body-md text-ink-muted max-w-[60ch] mx-auto leading-relaxed">
             {t("portfolio.description")}
           </p>
         </div>
@@ -202,29 +222,46 @@ export default async function HomePage() {
             const isOddTotal = sortedCategories.length % 2 !== 0;
             
             const cardColClass = isLast && isOddTotal
-              ? `border ${isDomestic ? "border-accent bg-accent-soft/30 hover:bg-accent-soft/45" : "border-border hover:bg-bg-subtle"} p-8 transition-colors flex flex-col justify-between min-h-[300px] md:col-span-2 lg:col-span-1 relative`
-              : `border ${isDomestic ? "border-accent bg-accent-soft/30 hover:bg-accent-soft/45" : "border-border hover:bg-bg-subtle"} p-8 transition-colors flex flex-col justify-between min-h-[300px] relative`;
+              ? `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] md:col-span-2 lg:col-span-1 relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden`
+              : `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden`;
 
             return (
               <div key={cat.slug} className={cardColClass}>
-                {isDomestic && (
-                  <span className="absolute top-4 right-4 bg-accent text-ink-inverse text-[9px] uppercase px-2 py-0.5 rounded-sm font-semibold tracking-wider">
-                    {t("portfolio.primaryService")}
-                  </span>
-                )}
+                {/* Image block at the top of card */}
+                <div className="relative h-[160px] w-full overflow-hidden rounded-t-lg -mx-8 -mt-8 mb-6 border-b border-border/60">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                    style={{ backgroundImage: `url('${meta.image}')` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  {isDomestic && (
+                    <span className="absolute top-4 right-4 bg-accent text-ink-inverse text-[8px] uppercase px-2.5 py-0.5 rounded-full font-bold tracking-widest shadow-xs select-none">
+                      {t("portfolio.primaryService")}
+                    </span>
+                  )}
+                </div>
+
                 <div>
-                  <div className="h-12 w-12 bg-accent-soft rounded-sm flex items-center justify-center text-accent mb-6">
-                    <IconComponent className="w-6 h-6" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-8 w-8 bg-gradient-to-br from-accent-soft to-accent/15 rounded-md flex items-center justify-center text-accent border border-accent/25">
+                      <IconComponent className="w-4 h-4 group-hover:rotate-[8deg] transition-transform duration-300" />
+                    </div>
+                    <span className="text-[10px] text-accent uppercase font-semibold tracking-wider">{t(`categories.${cat.slug}.subtitle`)}</span>
                   </div>
-                  <span className="text-caption text-accent uppercase block mb-1">{t(`categories.${cat.slug}.subtitle`)}</span>
-                  <h3 className="text-display-sm text-ink font-medium mb-3">{t(`categories.${cat.slug}.title`)}</h3>
-                  <p className="text-body-sm text-ink-muted">
+                  <h3 className="text-display-sm text-ink font-medium mb-3 group-hover:text-accent transition-colors duration-300">{t(`categories.${cat.slug}.title`)}</h3>
+                  <p className="text-body-sm text-ink-muted leading-relaxed">
                     {t(`categories.${cat.slug}.description`)}
                   </p>
                 </div>
-                <div className="pt-6 border-t border-border flex items-center justify-between mt-6">
-                  <span className="text-caption text-ink-subtle uppercase">{cat.customPriceText || t(`categories.${cat.slug}.priceText`)}</span>
-                  <Link href={localizeHref(meta.link, locale)} className="text-body-sm font-semibold text-accent hover:text-accent-hover transition-colors">{t("portfolio.book")}</Link>
+                <div className="pt-6 border-t border-border/60 flex items-center justify-between mt-6">
+                  <span className="text-[10px] tracking-wider font-mono text-ink-subtle uppercase">{cat.customPriceText || t(`categories.${cat.slug}.priceText`)}</span>
+                  <Link
+                    href={localizeHref(meta.link, locale)}
+                    className="text-body-sm font-bold text-accent group-hover:text-accent-hover transition-colors inline-flex items-center gap-1"
+                  >
+                    {t("portfolio.book").replace("→", "")}
+                    <span className="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+                  </Link>
                 </div>
               </div>
             );
@@ -233,39 +270,42 @@ export default async function HomePage() {
       </section>
 
       {/* WhatsApp Concierge Banner Section */}
-      <section className="bg-ink text-ink-inverse py-24 px-6 md:px-16 border-y border-accent/25 relative overflow-hidden">
+      <section className="bg-ink text-ink-inverse py-24 px-6 md:px-16 border-y border-accent/20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:24px_24px]"></div>
+        {/* Glow blobs for dark section */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
+        
         <div className="max-w-7xl mx-auto w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
-            <span className="text-caption text-accent uppercase tracking-wider block">{t("concierge.subtitle")}</span>
-            <h2 className="text-display-md md:text-display-lg text-ink-inverse font-display font-medium leading-tight">
+            <span className="text-caption text-accent uppercase tracking-wider block font-semibold">{t("concierge.subtitle")}</span>
+            <h2 className="text-display-md md:text-display-lg text-ink-inverse font-display font-medium leading-[1.1] tracking-tight">
               {t("concierge.title").split(". ").map((s, i) => (
                 <React.Fragment key={i}>
                   {s}{i === 0 ? "." : ""}<br />
                 </React.Fragment>
               ))}
             </h2>
-            <p className="text-body-md text-ink-subtle max-w-[55ch]">
+            <p className="text-body-md text-ink-subtle max-w-[55ch] leading-relaxed">
               {t("concierge.description")}
             </p>
             <div className="flex flex-wrap gap-8 pt-4">
               <div className="flex flex-col">
                 <span className="text-display-xs text-accent font-serif font-bold">&lt; 5 Min</span>
-                <span className="text-caption text-ink-subtle uppercase">{t("concierge.responseTime")}</span>
+                <span className="text-caption text-ink-subtle uppercase tracking-wider font-semibold">{t("concierge.responseTime")}</span>
               </div>
               <div className="flex flex-col border-l border-ink-muted/30 pl-8">
                 <span className="text-display-xs text-accent font-serif font-bold">24 / 7</span>
-                <span className="text-caption text-ink-subtle uppercase">{t("concierge.coverage")}</span>
+                <span className="text-caption text-ink-subtle uppercase tracking-wider font-semibold">{t("concierge.coverage")}</span>
               </div>
               <div className="flex flex-col border-l border-ink-muted/30 pl-8">
                 <span className="text-display-xs text-accent font-serif font-bold">Vetted</span>
-                <span className="text-caption text-ink-subtle uppercase">{t("concierge.matching")}</span>
+                <span className="text-caption text-ink-subtle uppercase tracking-wider font-semibold">{t("concierge.matching")}</span>
               </div>
             </div>
           </div>
           <div className="lg:col-span-5 lg:pl-8">
-            <div className="border border-accent/25 bg-bg/5 p-8 rounded-lg backdrop-blur-sm space-y-6">
-              <h3 className="text-body-lg font-display text-ink-inverse font-semibold">{t("concierge.howToBook")}</h3>
+            <div className="border border-accent/20 bg-bg/5 p-8 rounded-lg backdrop-blur-md space-y-6 shadow-xl relative">
+              <h3 className="text-body-lg font-display text-ink-inverse font-semibold border-b border-accent/15 pb-3">{t("concierge.howToBook")}</h3>
               <ul className="space-y-4 text-body-sm text-ink-subtle">
                 <li className="flex gap-3">
                   <span className="text-accent font-semibold font-serif">1.</span>
@@ -285,7 +325,7 @@ export default async function HomePage() {
                   href={`https://wa.me/${whatsappNumber}?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean.`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-6 rounded-md transition-colors flex items-center justify-center gap-3 shadow-md hover:shadow-lg"
+                  className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-6 rounded-md transition-all duration-300 flex items-center justify-center gap-3 shadow-md hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -299,32 +339,32 @@ export default async function HomePage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="bg-bg-subtle border-y border-border py-24 px-6 md:px-16">
-        <div className="max-w-7xl mx-auto w-full">
+      <section id="how-it-works" className="bg-bg-subtle border-y border-border py-24 px-6 md:px-16 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full relative z-10">
           <div className="text-center mb-16">
-            <span className="text-caption text-accent uppercase block mb-3">{t("how.subtitle")}</span>
+            <span className="text-caption text-accent uppercase block mb-3 font-semibold tracking-wider">{t("how.subtitle")}</span>
             <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("how.title")}</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-            <div className="flex flex-col">
-              <span className="font-display text-display-lg text-accent-soft mb-4">01</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step1Title")}</h3>
-              <p className="text-body-md text-ink-muted">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col p-8 rounded-lg border border-border/80 bg-bg/50 backdrop-blur-xs hover:border-accent/30 hover:bg-bg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <span className="font-display text-[56px] leading-none font-bold bg-gradient-to-br from-accent/30 to-accent/5 bg-clip-text text-transparent mb-4 group-hover:from-accent group-hover:to-accent-hover transition-all duration-300">01</span>
+              <h3 className="text-body-lg font-semibold text-ink mb-3 group-hover:text-accent transition-colors duration-300">{t("how.step1Title")}</h3>
+              <p className="text-body-sm text-ink-muted leading-relaxed">
                 {t("how.step1Desc")}
               </p>
             </div>
-            <div className="flex flex-col border-t md:border-t-0 md:border-l border-border pt-8 md:pt-0 md:pl-8">
-              <span className="font-display text-display-lg text-accent-soft mb-4">02</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step2Title")}</h3>
-              <p className="text-body-md text-ink-muted">
+            <div className="flex flex-col p-8 rounded-lg border border-border/80 bg-bg/50 backdrop-blur-xs hover:border-accent/30 hover:bg-bg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <span className="font-display text-[56px] leading-none font-bold bg-gradient-to-br from-accent/30 to-accent/5 bg-clip-text text-transparent mb-4 group-hover:from-accent group-hover:to-accent-hover transition-all duration-300">02</span>
+              <h3 className="text-body-lg font-semibold text-ink mb-3 group-hover:text-accent transition-colors duration-300">{t("how.step2Title")}</h3>
+              <p className="text-body-sm text-ink-muted leading-relaxed">
                 {t("how.step2Desc")}
               </p>
             </div>
-            <div className="flex flex-col border-t md:border-t-0 md:border-l border-border pt-8 md:pt-0 md:pl-8">
-              <span className="font-display text-display-lg text-accent-soft mb-4">03</span>
-              <h3 className="text-display-sm text-ink font-semibold mb-2">{t("how.step3Title")}</h3>
-              <p className="text-body-md text-ink-muted">
+            <div className="flex flex-col p-8 rounded-lg border border-border/80 bg-bg/50 backdrop-blur-xs hover:border-accent/30 hover:bg-bg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <span className="font-display text-[56px] leading-none font-bold bg-gradient-to-br from-accent/30 to-accent/5 bg-clip-text text-transparent mb-4 group-hover:from-accent group-hover:to-accent-hover transition-all duration-300">03</span>
+              <h3 className="text-body-lg font-semibold text-ink mb-3 group-hover:text-accent transition-colors duration-300">{t("how.step3Title")}</h3>
+              <p className="text-body-sm text-ink-muted leading-relaxed">
                 {t("how.step3Desc")}
               </p>
             </div>
@@ -333,68 +373,47 @@ export default async function HomePage() {
       </section>
 
       {/* Recurring Pitch Section */}
-      <section className="py-24 px-6 md:px-16 max-w-4xl mx-auto w-full text-center">
-        <span className="text-caption text-accent uppercase block mb-3">{t("recurringSection.subtitle")}</span>
-        <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("recurringSection.title")}</h2>
-        <p className="text-body-lg text-ink-muted mb-8 max-w-[65ch] mx-auto">
-          {t("recurringSection.description")}
-        </p>
-        <Link
-          href={localizeHref("/book/general", locale)}
-          className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors"
-        >
-          {t("recurringSection.cta")}
-        </Link>
+      <section className="py-28 px-6 md:px-16 relative overflow-hidden bg-bg">
+        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto w-full text-center relative z-10">
+          <span className="text-caption text-accent uppercase block mb-3 font-semibold tracking-wider">{t("recurringSection.subtitle")}</span>
+          <h2 className="text-display-md text-ink font-display font-medium mb-6 leading-tight">{t("recurringSection.title")}</h2>
+          <p className="text-body-md text-ink-muted mb-10 max-w-[65ch] mx-auto leading-relaxed">
+            {t("recurringSection.description")}
+          </p>
+          <Link
+            href={localizeHref("/book/general", locale)}
+            className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 shadow-md hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] active:translate-y-0 active:shadow-sm cursor-pointer"
+          >
+            {t("recurringSection.cta")}
+          </Link>
+        </div>
       </section>
 
       {/* FAQ Section */}
       <section className="bg-bg-subtle border-t border-border py-24 px-6 md:px-16">
         <div className="max-w-3xl mx-auto w-full">
           <div className="text-center mb-16">
-            <span className="text-caption text-accent uppercase block mb-3">{t("faqSection.subtitle")}</span>
+            <span className="text-caption text-accent uppercase block mb-3 font-semibold tracking-wider">{t("faqSection.subtitle")}</span>
             <h2 className="text-display-md text-ink font-display font-medium mb-4">{t("faqSection.title")}</h2>
           </div>
 
-          <div className="space-y-6">
-            <details className="group border-b border-border pb-6">
-              <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>{t("faqSection.q1")}</span>
-                <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
-              </summary>
-              <p className="text-body-md text-ink-muted mt-4">
-                {t("faqSection.a1")}
-              </p>
-            </details>
-
-            <details className="group border-b border-border pb-6">
-              <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>{t("faqSection.q2")}</span>
-                <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
-              </summary>
-              <p className="text-body-md text-ink-muted mt-4">
-                {t("faqSection.a2")}
-              </p>
-            </details>
-
-            <details className="group border-b border-border pb-6">
-              <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>{t("faqSection.q3")}</span>
-                <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
-              </summary>
-              <p className="text-body-md text-ink-muted mt-4">
-                {t("faqSection.a3")}
-              </p>
-            </details>
-
-            <details className="group border-b border-border pb-6">
-              <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-lg text-ink">
-                <span>{t("faqSection.q4")}</span>
-                <ChevronDown className="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform duration-base" />
-              </summary>
-              <p className="text-body-md text-ink-muted mt-4">
-                {t("faqSection.a4")}
-              </p>
-            </details>
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((num) => (
+              <details key={num} className="group border border-border/75 bg-bg/40 backdrop-blur-xs rounded-lg p-6 hover:border-accent/30 hover:bg-bg transition-all duration-300">
+                <summary className="list-none flex items-center justify-between cursor-pointer font-semibold text-body-md text-ink outline-none select-none">
+                  <span>{t(`faqSection.q${num}`)}</span>
+                  <div className="h-8 w-8 rounded-full border border-border/80 group-hover:border-accent/40 flex items-center justify-center text-ink-subtle group-hover:text-accent transition-all duration-300 shrink-0 ml-4">
+                    <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform duration-200" />
+                  </div>
+                </summary>
+                <p className="text-body-sm text-ink-muted mt-4 leading-relaxed max-w-[70ch] select-text">
+                  {t(`faqSection.a${num}`)}
+                </p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

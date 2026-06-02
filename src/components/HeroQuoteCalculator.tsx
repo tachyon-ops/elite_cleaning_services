@@ -47,6 +47,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Commercial / Office",
     divDomestic: "Home & Villa (Domestic)",
+    divMoveout: "Move-Out / End Clean",
     divHospitality: "Airbnb / B&B (Hospitality)",
     divAviation: "Private Jets & Aviation",
     divYacht: "Yachts & Marine",
@@ -91,6 +92,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Gewerbe / Büro",
     divDomestic: "Haus & Villa (Privat)",
+    divMoveout: "Endreinigung / Umzug",
     divHospitality: "Airbnb / B&B",
     divAviation: "Private Jets & Aviatik",
     divYacht: "Yachten & Marine",
@@ -135,6 +137,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Commercial / Bureau",
     divDomestic: "Maison & Villa (Privé)",
+    divMoveout: "Nettoyage remise de bail",
     divHospitality: "Airbnb / B&B",
     divAviation: "Jets Privés & Aviation",
     divYacht: "Yachts & Marine",
@@ -179,6 +182,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Comercial / Oficinas",
     divDomestic: "Hogar y Villa (Doméstico)",
+    divMoveout: "Limpieza de mudanza",
     divHospitality: "Airbnb / B&B",
     divAviation: "Jets Privados y Aviación",
     divYacht: "Yates y Náutica",
@@ -223,6 +227,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Commerciale / Uffici",
     divDomestic: "Casa & Villa (Privato)",
+    divMoveout: "Pulizia trasloco",
     divHospitality: "Airbnb / B&B",
     divAviation: "Jet Privati & Aviazione",
     divYacht: "Yacht & Marine",
@@ -267,6 +272,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Comercial / Escritório",
     divDomestic: "Casa & Vivenda (Doméstico)",
+    divMoveout: "Limpeza de mudança",
     divHospitality: "Airbnb / B&B",
     divAviation: "Jets Privados & Aviação",
     divYacht: "Iates & Náutica",
@@ -311,6 +317,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
     // Divisions
     divCommercial: "Commercial / Buros",
     divDomestic: "Chasa & Villa (Privat)",
+    divMoveout: "Nettegiament da moveout",
     divHospitality: "Airbnb / B&B",
     divAviation: "Jets Privads & Aviaziun",
     divYacht: "Iahts & Marine",
@@ -337,7 +344,7 @@ export default function HeroQuoteCalculator() {
 
   // Calculate pricing values dynamically (matches official booking algorithms)
   const calculatePricing = () => {
-    if (vertical === "aviation" || vertical === "yacht") {
+    if (vertical === "aviation" || vertical === "yacht" || vertical === "moveout") {
       return { priceStr: calcText.quoteOnRequest, isQuote: true };
     }
     if (vertical === "special") {
@@ -389,7 +396,7 @@ export default function HeroQuoteCalculator() {
 
   // Dynamically compute list bullet items matching calculated state
   const getBulletItems = () => {
-    if (vertical === "aviation" || vertical === "yacht") {
+    if (vertical === "aviation" || vertical === "yacht" || vertical === "moveout") {
       return [
         calcText.vettedSub,
         calcText.dispatchOrganizes,
@@ -482,7 +489,7 @@ export default function HeroQuoteCalculator() {
           {pricing.priceStr}
         </span>
         <span className="text-body-sm text-ink-subtle block mb-6">
-          {vertical === "aviation" || vertical === "yacht"
+          {vertical === "aviation" || vertical === "yacht" || vertical === "moveout"
             ? calcText.bespokeDesc
             : vertical === "special"
             ? calcText.biohazardDesc
@@ -511,11 +518,12 @@ export default function HeroQuoteCalculator() {
             onChange={(e) => setVertical(e.target.value)}
             className="w-full border border-border bg-bg text-ink p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
           >
-            <option value="commercial">{calcText.divCommercial}</option>
             <option value="domestic">{calcText.divDomestic}</option>
-            <option value="hospitality">{calcText.divHospitality}</option>
+            <option value="moveout">{calcText.divMoveout}</option>
             <option value="aviation">{calcText.divAviation}</option>
             <option value="yacht">{calcText.divYacht}</option>
+            <option value="commercial">{calcText.divCommercial}</option>
+            <option value="hospitality">{calcText.divHospitality}</option>
             <option value="special">{calcText.divSpecial}</option>
           </select>
         </div>
