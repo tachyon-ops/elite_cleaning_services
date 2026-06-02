@@ -342,6 +342,26 @@ export default function HeroQuoteCalculator() {
   const [frequency, setFrequency] = useState("weekly");
   const [preferredTime, setPreferredTime] = useState("after-hours");
 
+  const [particles, setParticles] = useState<{ id: number; left: string; xDir: number }[]>([]);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setSurfaceArea(val);
+    
+    // Spawn a sparkle particle
+    const pct = ((val - 50) / (500 - 50)) * 100;
+    const id = Date.now() + Math.random();
+    const xDir = (Math.random() - 0.5) * 35; // Random drift left/right (-17.5px to +17.5px)
+    const newParticle = { id, left: `calc(${pct}% + 4px)`, xDir };
+    
+    setParticles((prev) => [...prev.slice(-12), newParticle]); // limit to max 12 particles
+    
+    // Clean it up after animation finishes (750ms)
+    setTimeout(() => {
+      setParticles((prev) => prev.filter((p) => p.id !== id));
+    }, 750);
+  };
+
   // Calculate pricing values dynamically (matches official booking algorithms)
   const calculatePricing = () => {
     if (vertical === "aviation" || vertical === "yacht" || vertical === "moveout") {
@@ -516,7 +536,7 @@ export default function HeroQuoteCalculator() {
           <select
             value={vertical}
             onChange={(e) => setVertical(e.target.value)}
-            className="w-full border border-border bg-bg text-ink p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
+            className="w-full border border-border bg-bg text-ink p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer hover:border-accent/40 transition-all duration-300 shadow-xs"
           >
             <option value="domestic">{calcText.divDomestic}</option>
             <option value="moveout">{calcText.divMoveout}</option>
@@ -530,20 +550,47 @@ export default function HeroQuoteCalculator() {
 
         {/* Dynamic Parameters block based on Vertical selection */}
         {vertical === "commercial" && (
-          <div className="animate-fade-in space-y-2">
-            <div className="flex justify-between items-center text-[10px] text-ink-muted font-bold uppercase tracking-wider">
+          <div className="animate-fade-in space-y-3 relative overflow-visible pb-2 pt-4">
+            <div className="flex justify-between items-center text-[10px] text-ink-muted font-bold uppercase tracking-wider select-none">
               <span>{calcText.surfaceAreaLabel}</span>
-              <span className="text-accent font-mono">{surfaceArea} m²</span>
+              <span className="text-accent font-mono font-bold">{surfaceArea} m²</span>
             </div>
-            <input
-              type="range"
-              min="50"
-              max="500"
-              step="10"
-              value={surfaceArea}
-              onChange={(e) => setSurfaceArea(Number(e.target.value))}
-              className="w-full accent-accent bg-bg border border-border rounded-lg h-2 cursor-pointer outline-none"
-            />
+            <div className="relative w-full h-8 flex items-center overflow-visible">
+              {/* Dynamic Tooltip */}
+              <div 
+                className="absolute -top-5 bg-ink text-ink-inverse text-[9px] font-mono px-2 py-0.5 rounded shadow-md pointer-events-none select-none transition-all duration-75 flex items-center gap-1 border border-accent/30 z-20"
+                style={{ left: `calc(${((surfaceArea - 50) / 450) * 100}% - 24px + ${(50 - ((surfaceArea - 50) / 450) * 100) * 0.16}px)` }}
+              >
+                <Sparkles className="w-2.5 h-2.5 text-accent animate-pulse" />
+                <span>{surfaceArea} m²</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="500"
+                step="10"
+                value={surfaceArea}
+                onChange={handleSliderChange}
+                className="w-full custom-slider cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${((surfaceArea - 50) / 450) * 100}%, var(--color-border) ${((surfaceArea - 50) / 450) * 100}%, var(--color-border) 100%)`
+                }}
+              />
+              {/* Sparkle Emitter Container */}
+              <div className="absolute top-2 left-0 right-0 h-0 overflow-visible pointer-events-none">
+                {particles.map((p) => (
+                  <Sparkles
+                    key={p.id}
+                    className="sparkle-particle w-3.5 h-3.5"
+                    style={{
+                      left: p.left,
+                      // @ts-ignore
+                      "--x-dir": `${p.xDir}px`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -556,7 +603,7 @@ export default function HeroQuoteCalculator() {
               <select
                 value={bedrooms}
                 onChange={(e) => setBedrooms(Number(e.target.value))}
-                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
+                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer hover:border-accent/40 transition-all duration-300 shadow-xs"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <option key={num} value={num}>{num}</option>
@@ -570,7 +617,7 @@ export default function HeroQuoteCalculator() {
               <select
                 value={bathrooms}
                 onChange={(e) => setBathrooms(Number(e.target.value))}
-                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
+                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer hover:border-accent/40 transition-all duration-300 shadow-xs"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <option key={num} value={num}>{num}</option>
@@ -587,9 +634,9 @@ export default function HeroQuoteCalculator() {
               id="calcLinenCheckbox"
               checked={linenChange}
               onChange={(e) => setLinenChange(e.target.checked)}
-              className="w-4 h-4 rounded border-border bg-bg text-accent focus:ring-accent cursor-pointer accent-accent"
+              className="w-4 h-4 rounded border-border bg-bg text-accent focus:ring-accent cursor-pointer accent-accent transition-all duration-200"
             />
-            <label htmlFor="calcLinenCheckbox" className="text-body-xs font-semibold text-ink-muted cursor-pointer select-none">
+            <label htmlFor="calcLinenCheckbox" className="text-body-xs font-semibold text-ink-muted cursor-pointer select-none hover:text-ink transition-colors">
               {calcText.linenLabel}
             </label>
           </div>
@@ -605,7 +652,7 @@ export default function HeroQuoteCalculator() {
               <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
-                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
+                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer hover:border-accent/40 transition-all duration-300 shadow-xs"
               >
                 <option value="one-off">{mainT("booking.oneOff")}</option>
                 <option value="weekly">
@@ -628,7 +675,7 @@ export default function HeroQuoteCalculator() {
               <select
                 value={preferredTime}
                 onChange={(e) => setPreferredTime(e.target.value)}
-                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer"
+                className="w-full border border-border bg-bg text-ink p-2 rounded text-body-sm focus:border-accent outline-none font-semibold cursor-pointer hover:border-accent/40 transition-all duration-300 shadow-xs"
               >
                 <option value="business-hours">{mainT("booking.businessHours")}</option>
                 {vertical === "commercial" && (
@@ -646,7 +693,7 @@ export default function HeroQuoteCalculator() {
         <button
           type="button"
           onClick={handleBookingRedirect}
-          className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold py-3 rounded-md transition-all shadow-sm select-none text-center cursor-pointer uppercase tracking-wider"
+          className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold py-3.5 rounded-md transition-all shadow-sm select-none text-center cursor-pointer uppercase tracking-wider squeegee-shine transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)]"
         >
           {vertical === "aviation" || vertical === "yacht"
             ? calcText.requestQuoteButton

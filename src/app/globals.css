@@ -66,6 +66,7 @@
   --ease-default: cubic-bezier(0.2, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-spring: linear(0, 0.016 0.5%, 0.06 1%, 0.226 2%, 1.116 5.4%, 1.375 6.6%, 1.527 7.7%, 1.565 8.2%, 1.585 8.8%, 1.581 9.3%, 1.559 9.8%, 1.458 10.9%, 0.937 14.3%, 0.784 15.5%, 0.693 16.6%, 0.67 17.1%, 0.657 17.7%, 0.671 18.7%, 0.729 19.8%, 1.042 23.3%, 1.13 24.5%, 1.182 25.6%, 1.201 26.7%, 1.192 27.7%, 1.156 28.8%, 0.977 32.2%, 0.925 33.4%, 0.894 34.5%, 0.882 35.6%, 0.887 36.6%, 0.907 37.7%, 1.045 42.4%, 1.069 44.5%, 1.059 46.3%, 0.979 50.9%, 0.96 53.4%, 0.966 55.3%, 1.013 59.9%, 1.024 62.3%, 0.986 71.2%, 1.008 79.9%, 0.995 88.9%, 1);
 
   /* Typography Scale */
   --text-display-xl: 4.5rem;
@@ -163,3 +164,187 @@
     max-width: 65ch;
   }
 }
+
+/* Custom Interactive Micro-animations & Transitions */
+
+/* Squeegee Shine wipe */
+.squeegee-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.squeegee-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.15) 70%,
+    transparent
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.squeegee-shine:hover::after {
+  left: 150%;
+  transition: left 0.8s var(--ease-spring);
+}
+
+/* Logo specific squeegee shine (golden blend) */
+.logo-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.1) 30%,
+    rgba(212, 175, 55, 0.7) 50%,
+    rgba(212, 175, 55, 0.1) 70%,
+    transparent
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+
+.logo-shine:hover::after {
+  left: 150%;
+  transition: left 0.9s var(--ease-spring);
+}
+
+/* Card icon spring animations */
+.card-icon-spring {
+  rotate: 0deg;
+  scale: 1;
+  transition: rotate 0.8s var(--ease-spring), scale 0.8s var(--ease-spring);
+}
+
+.group:hover .card-icon-spring {
+  rotate: 8deg;
+  scale: 1.15;
+}
+
+/* Card arrow spring shift */
+.card-arrow-spring {
+  translate: 0px;
+  transition: translate 0.7s var(--ease-spring);
+}
+
+.group:hover .card-arrow-spring {
+  translate: 5px;
+}
+
+/* Custom premium slider */
+.custom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  outline: none;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+
+.custom-slider:focus-visible {
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+.custom-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.custom-slider::-webkit-slider-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-accent);
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -6px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+  transition: transform 0.3s var(--ease-spring), border-color 0.2s, background-color 0.2s;
+}
+
+.custom-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+  border-color: var(--color-accent-hover);
+}
+
+.custom-slider::-webkit-slider-thumb:active {
+  transform: scale(1.25);
+  background-color: var(--color-accent-soft);
+}
+
+/* Firefox Support for custom slider */
+.custom-slider::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.custom-slider::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+  transition: transform 0.3s var(--ease-spring), border-color 0.2s;
+}
+
+.custom-slider:hover::-moz-range-thumb {
+  transform: scale(1.15);
+}
+
+.custom-slider::-moz-range-thumb:active {
+  transform: scale(1.25);
+}
+
+/* Sparkle Floating Particle keyframes and class */
+@keyframes float-sparkle {
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translate(var(--x-dir, 10px), -15px) scale(1) rotate(45deg);
+  }
+  100% {
+    transform: translate(calc(var(--x-dir, 10px) * 2), -55px) scale(0.4) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.sparkle-particle {
+  position: absolute;
+  pointer-events: none;
+  animation: float-sparkle 0.75s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  color: var(--color-accent);
+  z-index: 50;
+}
+

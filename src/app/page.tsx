@@ -152,13 +152,13 @@ export default async function HomePage() {
           <div className="flex flex-wrap gap-4">
             <Link
               href={localizeHref("/book/general", locale)}
-              className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] active:translate-y-0 active:shadow-sm cursor-pointer"
+              className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] active:translate-y-0 active:shadow-sm cursor-pointer squeegee-shine"
             >
               {t("hero.ctaQuote")}
             </Link>
             <Link
               href="#how-it-works"
-              className="border border-border bg-transparent hover:bg-ink hover:text-ink-inverse text-ink text-button font-semibold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              className="border border-border bg-transparent hover:bg-ink hover:text-ink-inverse text-ink text-button font-semibold py-3.5 px-8 rounded-md transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer hover:shadow-sm"
             >
               {t("hero.ctaHow")}
             </Link>
@@ -222,8 +222,8 @@ export default async function HomePage() {
             const isOddTotal = sortedCategories.length % 2 !== 0;
             
             const cardColClass = isLast && isOddTotal
-              ? `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] md:col-span-2 lg:col-span-1 relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden`
-              : `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden`;
+              ? `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] md:col-span-2 lg:col-span-1 relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden squeegee-shine`
+              : `border ${isDomestic ? "border-accent/60 bg-accent-soft/10 hover:border-accent" : "border-border/80 bg-bg hover:border-accent/40"} p-8 rounded-lg flex flex-col justify-between min-h-[320px] relative shadow-xs hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden squeegee-shine`;
 
             return (
               <div key={cat.slug} className={cardColClass}>
@@ -244,7 +244,7 @@ export default async function HomePage() {
                 <div>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-8 w-8 bg-gradient-to-br from-accent-soft to-accent/15 rounded-md flex items-center justify-center text-accent border border-accent/25">
-                      <IconComponent className="w-4 h-4 group-hover:rotate-[8deg] transition-transform duration-300" />
+                      <IconComponent className="w-4 h-4 card-icon-spring" />
                     </div>
                     <span className="text-[10px] text-accent uppercase font-semibold tracking-wider">{t(`categories.${cat.slug}.subtitle`)}</span>
                   </div>
@@ -260,7 +260,7 @@ export default async function HomePage() {
                     className="text-body-sm font-bold text-accent group-hover:text-accent-hover transition-colors inline-flex items-center gap-1"
                   >
                     {t("portfolio.book").replace("→", "")}
-                    <span className="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+                    <span className="card-arrow-spring">→</span>
                   </Link>
                 </div>
               </div>
