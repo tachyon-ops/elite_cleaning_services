@@ -268,7 +268,7 @@ export async function createBooking(payload: {
     // Secure price calculation
     const pricing = calculatePrice(categorySlug, intake, scheduledAt);
 
-    const isQuoteVertical = ["aviation", "yacht", "special", "moveout"].includes(categorySlug);
+    const isQuoteVertical = ["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(categorySlug);
 
     // Matching Engine: Find active providers with active listing for this category slug (only if not a quote vertical yet)
     let hasMatchingProvider = false;

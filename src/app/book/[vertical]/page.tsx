@@ -172,7 +172,34 @@ export default function BookingPage() {
     // Move-out fields
     moveoutRooms: 3,
     moveoutArea: 80,
-    moveoutScope: ["handover_guarantee"]
+    moveoutScope: ["handover_guarantee"],
+
+    // Building Care fields
+    buildingPropertyType: "residential",
+    buildingEntrances: 1,
+    buildingFloors: 2,
+    buildingCommonArea: 50,
+    buildingLift: false,
+    buildingGarage: false,
+    buildingGarageArea: 0,
+    buildingWasteRoom: false,
+    buildingWindowCleaning: false,
+    buildingWindowFreq: "monthly",
+    buildingPortfolioSize: 0,
+
+    // Restaurant fields
+    restaurantVenueType: "restaurant",
+    restaurantSurfaceArea: 100,
+    restaurantCovers: 50,
+    restaurantTier: ["tier_a"],
+    restaurantKitchenArea: 30,
+    restaurantGreaseLoad: "light",
+    restaurantHoodLength: 2,
+    restaurantHoodsCount: 1,
+    restaurantDuctAccessible: false,
+    restaurantLastCertified: "",
+    restaurantCertRequiredFor: ["insurer"],
+    restaurantOperatingHours: "after-hours"
   });
 
   // Schedule State
@@ -355,7 +382,7 @@ export default function BookingPage() {
   }, []);
 
   // Validate Vertical
-  const isValidVertical = ["commercial", "hospitality", "domestic", "aviation", "yacht", "moveout"].includes(vertical) && activeSlugs.includes(vertical);
+  const isValidVertical = ["commercial", "hospitality", "domestic", "aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical) && activeSlugs.includes(vertical);
 
   // Auto-redirect if invalid vertical is requested
   useEffect(() => {
@@ -531,6 +558,10 @@ export default function BookingPage() {
       detailsText = `Vessel Type: ${intake.vesselType || "N/A"}\nLength: ${intake.vesselLength || 0} ft\nMarina: ${intake.marinaLocation || "N/A"}`;
     } else if (vertical === "moveout") {
       detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
+    } else if (vertical === "building-care") {
+      detailsText = `Property Type: ${intake.buildingPropertyType || "N/A"}\nEntrances: ${intake.buildingEntrances || 0}\nFloors: ${intake.buildingFloors || 0}\nCommon Area: ${intake.buildingCommonArea || 0} m²\nLift: ${intake.buildingLift ? "Yes" : "No"}\nGarage: ${intake.buildingGarage ? "Yes" : "No"} (${intake.buildingGarageArea || 0} m²)\nWaste Room: ${intake.buildingWasteRoom ? "Yes" : "No"}\nWindow Clean: ${intake.buildingWindowCleaning ? "Yes" : "No"} (${intake.buildingWindowFreq || "N/A"})\nPortfolio: ${intake.buildingPortfolioSize || 0}`;
+    } else if (vertical === "restaurant") {
+      detailsText = `Venue Type: ${intake.restaurantVenueType || "N/A"}\nSurface Area: ${intake.restaurantSurfaceArea || 0} m²\nCovers: ${intake.restaurantCovers || 0}\nTiers: ${(intake.restaurantTier || []).join(", ")}\nKitchen Area: ${intake.restaurantKitchenArea || 0} m²\nGrease Load: ${intake.restaurantGreaseLoad || "N/A"}\nHoods: ${intake.restaurantHoodsCount || 0} (${intake.restaurantHoodLength || 0}m)\nDuct Accessible: ${intake.restaurantDuctAccessible ? "Yes" : "No"}\nLast Certified: ${intake.restaurantLastCertified || "N/A"}\nCert Target: ${(intake.restaurantCertRequiredFor || []).join(", ")}`;
     } else if (vertical === "special") {
       detailsText = `Special service request details.`;
     }
@@ -571,7 +602,7 @@ Please help me schedule this service manually. Thank you!`;
 
     setLoading(false);
     if (res.success && res.bookingId) {
-      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout") {
+      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && vertical !== "building-care" && vertical !== "restaurant") {
         // Build WhatsApp message template
         const formattedDate = selectedDate || "Not scheduled";
         const formattedSlot = selectedSlot === "morning" ? "Morning Slot" : selectedSlot === "afternoon" ? "Afternoon Slot" : "Not specified";
@@ -586,6 +617,10 @@ Please help me schedule this service manually. Thank you!`;
           detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
         } else if (vertical === "moveout") {
           detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
+        } else if (vertical === "building-care") {
+          detailsText = `Property Type: ${intake.buildingPropertyType || "N/A"}\nEntrances: ${intake.buildingEntrances || 0}\nFloors: ${intake.buildingFloors || 0}\nCommon Area: ${intake.buildingCommonArea || 0} m²\nLift: ${intake.buildingLift ? "Yes" : "No"}\nGarage: ${intake.buildingGarage ? "Yes" : "No"} (${intake.buildingGarageArea || 0} m²)\nWaste Room: ${intake.buildingWasteRoom ? "Yes" : "No"}\nWindow Clean: ${intake.buildingWindowCleaning ? "Yes" : "No"} (${intake.buildingWindowFreq || "N/A"})\nPortfolio: ${intake.buildingPortfolioSize || 0}`;
+        } else if (vertical === "restaurant") {
+          detailsText = `Venue Type: ${intake.restaurantVenueType || "N/A"}\nSurface Area: ${intake.restaurantSurfaceArea || 0} m²\nCovers: ${intake.restaurantCovers || 0}\nTiers: ${(intake.restaurantTier || []).join(", ")}\nKitchen Area: ${intake.restaurantKitchenArea || 0} m²\nGrease Load: ${intake.restaurantGreaseLoad || "N/A"}\nHoods: ${intake.restaurantHoodsCount || 0} (${intake.restaurantHoodLength || 0}m)\nDuct Accessible: ${intake.restaurantDuctAccessible ? "Yes" : "No"}\nLast Certified: ${intake.restaurantLastCertified || "N/A"}\nCert Target: ${(intake.restaurantCertRequiredFor || []).join(", ")}`;
         } else if (vertical === "special") {
           detailsText = `Special service request details.`;
         }
@@ -814,11 +849,19 @@ Please verify and confirm my dispatch request. Thank you!`;
                 <Check className="w-8 h-8" />
               </div>
               <h2 className="text-display-md font-display font-medium text-ink">
-                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? t("requestSubmitted") : t("bookingConfirmed")}
+                {["aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical) ? t("requestSubmitted") : t("bookingConfirmed")}
               </h2>
               <p className="text-body-md text-ink-muted max-w-[50ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? (
-                  t(vertical === "moveout" ? "thankYouMoveout" : "thankYouAviation")
+                {["aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical) ? (
+                  t(
+                    vertical === "moveout"
+                      ? "thankYouMoveout"
+                      : vertical === "building-care"
+                      ? "thankYouBuildingCare"
+                      : vertical === "restaurant"
+                      ? "thankYouRestaurant"
+                      : "thankYouAviation"
+                  )
                     .replace("Thank you.", `Thank you, ${contact.name}.`)
                     .replace("Merci.", `Merci, ${contact.name}.`)
                     .replace("Vielen Dank.", `Vielen Dank, ${contact.name}.`)
@@ -842,7 +885,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                 {t("scheduled")} {selectedDate} ({selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")})
               </div>
               <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
-                {vertical === "aviation" || vertical === "yacht" || vertical === "moveout" ? (
+                {["aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical) ? (
                   (() => {
                     const parts = t("quoteSentEmail").split("{email}");
                     return <span>{parts[0]}<b>{contact.email}</b>{parts[1]}</span>;
@@ -1288,6 +1331,359 @@ Please verify and confirm my dispatch request. Thank you!`;
                     />
                   </div>
                 </div>
+              ) : vertical === "building-care" ? (
+                <div className="space-y-4 pt-4">
+                  {/* Building Care Intake Form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CustomSelect
+                      label={t("propertyType")}
+                      value={intake.buildingPropertyType || "residential"}
+                      onChange={(val) => handleIntakeChange("buildingPropertyType", val)}
+                      options={[
+                        { value: "residential", label: t("propertyTypeResidential") },
+                        { value: "mixed", label: t("propertyTypeMixed") },
+                        { value: "commercial", label: t("propertyTypeCommercial") }
+                      ]}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("entrancesCount")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.buildingEntrances || 1}
+                        onChange={(e) => handleIntakeChange("buildingEntrances", parseInt(e.target.value) || 1)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("floorsCount")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.buildingFloors || 2}
+                        onChange={(e) => handleIntakeChange("buildingFloors", parseInt(e.target.value) || 2)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("commonAreaM2")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.buildingCommonArea || 50}
+                        onChange={(e) => handleIntakeChange("buildingCommonArea", parseInt(e.target.value) || 50)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <label className="flex items-center gap-2.5 cursor-pointer text-body-sm text-ink-muted font-body">
+                      <input
+                        type="checkbox"
+                        checked={intake.buildingLift || false}
+                        onChange={(e) => handleIntakeChange("buildingLift", e.target.checked)}
+                        className="accent-accent h-4 w-4"
+                      />
+                      {t("liftPresent")}
+                    </label>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer text-body-sm text-ink-muted font-body">
+                      <input
+                        type="checkbox"
+                        checked={intake.buildingGarage || false}
+                        onChange={(e) => handleIntakeChange("buildingGarage", e.target.checked)}
+                        className="accent-accent h-4 w-4"
+                      />
+                      {t("garagePresent")}
+                    </label>
+                  </div>
+
+                  {intake.buildingGarage && (
+                    <div className="flex flex-col gap-2 pt-2 animate-popover-in">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("garageM2")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.buildingGarageArea || 100}
+                        onChange={(e) => handleIntakeChange("buildingGarageArea", parseInt(e.target.value) || 100)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <label className="flex items-center gap-2.5 cursor-pointer text-body-sm text-ink-muted font-body">
+                      <input
+                        type="checkbox"
+                        checked={intake.buildingWasteRoom || false}
+                        onChange={(e) => handleIntakeChange("buildingWasteRoom", e.target.checked)}
+                        className="accent-accent h-4 w-4"
+                      />
+                      {t("wasteRoomIncluded")}
+                    </label>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer text-body-sm text-ink-muted font-body">
+                      <input
+                        type="checkbox"
+                        checked={intake.buildingWindowCleaning || false}
+                        onChange={(e) => handleIntakeChange("buildingWindowCleaning", e.target.checked)}
+                        className="accent-accent h-4 w-4"
+                      />
+                      {t("windowCleaningSeparate")}
+                    </label>
+                  </div>
+
+                  {intake.buildingWindowCleaning && (
+                    <div className="pt-2 animate-popover-in">
+                      <CustomSelect
+                        label={t("frequencies")}
+                        value={intake.buildingWindowFreq || "monthly"}
+                        onChange={(val) => handleIntakeChange("buildingWindowFreq", val)}
+                        options={[
+                          { value: "weekly", label: t("weekly") },
+                          { value: "bi-weekly", label: t("biWeekly") },
+                          { value: "monthly", label: t("monthly") },
+                          { value: "quarterly", label: "Quarterly" }
+                        ]}
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <CustomSelect
+                      label={t("frequencies")}
+                      value={intake.frequency || "weekly"}
+                      onChange={(val) => handleIntakeChange("frequency", val)}
+                      options={[
+                        { value: "weekly", label: t("weekly") },
+                        { value: "bi-weekly", label: t("biWeekly") },
+                        { value: "monthly", label: t("monthly") }
+                      ]}
+                    />
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("portfolioSize")}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={intake.buildingPortfolioSize || 0}
+                        onChange={(e) => handleIntakeChange("buildingPortfolioSize", parseInt(e.target.value) || 0)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase font-body">{t("specInstructions")}</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder="Access Schließanlage codes, key repository location..."
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-20 resize-none font-body"
+                    />
+                  </div>
+                </div>
+              ) : vertical === "restaurant" ? (
+                <div className="space-y-4 pt-4">
+                  {/* Restaurant Intake Form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CustomSelect
+                      label={t("venueType")}
+                      value={intake.restaurantVenueType || "restaurant"}
+                      onChange={(val) => handleIntakeChange("restaurantVenueType", val)}
+                      options={[
+                        { value: "restaurant", label: t("venueTypeRestaurant") },
+                        { value: "bar", label: t("venueTypeBar") },
+                        { value: "cafe", label: t("venueTypeCafe") },
+                        { value: "hotel_fnb", label: t("venueTypeHotelFnb") },
+                        { value: "commercial_kitchen", label: t("venueTypeCommKitchen") },
+                        { value: "bakery", label: t("venueTypeBakery") }
+                      ]}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("coversSeats")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.restaurantCovers || 50}
+                        onChange={(e) => handleIntakeChange("restaurantCovers", parseInt(e.target.value) || 50)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-caption text-ink font-semibold uppercase">{t("surfaceArea")}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intake.restaurantSurfaceArea || 100}
+                        onChange={(e) => handleIntakeChange("restaurantSurfaceArea", parseInt(e.target.value) || 100)}
+                        className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                      />
+                    </div>
+                    <CustomSelect
+                      label={t("operatingHours")}
+                      value={intake.restaurantOperatingHours || "after-hours"}
+                      onChange={(val) => handleIntakeChange("restaurantOperatingHours", val)}
+                      options={[
+                        { value: "after-hours", label: t("afterHours") },
+                        { value: "business-hours", label: t("businessHours") },
+                        { value: "weekends", label: t("weekends") }
+                      ]}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-caption text-ink font-semibold uppercase block font-body">{t("cleaningTier")}</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
+                      {[
+                        { id: "tier_a", label: t("tierACompliance") },
+                        { id: "tier_b", label: t("tierBNightly") }
+                      ].map((item) => {
+                        const isChecked = intake.restaurantTier?.includes(item.id);
+                        return (
+                          <label key={item.id} className="flex items-center gap-2.5 cursor-pointer font-body">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const nextTiers = e.target.checked
+                                  ? [...(intake.restaurantTier || []), item.id]
+                                  : (intake.restaurantTier || []).filter((id: string) => id !== item.id);
+                                handleIntakeChange("restaurantTier", nextTiers);
+                              }}
+                              className="accent-accent h-4 w-4"
+                            />
+                            {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {intake.restaurantTier?.includes("tier_a") && (
+                    <div className="space-y-4 border-t border-border/60 pt-4 mt-2 animate-popover-in">
+                      <h4 className="text-body-sm font-semibold text-accent uppercase tracking-wider font-body">Tier A (Extraction & Compliance) Details</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">{t("kitchenSizeM2")}</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={intake.restaurantKitchenArea || 30}
+                            onChange={(e) => handleIntakeChange("restaurantKitchenArea", parseInt(e.target.value) || 30)}
+                            className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                          />
+                        </div>
+                        <CustomSelect
+                          label={t("greaseLoad")}
+                          value={intake.restaurantGreaseLoad || "light"}
+                          onChange={(val) => handleIntakeChange("restaurantGreaseLoad", val)}
+                          options={[
+                            { value: "light", label: t("greaseLoadLight") },
+                            { value: "heavy", label: t("greaseLoadHeavy") }
+                          ]}
+                        />
+                        <div className="flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">{t("hoodLength")}</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={intake.restaurantHoodLength || 2}
+                            onChange={(e) => handleIntakeChange("restaurantHoodLength", parseInt(e.target.value) || 2)}
+                            className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">{t("hoodsCount")}</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={intake.restaurantHoodsCount || 1}
+                            onChange={(e) => handleIntakeChange("restaurantHoodsCount", parseInt(e.target.value) || 1)}
+                            className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label className="flex items-center gap-2.5 cursor-pointer text-body-sm text-ink-muted font-body">
+                          <input
+                            type="checkbox"
+                            checked={intake.restaurantDuctAccessible || false}
+                            onChange={(e) => handleIntakeChange("restaurantDuctAccessible", e.target.checked)}
+                            className="accent-accent h-4 w-4"
+                          />
+                          {t("ductAccessible") || "Duct accessible / Roof fan present?"}
+                        </label>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-caption text-ink font-semibold uppercase">{t("lastCertified")}</label>
+                          <input
+                            type="date"
+                            value={intake.restaurantLastCertified || ""}
+                            onChange={(e) => handleIntakeChange("restaurantLastCertified", e.target.value)}
+                            className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-caption text-ink font-semibold uppercase block font-body">{t("certificateRequiredFor")}</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-body-sm text-ink-muted">
+                          {[
+                            { id: "insurer", label: t("certForInsurer") },
+                            { id: "fire", label: t("certForFire") },
+                            { id: "internal", label: t("certForInternal") }
+                          ].map((item) => {
+                            const isChecked = intake.restaurantCertRequiredFor?.includes(item.id);
+                            return (
+                              <label key={item.id} className="flex items-center gap-2.5 cursor-pointer font-body">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    const nextCerts = e.target.checked
+                                      ? [...(intake.restaurantCertRequiredFor || []), item.id]
+                                      : (intake.restaurantCertRequiredFor || []).filter((id: string) => id !== item.id);
+                                    handleIntakeChange("restaurantCertRequiredFor", nextCerts);
+                                  }}
+                                  className="accent-accent h-4 w-4"
+                                />
+                                {item.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <CustomSelect
+                    label={t("frequencies")}
+                    value={intake.frequency || "one-off"}
+                    onChange={(val) => handleIntakeChange("frequency", val)}
+                    options={[
+                      { value: "one-off", label: t("oneOffClean") },
+                      { value: "weekly", label: t("weekly") },
+                      { value: "bi-weekly", label: t("biWeekly") },
+                      { value: "monthly", label: t("monthly") }
+                    ]}
+                  />
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase font-body">{t("specInstructions")}</label>
+                    <textarea
+                      value={intake.specialRequirements}
+                      onChange={(e) => handleIntakeChange("specialRequirements", e.target.value)}
+                      placeholder="Access codes, grease trap details, alarm bypass instructions..."
+                      className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none h-20 resize-none font-body"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4 pt-4">
                   {/* Domestic Intake Form */}
@@ -1566,11 +1962,11 @@ Please verify and confirm my dispatch request. Thank you!`;
           {/* STEP 3: QUOTE / REVIEW */}
           {step === 3 && (
             <div className="space-y-6">
-              {vertical === "aviation" || vertical === "yacht" || vertical === "special" || vertical === "moveout" ? (
+              {["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(vertical) ? (
                 <div className="space-y-4 pt-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("bespokeQuoteRequired")}</h2>
                   <p className="text-body-sm text-ink-muted">
-                    {vertical === "moveout" ? t("moveoutQuoteDesc") : t("aviationYachtQuoteDesc")}
+                    {vertical === "moveout" ? t("moveoutQuoteDesc") : vertical === "building-care" ? t("buildingCareQuoteDesc") : vertical === "restaurant" ? t("restaurantQuoteDesc") : t("aviationYachtQuoteDesc")}
                   </p>
                   <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6 text-body-sm leading-relaxed">
                     <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
@@ -1897,12 +2293,12 @@ Please verify and confirm my dispatch request. Thank you!`;
                 </button>
                 <button
                   onClick={submitBooking}
-                  disabled={loading || !address || (autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && !cardName)}
+                  disabled={loading || !address || (autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && vertical !== "building-care" && vertical !== "restaurant" && !cardName)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 px-8 rounded-md transition-colors disabled:opacity-50 cursor-pointer font-body"
                 >
                   {loading 
                     ? t("processing") 
-                    : vertical === "aviation" || vertical === "yacht" || vertical === "moveout"
+                    : ["aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical)
                       ? t("submitBespoke") 
                       : !autoCheckout
                         ? t("booking.confirmSendWhatsapp")
@@ -1916,7 +2312,7 @@ Please verify and confirm my dispatch request. Thank you!`;
 
             {/* Pricing / Booking Summary Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              {vertical === "aviation" || vertical === "yacht" || vertical === "special" || vertical === "moveout" ? (
+              {["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(vertical) ? (
                 <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
                   <h3 className="text-body-md font-display font-medium text-ink tracking-wide uppercase border-b border-border pb-2">
                     {t("bespokeInquiry")}

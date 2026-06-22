@@ -17,7 +17,7 @@ export async function checkAndSeedDb() {
     }
 
     // Seed localized pages
-    const pageKeys = ["privacy", "terms", "cookies", "about", "provider-terms", "impressum"];
+    const pageKeys = ["privacy", "terms", "cookies", "about", "provider-terms", "impressum", "building-care", "restaurant"];
     for (const key of pageKeys) {
       let page = await db.page.findUnique({ where: { key } });
       if (!page) {
@@ -1077,6 +1077,88 @@ Nuno Ribeiro, Fundador e CEO
 A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualidade ou integridade das informações contidas neste website. A responsabilidade pela prestação dos serviços físicos de limpeza recai exclusivamente sobre o parceiro subcontratado independente que executa o serviço.`
           }
         ];
+      } else if (key === "building-care") {
+        translations = [
+          {
+            locale: "de",
+            slug: "building-care",
+            title: "Liegenschaftsunterhalt & Reinigungs-Service",
+            content: `# Liegenschaftsunterhalt & Reinigungs-Service
+Premium-Betreuung für Ihre Liegenschaften.
+
+Wir sorgen für makellose Sauberkeit in den Gemeinschaftsbereichen anspruchsvoller Wohn- und Geschäftsgebäude. Diskret, zuverlässig und wertsteigernd.
+
+## Unser Angebot
+- Reinigung von Hauseingängen und Treppenhäusern
+- Kabinenreinigung für Aufzüge
+- Pflege von Entsorgungs- und Veloräumen
+- Fensterreinigung im Gemeinschaftsbereich (separater Turnus)
+- Einstellhallen- & Garagenreinigung`
+          },
+          {
+            locale: "en",
+            slug: "building-care",
+            title: "Building Care & Common Area Cleaning",
+            content: `# Building Care & Common Area Cleaning
+Premium care for your residential and commercial properties.
+
+We maintain the common areas of prestige buildings to the highest standards. Discreet, reliable, and asset-preserving.
+
+## What We Offer
+- Entrance lobby & staircase cleaning
+- Elevator cabin cleaning
+- Waste & recycling room maintenance
+- Common area window cleaning (flexible scheduling)
+- Underground garage cleaning`
+          }
+        ];
+        for (const loc of ["fr", "it", "rm", "es", "pt"]) {
+          translations.push({
+            locale: loc,
+            slug: `building-care-${loc}`,
+            title: "Building Care",
+            content: `# Building Care
+Premium common area cleaning for residential and commercial buildings.`
+          });
+        }
+      } else if (key === "restaurant") {
+        translations = [
+          {
+            locale: "de",
+            slug: "restaurant",
+            title: "Restaurant- & Küchenreinigung",
+            content: `# Restaurant- & Küchenreinigung
+Hygiene und Brandschutz-Zertifizierung aus einer Hand.
+
+Wir bieten professionelle Reinigungsdienstleistungen für Küchen, Bar- und Gästebereiche. Maximale Compliance und Sauberkeit, die Ihre Versicherung überzeugt.
+
+## Unsere Services
+- **Abzugshauben & Abluftkanäle (Tier A)**: Zertifizierte Reinigung von Abzugshauben, Kanälen und Ventilatoren nach VKF-Brandschutzrichtlinien inklusive Vorher-Nachher-Dokumentation und Zertifikat.
+- **Unterhaltsreinigung (Tier B)**: Regelmässige Reinigung des Gästebereichs (FOH) und Arbeitsflächen (BOH) nach Betriebsschluss.`
+          },
+          {
+            locale: "en",
+            slug: "restaurant",
+            title: "Restaurant & Commercial Kitchen Cleaning",
+            content: `# Restaurant & Commercial Kitchen Cleaning
+Professional hygiene and VKF fire safety compliance.
+
+We provide premium cleaning services for commercial kitchens, front-of-house, and dining areas. Peace of mind and certification you can hand to your insurer.
+
+## Our Services
+- **Extraction & Compliance (Tier A)**: Certified cleaning of kitchen hoods, ducts, and fans according to VKF fire safety regulations. Includes before/after photos and compliance certificate.
+- **Nightly Maintenance (Tier B)**: Regular deep cleaning of front-of-house (FOH) and back-of-house (BOH) spaces outside operating hours.`
+          }
+        ];
+        for (const loc of ["fr", "it", "rm", "es", "pt"]) {
+          translations.push({
+            locale: loc,
+            slug: `restaurant-${loc}`,
+            title: "Restaurant Cleaning",
+            content: `# Restaurant Cleaning
+Professional cleaning and fire compliance certification for restaurant kitchens.`
+          });
+        }
       }
       
       for (const t of translations) {
@@ -1153,8 +1235,34 @@ A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualid
       console.log("Moveout cleaning seeded successfully.");
     }
 
+    // Check if building-care is missing and seed it
+    const buildingCareCat = await db.serviceCategory.findUnique({
+      where: { slug: "building-care" }
+    });
+
+    if (!buildingCareCat) {
+      console.log("Building Care category missing. Seeding building-care category...");
+      await db.serviceCategory.create({
+        data: { slug: "building-care", name: "Building Care", vertical: "building-care", pricingModel: "quote_on_request", active: true }
+      });
+      console.log("Building Care cleaning seeded successfully.");
+    }
+
+    // Check if restaurant is missing and seed it
+    const restaurantCat = await db.serviceCategory.findUnique({
+      where: { slug: "restaurant" }
+    });
+
+    if (!restaurantCat) {
+      console.log("Restaurant category missing. Seeding restaurant category...");
+      await db.serviceCategory.create({
+        data: { slug: "restaurant", name: "Restaurant & Kitchen", vertical: "restaurant", pricingModel: "quote_on_request", active: true }
+      });
+      console.log("Restaurant cleaning seeded successfully.");
+    }
+
     const count = await db.serviceCategory.count();
-    if (count > 2) { // 2 if only domestic and moveout exist, but normally it should seed everything if completely empty
+    if (count > 4) { // 4 if only domestic, moveout, building-care, restaurant exist, but normally it should seed everything if completely empty
       console.log("Database already seeded. Categories count:", count);
       return;
     }
@@ -1167,7 +1275,9 @@ A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualid
       { slug: "aviation", name: "Aviation Detailing", vertical: "aviation", pricingModel: "quote_on_request", active: true },
       { slug: "yacht", name: "Yacht & Marine Care", vertical: "yacht", pricingModel: "quote_on_request", active: true },
       { slug: "special", name: "Biohazard & Post-Incident", vertical: "special", pricingModel: "quote_on_request", active: true },
-      { slug: "moveout", name: "Move-Out & End Clean", vertical: "moveout", pricingModel: "quote_on_request", active: true }
+      { slug: "moveout", name: "Move-Out & End Clean", vertical: "moveout", pricingModel: "quote_on_request", active: true },
+      { slug: "building-care", name: "Building Care", vertical: "building-care", pricingModel: "quote_on_request", active: true },
+      { slug: "restaurant", name: "Restaurant & Kitchen", vertical: "restaurant", pricingModel: "quote_on_request", active: true }
     ];
 
     for (const cat of categories) {

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getAuthenticatedActor } from "./auth-helper";
+import { cancelBookingWithRefund } from "@/app/actions/payments";
 
 /**
  * Retrieves bookings filtered based on the current user's role.
@@ -151,11 +152,17 @@ export async function cancelBooking(bookingId: string, reason: string) {
     }
   }
 
-  return await db.booking.update({
-    where: { id: bookingId },
-    data: {
-      status: isStaff ? "cancelled_by_ops" : "cancelled_by_customer",
-      cancellationReason: reason,
-    },
+  const cancelledBy = isStaff ? "ops" : "customer";
+  const res = await cancelBookingWithRefund(bookingId, cancelledBy, reason);
+  if (!res.success) {
+    throw new Error(res.error);
+  }
+
+  const freshBooking = await db.booking.findUnique({
+    where: { id: bookingId }
   });
+  if (!freshBooking) {
+    throw new Error("Booking not found after update.");
+  }
+  return freshBooking;
 }

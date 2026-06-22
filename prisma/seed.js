@@ -29,6 +29,10 @@ async function main() {
   await prisma.providerTeam.deleteMany({});
   await prisma.provider.deleteMany({});
   await prisma.guestEmail.deleteMany({});
+  await prisma.jobOccurrence.deleteMany({});
+  await prisma.serviceContract.deleteMany({});
+  await prisma.property.deleteMany({});
+  await prisma.organization.deleteMany({});
   await prisma.user.deleteMany({});
 
   console.log('Database cleared.');
@@ -41,7 +45,9 @@ async function main() {
     { slug: 'aviation', name: 'Aviation Detailing', vertical: 'aviation', pricingModel: 'quote_on_request', active: true },
     { slug: 'yacht', name: 'Yacht & Marine Care', vertical: 'yacht', pricingModel: 'quote_on_request', active: true },
     { slug: 'special', name: 'Biohazard & Post-Incident', vertical: 'special', pricingModel: 'quote_on_request', active: true },
-    { slug: 'moveout', name: 'Move-Out & End Clean', vertical: 'moveout', pricingModel: 'quote_on_request', active: true }
+    { slug: 'moveout', name: 'Move-Out & End Clean', vertical: 'moveout', pricingModel: 'quote_on_request', active: true },
+    { slug: 'building-care', name: 'Building Care', vertical: 'building-care', pricingModel: 'quote_on_request', active: true },
+    { slug: 'restaurant', name: 'Restaurant & Kitchen', vertical: 'restaurant', pricingModel: 'quote_on_request', active: true }
   ];
 
   for (const cat of categories) {

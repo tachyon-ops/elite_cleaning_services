@@ -36,6 +36,10 @@ model User {
   quotesCreated         Quote[]             @relation("OpsUserQuotes")
   reviews               Review[]
   auditLogs             AuditLog[]
+
+  organizationId        String?
+  organization          Organization?       @relation("OrgUsers", fields: [organizationId], references: [id], onDelete: SetNull)
+  managedOrganizations  Organization[]      @relation("OrgAccountManager")
 }
 
 // 2. Guest Verification
@@ -156,6 +160,10 @@ model Booking {
   stripeSubscriptionId  String?
   isFirstBooking        Boolean          @default(true)
   cancellationReason    String?
+  balanceStripePaymentIntentId String?
+  balanceAuthStatus            String?   @default("not_attempted")
+  balanceAuthFailedAt          DateTime?
+  balanceAuthAttempts          Int       @default(0)
   providerOfferId       String?
   providerPayoutAmountChf Decimal?
   commissionAmountChf   Decimal?
@@ -453,4 +461,91 @@ model SystemSetting {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// B2B Organization Account
+model Organization {
+  id                  String            @id @default(uuid())
+  name                String
+  type                String            // "verwaltung", "restaurant_group", "hospitality", "other"
+  uidVat              String?           // Swiss VAT / UID
+  billingAddress      String
+  billingEmail        String
+  paymentTerms        String            @default("card") // "card", "invoice_net30"
+  primaryContactName  String
+  primaryContactPhone String?
+  accountManagerId    String?           // References User (Super Admin/Ops)
+  accountManager      User?             @relation("OrgAccountManager", fields: [accountManagerId], references: [id], onDelete: SetNull)
+  status              String            @default("active") // "active", "suspended"
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  properties          Property[]
+  contracts           ServiceContract[]
+  users               User[]            @relation("OrgUsers")
+}
+
+// Managed site under an Organization
+model Property {
+  id              String            @id @default(uuid())
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name            String
+  address         String
+  geo             String?
+  type            String            // "building", "restaurant", "mixed_use", etc.
+  intake          String            // JSON string containing building/venue specs (§7.6 / 7.7)
+  accessInfo      String            // JSON string containing alarm/key info
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  contracts       ServiceContract[]
+
+  @@index([organizationId])
+}
+
+// Recurring B2B Agreement
+model ServiceContract {
+  id              String            @id @default(uuid())
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  propertyId      String
+  property        Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  vertical        String            // "building_care", "restaurant"
+  tier            String            // "common_areas", "extraction_compliance", "nightly_maintenance"
+  frequency       String            // "weekly", "bi_weekly", "monthly", "custom"
+  schedule        String            // JSON string: { dayOfWeek: Int, window: String }
+  partnerTeamId   String?           // Nullable until assigned (matches ProviderTeam.id)
+  priceChf        Decimal
+  billingCadence  String            @default("monthly_invoice") // "monthly_invoice", "stripe_subscription"
+  startsOn        DateTime
+  endsOn          DateTime?
+  status          String            @default("draft") // "draft", "active", "suspended", "expired"
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  jobs            JobOccurrence[]
+
+  @@index([organizationId])
+  @@index([propertyId])
+}
+
+// Scheduled B2B Job occurrence spawned from a ServiceContract
+model JobOccurrence {
+  id                String          @id @default(uuid())
+  contractId        String
+  contract          ServiceContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  scheduledAt       DateTime
+  partnerTeamId     String?         // Nullable until assigned
+  status            String          @default("scheduled") // "scheduled", "in_progress", "completed", "disputed", "cancelled"
+  completionPhotos  String?         // JSON string array of URLs (stored as JSON string)
+  rating            Int?
+  certificateDocId  String?         // Nullable compliance certificate reference
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([contractId])
 }

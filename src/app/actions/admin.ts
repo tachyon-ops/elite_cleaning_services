@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { hashPassword, verifyPassword, verifyTOTPToken, getTOTPAuthUrl, generateTOTPSecret, generateEmailOtp } from "@/lib/auth-utils";
 import QRCode from "qrcode";
 import { sendEmail } from "@/lib/email-utils";
+import { captureBalance, cancelBookingWithRefund } from "@/app/actions/payments";
 
 
 // 1.0 Check if any admin user exists
@@ -552,10 +553,33 @@ export async function updateBookingStatus(bookingId: string, status: string) {
       throw new Error("Booking not found");
     }
 
-    const updated = await db.booking.update({
-      where: { id: bookingId },
-      data: { status }
-    });
+    let updatedStatus = status;
+    if (status === "cancelled" || status.startsWith("cancelled")) {
+      const res = await cancelBookingWithRefund(bookingId, "ops", "Cancelled by Admin via Dashboard");
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+      updatedStatus = "cancelled_by_ops";
+    } else if (status === "completed") {
+      await db.booking.update({
+        where: { id: bookingId },
+        data: { status }
+      });
+      const res = await captureBalance(bookingId);
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+    } else {
+      await db.booking.update({
+        where: { id: bookingId },
+        data: { status }
+      });
+    }
+
+    const updated = await db.booking.findUnique({ where: { id: bookingId } });
+    if (!updated) {
+      throw new Error("Failed to retrieve updated booking");
+    }
 
     // Log audit trail
     await db.auditLog.create({
