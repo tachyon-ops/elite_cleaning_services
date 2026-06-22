@@ -2,6 +2,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.HOME === '/home/editor';
+  if (isProduction) {
+    console.log('Production environment detected. Seeding is disabled to protect existing data.');
+    return;
+  }
+
   // Clear existing data
   await prisma.dispute.deleteMany({});
   await prisma.commissionLedger.deleteMany({});
