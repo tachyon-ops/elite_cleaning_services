@@ -319,7 +319,23 @@
       "btnLoggingIn": "ACCESSO IN CORSO...",
       "notRegistered": "Non sei ancora registrato?",
       "submitApplication": "Invia candidatura",
-      "copyright": "Elite Cleaning Platform AG. Accesso operatore sicuro."
+      "copyright": "Elite Cleaning Platform AG. Accesso operatore sicuro.",
+      "forgotPassword": "Password dimenticata?",
+      "forgotPasswordTitle": "Reimposta la password",
+      "forgotPasswordDesc": "Inserisci la tua email di partner per richiedere un codice di ripristino.",
+      "btnSendResetCode": "Invia codice di ripristino",
+      "btnSendingResetCode": "Invio...",
+      "resetPasswordTitle": "Imposta una nuova password",
+      "resetPasswordDesc": "Inserisci il codice inviato alla tua email e la tua nuova password.",
+      "labelResetCode": "Codice di ripristino a 6 cifre",
+      "labelNewPassword": "Nuova password",
+      "btnResetPassword": "Reimposta la password",
+      "btnResetting": "Ripristino...",
+      "successPasswordReset": "Password reimpostata con successo. Ora puoi accedere.",
+      "errCodeExpiredOrInvalid": "Codice di verifica non valido o scaduto.",
+      "errPasswordsDoNotMatch": "Le password non corrispondono.",
+      "errResetFailed": "Impossibile reimpostare la password.",
+      "errEmailNotFound": "Nessun account trovato con questo indirizzo email."
     }
   },
   "cookieBanner": {

@@ -319,7 +319,23 @@
       "btnLoggingIn": "CONNEXION EN COURS...",
       "notRegistered": "Pas encore inscrit ?",
       "submitApplication": "Déposer une candidature",
-      "copyright": "Elite Cleaning Platform AG. Accès répartiteur sécurisé."
+      "copyright": "Elite Cleaning Platform AG. Accès répartiteur sécurisé.",
+      "forgotPassword": "Mot de passe oublié ?",
+      "forgotPasswordTitle": "Réinitialiser le mot de passe",
+      "forgotPasswordDesc": "Saisissez votre e-mail de partenaire pour demander un code de réinitialisation.",
+      "btnSendResetCode": "Envoyer le code",
+      "btnSendingResetCode": "Envoi en cours...",
+      "resetPasswordTitle": "Définir le nouveau mot de passe",
+      "resetPasswordDesc": "Saisissez le code envoyé à votre adresse e-mail et votre nouveau mot de passe.",
+      "labelResetCode": "Code de réinitialisation à 6 chiffres",
+      "labelNewPassword": "Nouveau mot de passe",
+      "btnResetPassword": "Réinitialiser le mot de passe",
+      "btnResetting": "Réinitialisation...",
+      "successPasswordReset": "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
+      "errCodeExpiredOrInvalid": "Code de vérification invalide ou expiré.",
+      "errPasswordsDoNotMatch": "Les mots de passe ne correspondent pas.",
+      "errResetFailed": "Échec de la réinitialisation du mot de passe.",
+      "errEmailNotFound": "Aucun compte trouvé avec cette adresse e-mail."
     }
   },
   "cookieBanner": {

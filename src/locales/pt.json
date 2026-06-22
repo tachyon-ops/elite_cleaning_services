@@ -319,7 +319,23 @@
       "btnLoggingIn": "A ENTRAR...",
       "notRegistered": "Ainda não registado?",
       "submitApplication": "Enviar candidatura",
-      "copyright": "Elite Cleaning Platform AG. Acesso seguro para operadores."
+      "copyright": "Elite Cleaning Platform AG. Acesso seguro para operadores.",
+      "forgotPassword": "Esqueceu a senha?",
+      "forgotPasswordTitle": "Redefinir senha",
+      "forgotPasswordDesc": "Insira o seu e-mail de parceiro para solicitar um código de redefinição.",
+      "btnSendResetCode": "Enviar código de redefinição",
+      "btnSendingResetCode": "Enviando...",
+      "resetPasswordTitle": "Definir nova senha",
+      "resetPasswordDesc": "Insira o código enviado para o seu e-mail e a sua nova senha.",
+      "labelResetCode": "Código de redefinição de 6 dígitos",
+      "labelNewPassword": "Nova senha",
+      "btnResetPassword": "Redefinir senha",
+      "btnResetting": "Redefinindo...",
+      "successPasswordReset": "Senha redefinida com sucesso. Agora você pode fazer login.",
+      "errCodeExpiredOrInvalid": "Código de verificação inválido ou expirado.",
+      "errPasswordsDoNotMatch": "As senhas não coincidem.",
+      "errResetFailed": "Falha ao redefinir a senha.",
+      "errEmailNotFound": "Nenhuma conta encontrada com este endereço de e-mail."
     }
   },
   "cookieBanner": {

@@ -319,7 +319,23 @@
       "btnLoggingIn": "INICIANDO SESIÓN...",
       "notRegistered": "¿No estás registrado?",
       "submitApplication": "Presentar solicitud",
-      "copyright": "Elite Cleaning Platform AG. Acceso seguro de despacho."
+      "copyright": "Elite Cleaning Platform AG. Acceso seguro de despacho.",
+      "forgotPassword": "¿Olvidó su contraseña?",
+      "forgotPasswordTitle": "Restablecer contraseña",
+      "forgotPasswordDesc": "Ingrese su correo electrónico de socio para solicitar un código de restablecimiento.",
+      "btnSendResetCode": "Enviar código de restablecimiento",
+      "btnSendingResetCode": "Enviando...",
+      "resetPasswordTitle": "Establecer nueva contraseña",
+      "resetPasswordDesc": "Ingrese el código enviado a su correo electrónico y su nueva contraseña.",
+      "labelResetCode": "Código de restablecimiento de 6 dígitos",
+      "labelNewPassword": "Nueva contraseña",
+      "btnResetPassword": "Restablecer contraseña",
+      "btnResetting": "Restableciendo...",
+      "successPasswordReset": "Contraseña restablecida con éxito. Ahora puede iniciar sesión.",
+      "errCodeExpiredOrInvalid": "Código de verificación inválido o vencido.",
+      "errPasswordsDoNotMatch": "Las contraseñas no coinciden.",
+      "errResetFailed": "Error al restablecer la contraseña.",
+      "errEmailNotFound": "No se encontró ninguna cuenta con esta dirección de correo electrónico."
     }
   },
   "cookieBanner": {

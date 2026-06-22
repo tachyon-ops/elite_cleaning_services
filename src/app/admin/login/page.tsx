@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
-import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated } from "@/app/actions/admin";
+import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated, requestPasswordResetAdmin, resetPasswordAdmin } from "@/app/actions/admin";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -19,6 +19,15 @@ export default function AdminLoginPage() {
   const [maskedEmail, setMaskedEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [totpToken, setTotpToken] = useState("");
+
+  // Password Reset Flow State
+  const [resetStep, setResetStep] = useState<"login" | "forgot" | "otp" | "success">("login");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const checkExistsAndAuth = async () => {
@@ -83,6 +92,53 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) return;
+
+    setError("");
+    setLoading(true);
+    const res = await requestPasswordResetAdmin(resetEmail);
+    setLoading(false);
+
+    if (res.success) {
+      setResetStep("otp");
+    } else {
+      setError(res.error || "Failed to send reset code.");
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetCode || !newPassword || !confirmPassword) return;
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+    const res = await resetPasswordAdmin(resetEmail, resetCode, newPassword);
+    setLoading(false);
+
+    if (res.success) {
+      setResetStep("success");
+      setSuccessMessage("Password reset successfully. You can now log in.");
+      setResetEmail("");
+      setResetCode("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } else {
+      setError(res.error || "Failed to reset password.");
+    }
+  };
+
   if (checking) {
     return (
       <div className="min-h-screen bg-[#080808] text-[#f2f2f2] font-body flex justify-center items-center">
@@ -100,7 +156,11 @@ export default function AdminLoginPage() {
           </div>
           <h2 className="text-display-sm font-display font-medium text-[#f2f2f2] tracking-tight">ELITE CONTROL</h2>
           <p className="text-body-xs text-[#a6a6a6] uppercase tracking-widest">
-            {requires2FA ? "Verify Email OTP Code" : "Administrative Access Only"}
+            {resetStep !== "login"
+              ? "Password Recovery"
+              : requires2FA
+              ? "Verify Email OTP Code"
+              : "Administrative Access Only"}
           </p>
         </div>
 
@@ -110,8 +170,115 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {!requires2FA ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {resetStep === "login" ? (
+          !requires2FA ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5" /> Administrative Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@elite-cleaning.ch"
+                  className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 relative">
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5" /> Password
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 pr-10 rounded-md text-body-md focus:border-accent outline-none w-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setResetEmail(email);
+                    setResetStep("forgot");
+                  }}
+                  className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors font-medium cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {loading ? "Sending OTP..." : "SEND OTP CODE"} <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerify2FA} className="space-y-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5" /> 6-Digit Email OTP Code
+                </label>
+                <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
+                  A verification OTP code has been sent to your email <code className="text-accent">{maskedEmail}</code>.
+                </p>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={totpToken}
+                  onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
+                  placeholder="e.g. 123456"
+                  className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none tracking-[0.2em] font-mono text-center"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequires2FA(false);
+                    setTotpToken("");
+                    setError("");
+                  }}
+                  className="flex-1 border border-[#262626] hover:bg-[#1a1a1a] text-[#a6a6a6] font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || totpToken.length !== 6}
+                  className="flex-1 bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  Verify Code
+                </button>
+              </div>
+            </form>
+          )
+        ) : resetStep === "forgot" ? (
+          <form onSubmit={handleRequestReset} className="space-y-4">
             <div className="flex flex-col gap-2">
               <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5" /> Administrative Email
@@ -119,32 +286,68 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
                 placeholder="admin@elite-cleaning.ch"
                 className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
               />
             </div>
 
-            <div className="flex flex-col gap-2 relative">
+            <button
+              type="submit"
+              disabled={loading || !resetEmail}
+              className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? "Sending Code..." : "SEND RESET CODE"} <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                setResetStep("login");
+              }}
+              className="w-full border border-[#262626] hover:bg-[#1a1a1a] text-[#a6a6a6] font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Login
+            </button>
+          </form>
+        ) : resetStep === "otp" ? (
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="flex flex-col gap-2">
               <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5" /> Password
+                <KeyRound className="w-3.5 h-3.5" /> 6-Digit Reset Code
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                required
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="e.g. 123456"
+                className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none tracking-[0.2em] font-mono text-center w-full"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> New Password
               </label>
               <div className="relative flex items-center">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showNewPassword ? "text" : "password"}
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 pr-10 rounded-md text-body-md focus:border-accent outline-none w-full"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-3 text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors focus:outline-none"
                 >
-                  {showPassword ? (
+                  {showNewPassword ? (
                     <EyeOff className="w-4 h-4" />
                   ) : (
                     <Eye className="w-4 h-4" />
@@ -153,54 +356,53 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || !email || !password}
-              className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {loading ? "Sending OTP..." : "SEND OTP CODE"} <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerify2FA} className="space-y-6">
             <div className="flex flex-col gap-2">
               <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5" /> 6-Digit Email OTP Code
+                <Lock className="w-3.5 h-3.5" /> Confirm New Password
               </label>
-              <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
-                A verification OTP code has been sent to your email <code className="text-accent">{maskedEmail}</code>.
-              </p>
               <input
-                type="text"
-                maxLength={6}
-                value={totpToken}
-                onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
-                placeholder="e.g. 123456"
-                className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none tracking-[0.2em] font-mono text-center"
+                type={showNewPassword ? "text" : "password"}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
               />
             </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setRequires2FA(false);
-                  setTotpToken("");
-                  setError("");
-                }}
-                className="flex-1 border border-[#262626] hover:bg-[#1a1a1a] text-[#a6a6a6] font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <button
-                type="submit"
-                disabled={loading || totpToken.length !== 6}
-                className="flex-1 bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                Verify Code
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading || !resetCode || !newPassword || !confirmPassword}
+              className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? "Resetting..." : "RESET PASSWORD"} <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                setResetStep("forgot");
+              }}
+              className="w-full border border-[#262626] hover:bg-[#1a1a1a] text-[#a6a6a6] font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
           </form>
+        ) : (
+          <div className="space-y-4 text-center">
+            <p className="text-body-md text-[#a6a6a6]">{successMessage}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                setResetStep("login");
+              }}
+              className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              Return to Login
+            </button>
+          </div>
         )}
       </div>
     </div>

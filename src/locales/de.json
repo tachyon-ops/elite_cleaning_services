@@ -298,7 +298,27 @@
       "catHospitality": "Ferienwohnungen & Airbnb",
       "catAviation": "Luftfahrt (Jets & Helikopter)",
       "catYacht": "Yachten & Schiffe",
-      "catMoveout": "Umzugsreinigung"
+      "catMoveout": "Umzugsreinigung",
+      "labelCalendarSync": "Kalendersynchronisation",
+      "calendarSyncPlaceholder": "Planungssystem auswählen...",
+      "syncGoogle": "Google Kalender-Synchronisation",
+      "syncOutlook": "Outlook/Office 365-Synchronisation",
+      "syncApple": "iCal/Apple Kalender-Synchronisation",
+      "syncManual": "Manuelle Terminplanung im Portal",
+      "syncOther": "Spezialisierte Branchensoftware (z.B. Jobber)",
+      "labelBookingMode": "Auftragszuteilung & Zusage",
+      "bookingModePlaceholder": "Präferenz für Zuweisungen auswählen...",
+      "modeInstant": "Sofortbuchung (Automatische Zuweisung per Kalender)",
+      "modeRequest": "Buchungsanfrage (Prüfung & Bestätigung binnen 30 Min.)",
+      "labelRecurringSupport": "Abonnements / Wiederkehrende Reinigungen",
+      "recurringSupportPlaceholder": "Fähigkeit für Abos auswählen...",
+      "recurringYesDedicated": "Ja, wiederkehrende Aufträge mit festem Team garantieren",
+      "recurringYesRotate": "Ja, wiederkehrende Aufträge mit flexiblem Team",
+      "recurringNo": "Nein, bevorzugt nur einmalige Spezialaufträge",
+      "labelChatPreference": "In-App übersetzter Chat",
+      "chatPreferencePlaceholder": "Kommunikationspräferenz auswählen...",
+      "chatOptIn": "Ja, In-App Chat mit Echtzeit-Übersetzung zum Kunden nutzen",
+      "chatOptOut": "Nein, anonymisierte SMS/Anrufe bevorzugen"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. Alle Schweizer Partnerrechte vorbehalten."
@@ -319,7 +339,23 @@
       "btnLoggingIn": "ANMELDUNG LÄUFT...",
       "notRegistered": "Noch nicht registriert?",
       "submitApplication": "Bewerbung einreichen",
-      "copyright": "Elite Cleaning Platform AG. Sicherer Dispatcher-Zugang."
+      "copyright": "Elite Cleaning Platform AG. Sicherer Dispatcher-Zugang.",
+      "forgotPassword": "Passwort vergessen?",
+      "forgotPasswordTitle": "Passwort zurücksetzen",
+      "forgotPasswordDesc": "Geben Sie Ihre Partner-E-Mail-Adresse ein, um einen Reset-Code anzufordern.",
+      "btnSendResetCode": "Reset-Code senden",
+      "btnSendingResetCode": "Wird gesendet...",
+      "resetPasswordTitle": "Neues Passwort festlegen",
+      "resetPasswordDesc": "Geben Sie den an Ihre E-Mail gesendeten Code und Ihr neues Passwort ein.",
+      "labelResetCode": "6-stelliger Reset-Code",
+      "labelNewPassword": "Neues Passwort",
+      "btnResetPassword": "Passwort zurücksetzen",
+      "btnResetting": "Wird zurückgesetzt...",
+      "successPasswordReset": "Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.",
+      "errCodeExpiredOrInvalid": "Ungültiger oder abgelaufener Verifizierungscode.",
+      "errPasswordsDoNotMatch": "Passwörter stimmen nicht überein.",
+      "errResetFailed": "Zurücksetzen des Passworts fehlgeschlagen.",
+      "errEmailNotFound": "Kein Konto mit dieser E-Mail-Adresse gefunden."
     }
   },
   "cookieBanner": {

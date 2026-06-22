@@ -319,7 +319,23 @@
       "btnLoggingIn": "S'ANNUNZIOND...",
       "notRegistered": "Betg anc registrà?",
       "submitApplication": "Trametter la candidatura",
-      "copyright": "Elite Cleaning Platform AG. Access da disponent segirà."
+      "copyright": "Elite Cleaning Platform AG. Access da disponent segirà.",
+      "forgotPassword": "Passpled sblundrà?",
+      "forgotPasswordTitle": "Restabilir il passpled",
+      "forgotPasswordDesc": "Endrizzai voss e-mail da partenari per dumandar in code da restabiliment.",
+      "btnSendResetCode": "Trametter il code",
+      "btnSendingResetCode": "Trametta...",
+      "resetPasswordTitle": "Definir in nov passpled",
+      "resetPasswordDesc": "Endrizzai il code tramess a voss e-mail e voss nov passpled.",
+      "labelResetCode": "Code da restabiliment da 6 digits",
+      "labelNewPassword": "Nov passpled",
+      "btnResetPassword": "Restabilir il passpled",
+      "btnResetting": "Restabilia...",
+      "successPasswordReset": "Passpled restabili cun success. Vus pudais ussa far log-in.",
+      "errCodeExpiredOrInvalid": "Code da verificaziun invalid u expirà.",
+      "errPasswordsDoNotMatch": "Ils passpleds na corrispundan betg.",
+      "errResetFailed": "Betg pussaivel da restabilir il passpled.",
+      "errEmailNotFound": "Nia chattà nagin conto cun quest e-mail."
     }
   },
   "cookieBanner": {

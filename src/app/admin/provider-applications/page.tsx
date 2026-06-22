@@ -126,6 +126,52 @@ export default function AdminProviderApplicationsPage() {
                       ))}
                     </div>
                   </div>
+                  <div className="bg-[#0d0d0d] p-4 rounded border border-[#1f1f1f] space-y-3 text-[11px] text-[#a6a6a6] font-mono">
+                    <span className="text-caption text-accent uppercase font-bold block pb-1 border-b border-[#1f1f1f]">Moat Alignment</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-[#737373] block text-[9px] uppercase tracking-wider">Calendar system</span>
+                        <span className="text-[#f2f2f2] font-semibold">
+                          {{
+                            google: "Google Calendar Sync",
+                            outlook: "Outlook/O365 Sync",
+                            apple: "Apple Calendar Sync",
+                            manual: "Manual Portal",
+                            other: "Field Software Sync"
+                          }[data.calendarSync as string || "manual"] || data.calendarSync}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[#737373] block text-[9px] uppercase tracking-wider">Booking mode</span>
+                        <span className="text-[#f2f2f2] font-semibold">
+                          {{
+                            instant: "Instant Auto-Assign",
+                            request: "Request-to-Book"
+                          }[data.bookingMode as string || "request"] || data.bookingMode}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[#737373] block text-[9px] uppercase tracking-wider">Recurring Support</span>
+                        <span className="text-[#f2f2f2] font-semibold">
+                          {{
+                            yes_dedicated: "Yes (Dedicated Crew)",
+                            yes_rotate: "Yes (Rotating/Flexible)",
+                            no: "No (One-off only)"
+                          }[data.recurringSupport as string || "yes_rotate"] || data.recurringSupport}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[#737373] block text-[9px] uppercase tracking-wider">In-App Chat</span>
+                        <span className="text-[#f2f2f2] font-semibold">
+                          {{
+                            opt_in: "In-App translated",
+                            opt_out: "Masked phone/SMS"
+                          }[data.chatPreference as string || "opt_in"] || data.chatPreference}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="text-body-xs text-[#a6a6a6] space-y-1">
                     <span className="text-caption text-[#737373] uppercase font-bold block">Business Motivation</span>
                     <p className="italic bg-[#0d0d0d] p-3 rounded border border-[#1f1f1f] leading-relaxed">

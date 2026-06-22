@@ -16,7 +16,11 @@ export default function ProviderApplyPage() {
     legalEntityType: "gmbh",
     verticalsRequested: [] as string[],
     region: "Zürich",
-    motivation: ""
+    motivation: "",
+    calendarSync: "manual",
+    bookingMode: "request",
+    recurringSupport: "yes_rotate",
+    chatPreference: "opt_in"
   });
   
   const [loading, setLoading] = useState(false);
@@ -58,7 +62,11 @@ export default function ProviderApplyPage() {
       legalEntityType: formData.legalEntityType,
       verticalsRequested: formData.verticalsRequested,
       region: formData.region,
-      motivation: formData.motivation
+      motivation: formData.motivation,
+      calendarSync: formData.calendarSync,
+      bookingMode: formData.bookingMode,
+      recurringSupport: formData.recurringSupport,
+      chatPreference: formData.chatPreference
     });
 
     setLoading(false);
@@ -213,6 +221,62 @@ export default function ProviderApplyPage() {
                       {vert.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelCalendarSync")}</label>
+                  <select
+                    value={formData.calendarSync}
+                    onChange={(e) => setFormData({ ...formData, calendarSync: e.target.value })}
+                    className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
+                  >
+                    <option value="google">{t("providers.apply.syncGoogle")}</option>
+                    <option value="outlook">{t("providers.apply.syncOutlook")}</option>
+                    <option value="apple">{t("providers.apply.syncApple")}</option>
+                    <option value="manual">{t("providers.apply.syncManual")}</option>
+                    <option value="other">{t("providers.apply.syncOther")}</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelBookingMode")}</label>
+                  <select
+                    value={formData.bookingMode}
+                    onChange={(e) => setFormData({ ...formData, bookingMode: e.target.value })}
+                    className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
+                  >
+                    <option value="instant">{t("providers.apply.modeInstant")}</option>
+                    <option value="request">{t("providers.apply.modeRequest")}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelRecurringSupport")}</label>
+                  <select
+                    value={formData.recurringSupport}
+                    onChange={(e) => setFormData({ ...formData, recurringSupport: e.target.value })}
+                    className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
+                  >
+                    <option value="yes_dedicated">{t("providers.apply.recurringYesDedicated")}</option>
+                    <option value="yes_rotate">{t("providers.apply.recurringYesRotate")}</option>
+                    <option value="no">{t("providers.apply.recurringNo")}</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">{t("providers.apply.labelChatPreference")}</label>
+                  <select
+                    value={formData.chatPreference}
+                    onChange={(e) => setFormData({ ...formData, chatPreference: e.target.value })}
+                    className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
+                  >
+                    <option value="opt_in">{t("providers.apply.chatOptIn")}</option>
+                    <option value="opt_out">{t("providers.apply.chatOptOut")}</option>
+                  </select>
                 </div>
               </div>
 

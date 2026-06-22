@@ -986,3 +986,107 @@ export async function updateSystemSetting(key: string, value: string) {
     return { success: false, error: error.message };
   }
 }
+
+// 20. Request Password Reset for administrative users
+export async function requestPasswordResetAdmin(email: string) {
+  try {
+    const adminUser = await db.user.findFirst({
+      where: { email: email.trim().toLowerCase(), role: "super_admin" }
+    });
+
+    if (!adminUser) {
+      throw new Error("Administrative email not found");
+    }
+
+    // Generate and save Email OTP
+    const otp = generateEmailOtp();
+    await db.user.update({
+      where: { id: adminUser.id },
+      data: {
+        emailOtpCode: otp,
+        emailOtpExpiresAt: new Date(Date.now() + 5 * 60 * 1000)
+      }
+    });
+
+    console.log(`\n==================================================`);
+    console.log(`[ADMIN PASSWORD RESET OTP] Sent to: ${adminUser.email}`);
+    console.log(`[ADMIN PASSWORD RESET OTP] Code: ${otp}`);
+    console.log(`==================================================\n`);
+
+    // Send SMTP email
+    const emailResult = await sendEmail({
+      to: adminUser.email,
+      subject: "Elite Cleaning Services - Admin Password Reset Request",
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">PASSWORD RESET REQUEST</h2>
+          <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the verification code below to reset your administrative password:</p>
+          <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
+            <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
+          </div>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 5 minutes. If you did not initiate this request, please contact security operations immediately.</p>
+        </div>
+      `
+    });
+
+    if (!emailResult.success) {
+      throw new Error(emailResult.error || "Failed to dispatch password reset OTP code via SMTP.");
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 21. Reset Password for administrative users
+export async function resetPasswordAdmin(email: string, code: string, passwordNew: string) {
+  try {
+    const adminUser = await db.user.findFirst({
+      where: { email: email.trim().toLowerCase(), role: "super_admin" }
+    });
+
+    if (!adminUser) {
+      throw new Error("Administrative email not found");
+    }
+
+    if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
+      throw new Error("Verification code has expired. Please request a new one.");
+    }
+
+    if (adminUser.emailOtpCode !== code.trim()) {
+      throw new Error("Invalid verification code. Please check your numbers.");
+    }
+
+    if (passwordNew.length < 8) {
+      throw new Error("Password must be at least 8 characters long.");
+    }
+
+    // Hash the new password and update user record
+    const passwordHash = hashPassword(passwordNew);
+    await db.user.update({
+      where: { id: adminUser.id },
+      data: {
+        passwordHash,
+        emailOtpCode: null,
+        emailOtpExpiresAt: null
+      }
+    });
+
+    // Log administrative audit log
+    await db.auditLog.create({
+      data: {
+        action: "reset_password",
+        targetTable: "User",
+        targetId: adminUser.id,
+        before: "redacted",
+        after: "redacted",
+        actorUserId: adminUser.id
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

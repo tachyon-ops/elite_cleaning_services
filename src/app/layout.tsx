@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale } from "@/lib/i18n";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { CookieBanner } from "@/components/CookieBanner";
+import { DemoStoreRibbon } from "@/components/DemoStoreRibbon";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
         <LanguageProvider locale={locale} dictionary={dictionary}>
+          <DemoStoreRibbon />
           {children}
           <CookieBanner />
         </LanguageProvider>

@@ -2,7 +2,8 @@
 
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
-import { verifyPassword, verifyTOTPToken, getTOTPAuthUrl, generateTOTPSecret } from "@/lib/auth-utils";
+import { verifyPassword, verifyTOTPToken, getTOTPAuthUrl, generateTOTPSecret, generateEmailOtp, hashPassword } from "@/lib/auth-utils";
+import { sendEmail } from "@/lib/email-utils";
 import QRCode from "qrcode";
 
 // 1. Submit Application
@@ -14,9 +15,25 @@ export async function applyProvider(payload: {
   verticalsRequested: string[];
   region: string;
   motivation: string;
+  calendarSync?: string;
+  bookingMode?: string;
+  recurringSupport?: string;
+  chatPreference?: string;
 }) {
   try {
-    const { companyName, applicantEmail, applicantName, legalEntityType, verticalsRequested, region, motivation } = payload;
+    const {
+      companyName,
+      applicantEmail,
+      applicantName,
+      legalEntityType,
+      verticalsRequested,
+      region,
+      motivation,
+      calendarSync,
+      bookingMode,
+      recurringSupport,
+      chatPreference
+    } = payload;
 
     if (!companyName || !applicantEmail || !applicantName) {
       throw new Error("Missing required application fields");
@@ -31,7 +48,13 @@ export async function applyProvider(payload: {
         verticalsRequested: verticalsRequested.join(","),
         region,
         status: "submitted",
-        applicationData: JSON.stringify({ motivation })
+        applicationData: JSON.stringify({
+          motivation,
+          calendarSync: calendarSync || "manual",
+          bookingMode: bookingMode || "request",
+          recurringSupport: recurringSupport || "yes_rotate",
+          chatPreference: chatPreference || "opt_in"
+        })
       }
     });
 
@@ -386,6 +409,110 @@ export async function updateProviderListing(payload: {
     });
 
     return { success: true, listing };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 8. Request Password Reset for provider staff
+export async function requestPasswordResetProvider(email: string) {
+  try {
+    const user = await db.user.findFirst({
+      where: { email: email.trim().toLowerCase(), role: "provider_staff" }
+    });
+
+    if (!user) {
+      throw new Error("Provider email not found");
+    }
+
+    // Generate and save Email OTP
+    const otp = generateEmailOtp();
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        emailOtpCode: otp,
+        emailOtpExpiresAt: new Date(Date.now() + 5 * 60 * 1000)
+      }
+    });
+
+    console.log(`\n==================================================`);
+    console.log(`[PROVIDER PASSWORD RESET OTP] Sent to: ${user.email}`);
+    console.log(`[PROVIDER PASSWORD RESET OTP] Code: ${otp}`);
+    console.log(`==================================================\n`);
+
+    // Send SMTP email
+    const emailResult = await sendEmail({
+      to: user.email,
+      subject: "Elite Cleaning Services - Partner Password Reset Request",
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">PARTNER PORTAL PASSWORD RESET</h2>
+          <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the verification code below to reset your partner portal password:</p>
+          <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
+            <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
+          </div>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 5 minutes. If you did not initiate this request, please secure your account immediately.</p>
+        </div>
+      `
+    });
+
+    if (!emailResult.success) {
+      throw new Error(emailResult.error || "Failed to dispatch password reset OTP code via SMTP.");
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 9. Reset Password for provider staff
+export async function resetPasswordProvider(email: string, code: string, passwordNew: string) {
+  try {
+    const user = await db.user.findFirst({
+      where: { email: email.trim().toLowerCase(), role: "provider_staff" }
+    });
+
+    if (!user) {
+      throw new Error("Provider email not found");
+    }
+
+    if (!user.emailOtpCode || !user.emailOtpExpiresAt || user.emailOtpExpiresAt < new Date()) {
+      throw new Error("Verification code has expired. Please request a new one.");
+    }
+
+    if (user.emailOtpCode !== code.trim()) {
+      throw new Error("Invalid verification code. Please check your numbers.");
+    }
+
+    if (passwordNew.length < 8) {
+      throw new Error("Password must be at least 8 characters long.");
+    }
+
+    // Hash the new password and update user record
+    const passwordHash = hashPassword(passwordNew);
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        emailOtpCode: null,
+        emailOtpExpiresAt: null
+      }
+    });
+
+    // Log audit log
+    await db.auditLog.create({
+      data: {
+        action: "reset_password",
+        targetTable: "User",
+        targetId: user.id,
+        before: "redacted",
+        after: "redacted",
+        actorUserId: user.id
+      }
+    });
+
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

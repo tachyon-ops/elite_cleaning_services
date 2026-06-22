@@ -298,7 +298,27 @@
       "catHospitality": "Hospitality",
       "catAviation": "Aviation",
       "catYacht": "Yacht & Marine",
-      "catMoveout": "Move-Out Cleaning"
+      "catMoveout": "Move-Out Cleaning",
+      "labelCalendarSync": "Calendar Synchronization",
+      "calendarSyncPlaceholder": "Select scheduling system...",
+      "syncGoogle": "Google Calendar Sync",
+      "syncOutlook": "Outlook/Office 365 Sync",
+      "syncApple": "iCal/Apple Calendar Sync",
+      "syncManual": "Manual Portal Scheduling",
+      "syncOther": "Specialized Field Software (e.g. Jobber)",
+      "labelBookingMode": "Dispatch & Booking Commitment",
+      "bookingModePlaceholder": "Select dispatch preference...",
+      "modeInstant": "Instant Booking (Vetted calendar auto-assign)",
+      "modeRequest": "Request-to-Book (Review & approve within 30 min)",
+      "labelRecurringSupport": "Subscription / Recurring Cleanings",
+      "recurringSupportPlaceholder": "Select recurring capability...",
+      "recurringYesDedicated": "Yes, accept recurring jobs with dedicated crew guaranteed",
+      "recurringYesRotate": "Yes, accept recurring jobs with rotating/flexible crew",
+      "recurringNo": "No, prefer one-off/specialty bookings only",
+      "labelChatPreference": "In-App Translated Communication",
+      "chatPreferencePlaceholder": "Select communication preference...",
+      "chatOptIn": "Yes, use in-app chat with real-time customer translation",
+      "chatOptOut": "No, prefer masked SMS/phone calls directly"
     },
     "footer": {
       "copyright": "Elite Cleaning Platform AG. All Swiss partner rights reserved."
@@ -319,7 +339,23 @@
       "btnLoggingIn": "LOGGING IN...",
       "notRegistered": "Not yet registered?",
       "submitApplication": "Submit Application",
-      "copyright": "Elite Cleaning Platform AG. Secure dispatcher access."
+      "copyright": "Elite Cleaning Platform AG. Secure dispatcher access.",
+      "forgotPassword": "Forgot Password?",
+      "forgotPasswordTitle": "Reset Password",
+      "forgotPasswordDesc": "Enter your partner email to request a reset code.",
+      "btnSendResetCode": "Send Reset Code",
+      "btnSendingResetCode": "Sending...",
+      "resetPasswordTitle": "Set New Password",
+      "resetPasswordDesc": "Enter the code sent to your email and your new password.",
+      "labelResetCode": "6-Digit Reset Code",
+      "labelNewPassword": "New Password",
+      "btnResetPassword": "Reset Password",
+      "btnResetting": "Resetting...",
+      "successPasswordReset": "Password reset successfully. You can now log in.",
+      "errCodeExpiredOrInvalid": "Invalid or expired verification code.",
+      "errPasswordsDoNotMatch": "Passwords do not match.",
+      "errResetFailed": "Failed to reset password.",
+      "errEmailNotFound": "No account found with this email address."
     }
   },
   "cookieBanner": {
