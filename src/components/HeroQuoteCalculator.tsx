@@ -10,7 +10,7 @@ import { Shield, Sparkles, Building2, Home, Plane, Ship } from "lucide-react";
 const CALC_I18N: Record<string, Record<string, string>> = {
   en: {
     title: "ESTIMATE PREVIEW",
-    subtitle: "No commitment, full refunds up to 24h prior.",
+    subtitle: "100% refund up to 7 days prior.",
     commercialClean: "Commercial office cleaning ({area} m²)",
     homeClean: "Home cleaning ({beds} bed / {baths} bath)",
     airbnbClean: "Airbnb turnover ({beds} bed / {baths} bath)",
@@ -55,7 +55,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   de: {
     title: "OFFERTENVORSCHAU",
-    subtitle: "Keine Verpflichtung, volle Rückerstattung bis zu 24h vorher.",
+    subtitle: "100% Rückerstattung bis zu 7 Tage vorher.",
     commercialClean: "Gewerbliche Büroreinigung ({area} m²)",
     homeClean: "Wohnungsreinigung ({beds} Zi. / {baths} Bad)",
     airbnbClean: "Airbnb-Reinigung ({beds} Zi. / {baths} Bad)",
@@ -100,7 +100,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   fr: {
     title: "APERÇU DU DEVIS",
-    subtitle: "Sans engagement, remboursement intégral jusqu'à 24h avant.",
+    subtitle: "Remboursement à 100% jusqu'à 7 jours avant.",
     commercialClean: "Nettoyage de bureaux ({area} m²)",
     homeClean: "Nettoyage de maison ({beds} ch. / {baths} sdb)",
     airbnbClean: "Ménage Airbnb ({beds} ch. / {baths} sdb)",
@@ -145,7 +145,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   es: {
     title: "VISTA PREVIA DE PRECIOS",
-    subtitle: "Sin compromiso, reembolso completo hasta 24h antes.",
+    subtitle: "100% de reembolso hasta 7 días antes.",
     commercialClean: "Limpieza de oficinas ({area} m²)",
     homeClean: "Limpieza del hogar ({beds} hab. / {baths} baño)",
     airbnbClean: "Ménage Airbnb ({beds} hab. / {baths} baño)",
@@ -190,7 +190,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   it: {
     title: "ANTEPRIMA PREZZI",
-    subtitle: "Nessun impegno, rimborso completo fino a 24 ore prima.",
+    subtitle: "Rimborso del 100% fino a 7 giorni prima.",
     commercialClean: "Pulizia uffici commerciali ({area} m²)",
     homeClean: "Pulizia casa ({beds} camere / {baths} bagni)",
     airbnbClean: "Pulizia Airbnb ({beds} camere / {baths} bagni)",
@@ -235,7 +235,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   pt: {
     title: "PRÉ-VISUALIZAÇÃO DE PREÇOS",
-    subtitle: "Sem compromisso, reembolso total até 24h antes.",
+    subtitle: "Reembolso de 100% até 7 dias antes.",
     commercialClean: "Limpeza de escritórios ({area} m²)",
     homeClean: "Limpeza doméstica ({beds} quartos / {baths} banhos)",
     airbnbClean: "Limpeza Airbnb ({beds} quartos / {baths} banhos)",
@@ -280,7 +280,7 @@ const CALC_I18N: Record<string, Record<string, string>> = {
   },
   rm: {
     title: "VISTA PRELIMINARA",
-    subtitle: "Nagut commitments, reembursament cumplain fin 24h avant.",
+    subtitle: "100% reembursament fin 7 dis avant.",
     commercialClean: "Nettegiament da buros ({area} m²)",
     homeClean: "Nettegiament domestic ({beds} stivas / {baths} bagn)",
     airbnbClean: "Rotaziun Airbnb ({beds} stivas / {baths} bagn)",

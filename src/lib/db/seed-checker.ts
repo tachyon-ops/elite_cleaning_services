@@ -230,8 +230,9 @@ Da alle Aufträge ausschliesslich an eingetragene Schweizer Unternehmen (AG, Gmb
 - **Zahlungen:** Alle Preise verstehen sich in CHF. Die Zahlung erfolgt über Stripe. Je nach Sparte wird bei Buchung eine Anzahlung (30 %) oder Vorauszahlung fällig. Elite zieht diese Beträge im Namen des Partners ein.
 
 ## 4. Stornierungen und Umbuchungen
-- Stornierungen oder Verschiebungen **mehr als 24 Stunden** vor dem vereinbarten Termin sind kostenlos. Geleistete Anzahlungen werden vollständig zurückerstattet.
-- Bei Stornierungen oder Verschiebungen **innerhalb von 24 Stunden** vor dem Termin wird eine Stornogebühr von **50 % des Gesamtbetrages** verrechnet, um den Partner für die reservierte Kapazität zu entschädigen.
+- Stornierungen oder Verschiebungen **mehr als 7 Tage** vor dem vereinbarten Termin sind kostenlos. Geleistete Anzahlungen von 30% werden vollständig zurückerstattet.
+- Bei Stornierungen oder Verschiebungen **zwischen 7 Tagen und 48 Stunden** vor dem Termin wird eine Stornogebühr in Höhe der **Anzahlung von 30%** verrechnet (die Autorisierung über 70% wird freigegeben).
+- Bei Stornierungen oder Verschiebungen **innerhalb von 48 Stunden** vor dem Termin wird eine Stornogebühr von **100 % des Gesamtbetrages** fällig (die Anzahlung von 30% verfällt und die Autorisierung über 70% wird eingezogen).
 
 ## 5. Haftung, Versicherung und Reklamationen
 - Das ausführende Partnerunternehmen haftet vollumfänglich für Schäden, Mängel oder Verzögerungen bei der Reinigung.
@@ -263,8 +264,9 @@ Because the cleaning services are exclusively fulfilled by registered Swiss busi
 - **Payments:** Prices are in CHF. Payments are handled via Stripe. A deposit (typically 30%) or full prepayment is captured at booking. Elite collects payment on behalf of the Provider.
 
 ## 4. Cancellation and Rescheduling Policy
-- Cancellations or rescheduling requests made **more than 24 hours** before the scheduled service start are free of charge. Any deposit will be fully refunded.
-- Cancellations or rescheduling requests made **within 24 hours** of the scheduled start will incur a cancellation fee of **50% of the booking total**. This fee is charged to compensate the Provider for reserved staff capacity.
+- Cancellations or rescheduling requests made **more than 7 days** before the scheduled service start are free of charge. The 30% deposit will be fully refunded.
+- Cancellations or rescheduling requests made **between 7 days and 48 hours** before the scheduled start will incur a cancellation fee equal to the **30% deposit** (the 70% hold is released).
+- Cancellations or rescheduling requests made **within 48 hours** of the scheduled start will incur a cancellation fee of **100% of the booking total** (the 30% deposit is forfeited and the 70% hold is captured).
 
 ## 5. Liability, Insurance, and Disputes
 - The performing Provider Company is solely liable for the execution of the cleaning service, including any property damages, timing delays, or quality defects.
@@ -296,8 +298,9 @@ Comme les services sont exclusivement assurés par des entreprises suisses enreg
 - **Paiements:** Prix en CHF via Stripe. Un acompte (30%) ou le montant total est prélevé à la réservation. Elite perçoit les paiements au nom du partenaire.
 
 ## 4. Annulation et modification
-- L'annulation ou la modification est gratuite **plus de 24 heures** avant l'intervention.
-- Passé ce délai, des frais d'annulation de **50% du montant total** sont appliqués pour indemniser le partenaire pour la capacité réservée.
+- L'annulation ou la modification est gratuite **plus de 7 jours** avant l'intervention. L'acompte de 30% est intégralement remboursé.
+- Les annulations ou modifications effectuées **entre 7 jours et 48 heures** avant le début prévu entraînent des frais d'annulation égaux à **l'acompte de 30%** (le blocage de 70% est libéré).
+- Les annulations ou modifications effectuées **moins de 48 heures** avant le début prévu entraînent des frais d'annulation de **100% du montant total** (l'acompte de 30% est conservé et le blocage de 70% est prélevé).
 
 ## 5. Responsabilité, assurance et réclamations
 - L'entreprise partenaire est seule responsable de l'exécution et des dommages éventuels. Les partenaires doivent détenir une assurance RC professionnelle de **CHF 5 millions** minimum.
@@ -325,8 +328,9 @@ Poiché le pulizie sono eseguite esclusivamente da società svizzere registrate 
 - **Pagamenti:** Prezzi in CHF gestiti tramite Stripe. All'atto della prenotazione è dovuto un acconto del 30% o il saldo totale. Elite riscuote i fondi per conto del partner.
 
 ## 4. Politica di cancellazione
-- La cancellazione o modifica è gratuita fino a **24 ore prima** dell'inizio del servizio.
-- Le richieste effettuate **entro le 24 ore** comportano una penale del **50% dell'importo totale**, accreditata al partner per compensare la capacità riservata.
+- La cancellazione o la modifica è gratuita fino a **7 giorni prima** dell'inizio del servizio. L'acconto del 30% sarà interamente rimborsato.
+- Le cancellazioni o modifiche effettuate **tra 7 giorni e 48 ore** prima dell'inizio comporteranno una penale pari all'**acconto del 30%** (la trattenuta del 70% viene svincolata).
+- Le cancellazioni o modifiche effettuate **entro le 48 ore** dall'inizio comporteranno una penale pari al **100% dell'importo totale** (l'acconto del 30% viene trattenuto e la trattenuta del 70% viene addebitata).
 
 ## 5. Responsabilità, assicurazione e controversie
 - Il partner è l'unico responsabile dell'esecuzione del servizio e di eventuali danni. Deve possedere un'assicurazione RC aziendale di almeno **CHF 5 milioni**.
@@ -353,8 +357,9 @@ Damai che tuts partenaris èn firmas svizras registradas (AG, GmbH u Einzelfirma
 - **Pajaments:** En CHF via Stripe. In deposit da 30% u il pajament total vegn fatg a la reservaziun.
 
 ## 4. Stornaments
-- Stornaments u spustaments èn gratuits fin **24 uras** avant il termin.
-- Pli tard vegn cargà **50% per stornar** sco cumpensaziun per il partenari.
+- Stornaments u spustaments èn gratuits fin **7 dis** avant il termin. Il deposit da 30% vegn refundà cumplainamain.
+- Stornaments tranter **7 dis e 48 uras** avant il termin chaschunan custs da stornament en l'autezza dal **deposit da 30%** (il hold da 70% vegn relaschà).
+- Stornaments entaifer **48 uras** chaschunan custs da stornament da **100% dal import total** (il deposit da 30% va a perder ed il hold da 70% vegn incassà).
 
 ## 5. Responsabladad ed assicuranza
 - Il partenari accepta la responsabladad per la nettegiada e sto avair ina assicuranza da CHF **5 milliuns**.
@@ -382,8 +387,9 @@ Dado que todos los servicios son prestados exclusivamente por empresas suizas re
 - **Pagos:** Precios en CHF a través de Stripe. Se requiere un depósito del 30% o el pago total al reservar. Elite recauda en nombre del socio.
 
 ## 4. Política de cancelación y cambios
-- Las cancelaciones o modificaciones con **más de 24 horas** de antelación son gratuitas.
-- Las cancelaciones dentro de las **24 horas** anteriores conllevan una penalización del **50% del total** para compensar la capacidad reservada del socio.
+- Las cancelaciones o modificaciones con **más de 7 días** de antelación son gratuitas. El depósito del 30% se reembolsará en su totalidad.
+- Las cancelaciones o modificaciones realizadas **entre 7 días y 48 horas** antes del inicio conllevan una penalización equivalente al **depósito del 30%** (se libera la retención del 70%).
+- Las cancelaciones dentro de las **48 horas** anteriores conllevan una penalización del **100% del total** (se pierde el depósito del 30% y se ejecuta la retención del 70%).
 
 ## 5. Responsabilidad, seguros y reclamaciones
 - El socio es el único responsable de la ejecución y los daños causados. Debe contar con un seguro de responsabilidad civil de mínimo **CHF 5 millones**.
@@ -411,8 +417,9 @@ Dado que os serviços são exclusivamente executados por empresas suíças regis
 - **Pagamento:** Preços em CHF através de Stripe. Cobrado depósito de 30% ou valor total no momento da reserva. A Elite cobra estes valores em nome do parceiro.
 
 ## 4. Cancelamentos e Reagendamentos
-- Cancelamentos e alterações com **mais de 24 horas** de antecedência são gratuitos.
-- Cancelamentos a menos de **24 horas** incorrem numa taxa de **50% do valor total**, creditada ao parceiro pela reserva de capacidade de pessoal.
+- Cancelamentos e alterações com **mais de 7 dias** de antecedência são gratuitos. O depósito de 30% será totalmente reembolsado.
+- Cancelamentos e alterações efetuados **entre 7 dias e 48 horas** antes do início incorrem numa taxa equivalente ao **depósito de 30%** (a retenção de 70% é liberada).
+- Cancelamentos a menos de **48 horas** incorrem numa taxa de **100% do valor total** (o depósito de 30% é perdido e a retenção de 70% é capturada).
 
 ## 5. Responsabilidade, Seguros e Litígios
 - A empresa parceira prestadora é a única responsável pela execução do serviço e por eventuais danos. Os parceiros são obrigados a manter seguro de responsabilidade civil de no mínimo **CHF 5 milhões**.
