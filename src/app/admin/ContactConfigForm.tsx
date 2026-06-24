@@ -11,6 +11,7 @@ interface ContactConfigFormProps {
   initialContactEmail: string;
   initialContactAddress: string;
   initialAutoCheckout: boolean;
+  initialShowPhone: boolean;
 }
 
 export function ContactConfigForm({
@@ -19,7 +20,8 @@ export function ContactConfigForm({
   initialContactPhone,
   initialContactEmail,
   initialContactAddress,
-  initialAutoCheckout
+  initialAutoCheckout,
+  initialShowPhone
 }: ContactConfigFormProps) {
   const { t } = useLanguage();
   
@@ -29,6 +31,7 @@ export function ContactConfigForm({
   const [contactEmail, setContactEmail] = useState(initialContactEmail);
   const [contactAddress, setContactAddress] = useState(initialContactAddress);
   const [autoCheckout, setAutoCheckout] = useState(initialAutoCheckout);
+  const [showPhone, setShowPhone] = useState(initialShowPhone);
   
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
@@ -54,9 +57,10 @@ export function ContactConfigForm({
     const resPhone = await updateSystemSetting("contact_phone", contactPhone);
     const resEmail = await updateSystemSetting("contact_email", contactEmail);
     const resAddress = await updateSystemSetting("contact_address", contactAddress);
+    const resShowPhone = await updateSystemSetting("show_phone_number", showPhone ? "true" : "false");
 
     setSaving(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success) {
       setSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -67,6 +71,7 @@ export function ContactConfigForm({
         resPhone.error || 
         resEmail.error || 
         resAddress.error || 
+        resShowPhone.error || 
         "Failed to update settings."
       );
     }
@@ -155,22 +160,42 @@ export function ContactConfigForm({
           />
         </div>
 
-        <div className="pt-2 border-t border-[#262626] space-y-2">
-          <div className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              id="autoCheckoutCheckboxDashboard"
-              checked={autoCheckout}
-              onChange={(e) => setAutoCheckout(e.target.checked)}
-              className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
-            />
-            <label htmlFor="autoCheckoutCheckboxDashboard" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
-              {t("admin.settings.autoCheckoutLabel")}
-            </label>
+        <div className="pt-2 border-t border-[#262626] space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="autoCheckoutCheckboxDashboard"
+                checked={autoCheckout}
+                onChange={(e) => setAutoCheckout(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+              />
+              <label htmlFor="autoCheckoutCheckboxDashboard" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                {t("admin.settings.autoCheckoutLabel")}
+              </label>
+            </div>
+            <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+              {t("admin.settings.autoCheckoutDesc")}
+            </p>
           </div>
-          <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
-            {t("admin.settings.autoCheckoutDesc")}
-          </p>
+
+          <div className="space-y-2 pt-2 border-t border-[#262626]/40">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="showPhoneCheckboxDashboard"
+                checked={showPhone}
+                onChange={(e) => setShowPhone(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+              />
+              <label htmlFor="showPhoneCheckboxDashboard" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                {t("admin.settings.showPhoneLabel")}
+              </label>
+            </div>
+            <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+              {t("admin.settings.showPhoneDesc")}
+            </p>
+          </div>
         </div>
       </div>
 

@@ -97,6 +97,7 @@ export default function BookingPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("41791234567");
   const [autoCheckout, setAutoCheckout] = useState(true);
   const [contactPhone, setContactPhone] = useState("+41 (0) 44 123 4567");
+  const [showPhone, setShowPhone] = useState(true);
 
   useEffect(() => {
     async function loadConfig() {
@@ -111,6 +112,10 @@ export default function BookingPage() {
       const resPhone = await getSystemSetting("contact_phone");
       if (resPhone.success && resPhone.value) {
         setContactPhone(resPhone.value);
+      }
+      const resShowPhone = await getSystemSetting("show_phone_number");
+      if (resShowPhone.success) {
+        setShowPhone(resShowPhone.value !== "false");
       }
     }
     loadConfig();
@@ -769,13 +774,15 @@ Please verify and confirm my dispatch request. Thank you!`;
                 </p>
 
                 <div className="space-y-3 pt-2">
-                  <a
-                    href={`tel:${contactPhone.replace(/[^\d+]/g, "")}`}
-                    className="flex items-center justify-center gap-3 w-full bg-ink hover:bg-ink-muted text-ink-inverse py-3 rounded-md font-semibold transition-colors border border-border"
-                  >
-                    <Phone className="w-4 h-4 shrink-0" />
-                    <span>{t("callDispatch").replace("{phone}", contactPhone)}</span>
-                  </a>
+                  {showPhone && (
+                    <a
+                      href={`tel:${contactPhone.replace(/[^\d+]/g, "")}`}
+                      className="flex items-center justify-center gap-3 w-full bg-ink hover:bg-ink-muted text-ink-inverse py-3 rounded-md font-semibold transition-colors border border-border"
+                    >
+                      <Phone className="w-4 h-4 shrink-0" />
+                      <span>{t("callDispatch").replace("{phone}", contactPhone)}</span>
+                    </a>
+                  )}
                    <a
                     href={`https://wa.me/${whatsappNumber}?text=Hello%20Mondar%20Concierge,%20I'd%20like%20to%2520inquire%2520about%2520a%2520specialty%2520post-incident%2520clean.`}
                     target="_blank"

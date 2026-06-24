@@ -37,9 +37,14 @@ export async function Footer() {
   const emailSetting = await db.systemSetting.findUnique({
     where: { key: "contact_email" }
   });
+  const showPhoneSetting = await db.systemSetting.findUnique({
+    where: { key: "show_phone_number" }
+  });
 
+  const showPhone = showPhoneSetting?.value !== "false";
   const phone = phoneSetting?.value || COMPANY_CONFIG.phone;
   const email = emailSetting?.value || COMPANY_CONFIG.email;
+
 
   const activeCategories = await db.serviceCategory.findMany({
     where: { active: true }
@@ -96,12 +101,14 @@ export async function Footer() {
         <div className="text-center md:text-left border-t border-ink-muted/10 pt-8 md:pt-0 md:border-t-0">
           <span className="text-caption text-accent uppercase block mb-4">{t("footerSection.contactHeader")}</span>
           <div className="inline-flex flex-col items-center md:items-start gap-3 text-body-sm text-ink-subtle">
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-accent shrink-0" />
-              <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="hover:text-ink-inverse transition-colors">
-                {phone}
-              </a>
-            </div>
+            {showPhone && (
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-accent shrink-0" />
+                <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="hover:text-ink-inverse transition-colors">
+                  {phone}
+                </a>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-accent shrink-0" />
               <a href={`mailto:${email}`} className="hover:text-ink-inverse transition-colors">

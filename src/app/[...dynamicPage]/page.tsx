@@ -133,9 +133,11 @@ export default async function DynamicStaticPage({ params }: PageProps) {
   const emailRes = await db.systemSetting.findUnique({ where: { key: "contact_email" } });
   const phoneRes = await db.systemSetting.findUnique({ where: { key: "contact_phone" } });
   const addressRes = await db.systemSetting.findUnique({ where: { key: "contact_address" } });
+  const showPhoneRes = await db.systemSetting.findUnique({ where: { key: "show_phone_number" } });
 
   const email = emailRes?.value || "ops@elite-cleaning.ch";
-  const phone = phoneRes?.value || "+41 (0) 44 123 4567";
+  const showPhone = showPhoneRes?.value !== "false";
+  const phone = showPhone ? (phoneRes?.value || "+41 (0) 44 123 4567") : "";
   const address = addressRes?.value || "Bahnhofstrasse 12, 8001 Zürich, Switzerland";
 
   // Replace placeholders dynamically
