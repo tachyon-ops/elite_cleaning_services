@@ -678,7 +678,7 @@ Please verify and confirm my dispatch request. Thank you!`;
       ];
 
       const activeCategoriesToShow = categoriesList.filter(cat => activeSlugs.includes(cat.slug));
-      const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+      const capitalize = (s: string) => s.split("-").map(p => p.charAt(0).toUpperCase() + p.slice(1)).join("");
 
       return (
         <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
