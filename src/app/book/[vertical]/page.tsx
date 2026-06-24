@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key } from "lucide-react";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
+import { Logo } from "@/components/Logo";
 
 interface CustomSelectProps {
   label: string;
@@ -671,7 +672,9 @@ Please verify and confirm my dispatch request. Thank you!`;
         { slug: "hospitality", icon: Home },
         { slug: "aviation", icon: Plane },
         { slug: "yacht", icon: Ship },
-        { slug: "special", icon: Shield }
+        { slug: "special", icon: Shield },
+        { slug: "building-care", icon: Building },
+        { slug: "restaurant", icon: ChefHat }
       ];
 
       const activeCategoriesToShow = categoriesList.filter(cat => activeSlugs.includes(cat.slug));
@@ -681,9 +684,7 @@ Please verify and confirm my dispatch request. Thank you!`;
         <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
           {/* Header */}
           <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center px-6 md:px-16 justify-between sticky top-0 z-50">
-            <a href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
-              <span className="text-accent font-serif font-bold">E</span>LITE
-            </a>
+            <Logo locale={locale} variant="dark" />
             <span className="text-caption text-accent uppercase font-semibold">
               {t("selectDivision")}
             </span>
@@ -821,9 +822,7 @@ Please verify and confirm my dispatch request. Thank you!`;
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-body">
       <header className="h-[80px] bg-bg border-b border-border flex items-center px-6 md:px-16 justify-between">
-        <a href={localizeHref("/", locale)} className="font-display text-display-sm font-bold tracking-tight">
-          <span className="text-accent font-serif font-bold">E</span>LITE
-        </a>
+        <Logo locale={locale} variant="dark" />
         <span className="text-caption text-accent uppercase font-semibold">
           {vertical} {t("bookingFlow")}
         </span>
