@@ -348,3 +348,42 @@
   z-index: 50;
 }
 
+/* Premium ribbon shine animation */
+@keyframes ribbon-shine-loop {
+  0% {
+    left: -150%;
+  }
+  30% {
+    left: 150%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+.ribbon-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.ribbon-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.15) 70%,
+    transparent
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: ribbon-shine-loop 6s infinite ease-in-out;
+}
+
+
