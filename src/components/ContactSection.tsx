@@ -118,7 +118,9 @@ export function ContactSection({
                   <ExternalLink className="w-3 h-3 text-ink-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <p className="text-caption text-ink-subtle">{t("contactPage.whatsappCardDesc")}</p>
-                <p className="text-body-sm text-ink font-medium truncate">{whatsappLabel || whatsappNum}</p>
+                <p className="text-body-sm text-ink font-medium truncate">
+                  {showPhone ? (whatsappLabel || whatsappNum) : t("contactPage.whatsappCardAction")}
+                </p>
               </div>
             </a>
           )}
