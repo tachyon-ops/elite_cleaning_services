@@ -73,7 +73,7 @@ describe("i18n-utils", () => {
       expect(localizeHref("#how-it-works", "pt")).toBe("#how-it-works");
       expect(localizeHref("https://google.com", "pt")).toBe("https://google.com");
       expect(localizeHref("tel:+41441234567", "pt")).toBe("tel:+41441234567");
-      expect(localizeHref("mailto:info@elite.ch", "pt")).toBe("mailto:info@elite.ch");
+      expect(localizeHref("mailto:info@mondar.ch", "pt")).toBe("mailto:info@mondar.ch");
     });
   });
 

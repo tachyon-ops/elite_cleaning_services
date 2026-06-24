@@ -340,7 +340,7 @@ export default async function HomePage() {
               </ul>
               <div className="pt-6 border-t border-accent/15">
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean.`}
+                  href={`https://wa.me/${whatsappNumber}?text=Hello%20Mondar%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-accent hover:bg-accent-hover text-ink-inverse text-button font-bold py-3.5 px-6 rounded-md transition-all duration-300 flex items-center justify-center gap-3 shadow-md hover:shadow-[0_8px_20px_rgba(212,175,55,0.25)] transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
@@ -442,7 +442,7 @@ export default async function HomePage() {
       {/* Floating WhatsApp Concierge Widget */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
-          href={`https://wa.me/${whatsappNumber}?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean.`}
+          href={`https://wa.me/${whatsappNumber}?text=Hello%20Mondar%20Concierge,%20I'd%20like%20to%20inquire%20about%20a%20specialty%20clean.`}
           target="_blank"
           rel="noopener noreferrer"
           className="bg-ink hover:bg-black text-accent hover:text-accent border border-accent/35 hover:border-accent h-12 w-12 hover:w-[210px] focus:w-[210px] active:w-[210px] rounded-full flex items-center justify-start pl-[13px] transition-all duration-300 shadow-[0_4px_20px_rgba(146,108,21,0.25)] hover:shadow-[0_6px_25px_rgba(146,108,21,0.4)] group overflow-hidden select-none"

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
+import { Logo } from "@/components/Logo";
 import { getBookingQuoteDetails, acceptQuoteAndPayDeposit } from "@/app/actions/booking";
 import { Shield, Check, Lock, CreditCard, Calendar, Clock, MapPin, Mail, AlertTriangle, ArrowRight, Plane, Ship } from "lucide-react";
 
@@ -118,12 +119,7 @@ export default function QuoteAcceptancePage() {
       {/* Header */}
       <header className="border-b border-[#262626] bg-[#141414]/90 backdrop-blur-md sticky top-0 z-50 py-5">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <Link href={localizeHref("/", locale)} className="flex items-center gap-2 group">
-            <Shield className="w-6 h-6 text-accent group-hover:rotate-12 transition-transform" />
-            <span className="font-display font-medium text-body-md uppercase tracking-wider text-[#f2f2f2] group-hover:text-accent transition-colors">
-              Elite Cleaning Services
-            </span>
-          </Link>
+          <Logo locale={locale} variant="light" />
           <div className="text-caption font-mono text-[#a6a6a6]">
             REF: {booking.id.substring(0, 8).toUpperCase()}
           </div>
@@ -433,7 +429,7 @@ export default function QuoteAcceptancePage() {
       {/* Footer */}
       <footer className="border-t border-[#262626] bg-[#0d0d0d] py-8 text-center text-caption text-[#737373]">
         <div className="max-w-7xl mx-auto px-6 space-y-2">
-          <p>© 2026 Elite Cleaning Services GmbH. Switzerland. All Rights Reserved.</p>
+          <p>© 2026 Mondar AG. Switzerland. All Rights Reserved.</p>
           <p className="font-mono text-body-xs">Secure mock platform payment. No actual funds are charged.</p>
         </div>
       </footer>

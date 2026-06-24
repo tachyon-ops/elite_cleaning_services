@@ -34,7 +34,7 @@
   },
   "admin": {
     "sidebar": {
-      "title": "CONTROLO ELITE",
+      "title": "CONTROLO MONDAR",
       "subtitle": "Operações Backoffice",
       "dashboard": "Painel de controlo",
       "bookings": "Reservas e Despacho",
@@ -214,11 +214,11 @@
     "subtitle": "FAQ",
     "title": "Perguntas Frequentes",
     "q1": "Fazem a limpeza vocês mesmos?",
-    "a1": "Não, a Elite atua como uma plataforma de corretagem avaliada. Gerimos as reservas, auditorias de qualidade, seguros e pagamentos, enquanto despachamos o serviço físico para subcontratados suíços especializados e certificados.",
+    "a1": "Não, a Mondar atua como uma plataforma de corretagem avaliada. Gerimos as reservas, auditorias de qualidade, seguros e pagamentos, enquanto despachamos o serviço físico para subcontratados suíços especializados e certificados.",
     "q2": "Onde operam?",
     "a2": "Estamos a lançar os serviços iniciais em Zurique, no lago de Zurique e nos municípios circundantes, com planos de expansão para outros cantões suíços em fases posteriores.",
     "q3": "E se algo for danificado durante uma sessão?",
-    "a3": "Todos os subcontratados atribuídos devem possuir um seguro de responsabilidade civil. No raro caso de danos, a Elite media a reclamação e garante uma resolução através do compromisso da nossa plataforma.",
+    "a3": "Todos os subcontratados atribuídos devem possuir um seguro de responsabilidade civil. No raro caso de danos, a Mondar media a reclamação e garante uma resolução através do compromisso da nossa plataforma.",
     "q4": "Os meus dados estão seguros de acordo com o RGPD?",
     "a4": "Sim. Todos os servidores de aplicações, instâncias Supabase e registos são alojados em centros de dados europeus. Não rastreamos cookies sem consentimento e pode exportar ou apagar os dados da sua conta a qualquer momento."
   },
@@ -237,11 +237,11 @@
     "impressum": "Impressum",
     "providerTerms": "Termos de Parceiro",
     "tagline": "Corretagem de limpeza suíça de precisão. Confiança sóbria, execução impecável.",
-    "copyright": "Elite Cleaning Services. Todos os direitos reservados."
+    "copyright": "Mondar Specialty Cleaning. Todos os direitos reservados."
   },
   "providers": {
     "nav": {
-      "brand": "ELITE CLEANING",
+      "brand": "MONDAR",
       "signIn": "Entrar",
       "apply": "Candidatar-se"
     },
@@ -301,10 +301,10 @@
       "catMoveout": "Limpeza de fim de contrato"
     },
     "footer": {
-      "copyright": "Elite Cleaning Platform AG. Todos os direitos de parceiros suíços reservados."
+      "copyright": "Mondar AG. Todos os direitos de parceiros suíços reservados."
     },
     "login": {
-      "nav": "ELITE PARTNER HUB",
+      "nav": "MONDAR PARTNER HUB",
       "mfaTitle": "Autenticação de Dois Fatores",
       "mfaDesc": "Insira o token de verificação para autorizar o acesso",
       "partnerLogin": "Login do Parceiro",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "A ENTRAR...",
       "notRegistered": "Ainda não registado?",
       "submitApplication": "Enviar candidatura",
-      "copyright": "Elite Cleaning Platform AG. Acesso seguro para operadores.",
+      "copyright": "Mondar AG. Acesso seguro para operadores.",
       "forgotPassword": "Esqueceu a senha?",
       "forgotPasswordTitle": "Redefinir senha",
       "forgotPasswordDesc": "Insira o seu e-mail de parceiro para solicitar um código de redefinição.",

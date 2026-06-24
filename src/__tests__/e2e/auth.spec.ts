@@ -2,7 +2,7 @@ import { test } from "./helpers/fixtures";
 import { expect } from "@playwright/test";
 import { getUserByEmail } from "./helpers/db-queries";
 
-test.describe("Elite Cleaning Services - Authentication Flows", () => {
+test.describe("Mondar - Authentication Flows", () => {
 
   test("should successfully login as Admin with 2FA OTP code", async ({ page }) => {
     // 1. Go to Admin Login page
@@ -10,7 +10,7 @@ test.describe("Elite Cleaning Services - Authentication Flows", () => {
     await page.screenshot({ path: "src/__tests__/e2e/snapshots/admin-login-empty.png" });
 
     // 2. Fill credentials
-    await page.locator("input[type='email']").fill("admin@elite-cleaning.ch");
+    await page.locator("input[type='email']").fill("admin@mondar.ch");
     await page.locator("input[type='password']").fill("admin123");
     await page.screenshot({ path: "src/__tests__/e2e/snapshots/admin-login-filled.png" });
 
@@ -18,11 +18,11 @@ test.describe("Elite Cleaning Services - Authentication Flows", () => {
     await page.click("button:has-text('SEND OTP CODE')");
 
     // 4. Expect to be prompted for 2FA token
-    await expect(page.locator("h2:has-text('ELITE CONTROL')")).toBeVisible();
+    await expect(page.locator("h2:has-text('MONDAR CONTROL')")).toBeVisible();
     await expect(page.locator("text=Verify Email OTP Code")).toBeVisible();
 
     // 5. Query OTP code from the database
-    const adminUser = await getUserByEmail("admin@elite-cleaning.ch");
+    const adminUser = await getUserByEmail("admin@mondar.ch");
     expect(adminUser).not.toBeNull();
     const otpCode = adminUser?.emailOtpCode;
     expect(otpCode).not.toBeNull();

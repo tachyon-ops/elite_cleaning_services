@@ -131,10 +131,10 @@ export async function loginAdmin(email: string, password?: string) {
     // Send SMTP email
     const emailResult = await sendEmail({
       to: adminUser.email,
-      subject: "Elite Cleaning Services - Security OTP",
+      subject: "Mondar - Security OTP",
       html: `
         <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
-          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">ELITE CLEANING GATEWAY</h2>
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">MONDAR GATEWAY</h2>
           <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the OTP code below to verify your identity and authorize your backoffice session:</p>
           <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
             <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
@@ -255,10 +255,10 @@ export async function sendRegistrationEmailOtp(email: string) {
     // Send SMTP email
     const emailResult = await sendEmail({
       to: email,
-      subject: "Elite Cleaning Services - Root Setup MFA OTP",
+      subject: "Mondar - Root Setup MFA OTP",
       html: `
         <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
-          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">ELITE CLEANING GATEWAY</h2>
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">MONDAR GATEWAY</h2>
           <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">You are setting up administrative Multi-Factor Authentication. Please input the following OTP code on your setup screen:</p>
           <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
             <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
@@ -1040,7 +1040,7 @@ export async function requestPasswordResetAdmin(email: string) {
     // Send SMTP email
     const emailResult = await sendEmail({
       to: adminUser.email,
-      subject: "Elite Cleaning Services - Admin Password Reset Request",
+      subject: "Mondar - Admin Password Reset Request",
       html: `
         <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
           <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">PASSWORD RESET REQUEST</h2>

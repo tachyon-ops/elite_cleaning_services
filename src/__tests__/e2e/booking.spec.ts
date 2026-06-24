@@ -2,7 +2,7 @@ import { test } from "./helpers/fixtures";
 import { expect } from "@playwright/test";
 import { getLatestBookingForEmail } from "./helpers/db-queries";
 
-test.describe("Elite Cleaning Services - Booking Intake Wizard", () => {
+test.describe("Mondar - Booking Intake Wizard", () => {
   
   test("should successfully complete a Domestic booking (Credit Card Flow)", async ({ page }) => {
     // 1. Navigate to Domestic booking intake page in English

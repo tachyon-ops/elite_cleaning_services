@@ -14,7 +14,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailPayload) {
   const port = Number(clean(process.env.SMTP_PORT || "587"));
   const user = clean(process.env.SMTP_USER);
   const pass = clean(process.env.SMTP_PASS);
-  const from = clean(process.env.SMTP_FROM) || `"Elite Cleaning Services" <${user}>`;
+  const from = clean(process.env.SMTP_FROM) || `"Mondar Specialty Cleaning" <${user}>`;
 
   if (!host || !user || !pass) {
     console.warn("[SMTP WARNING] SMTP configuration is incomplete. Skipping mail dispatch.");

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/Logo";
 
 const verticalMeta: Record<string, {
   icon: React.ComponentType<{ className?: string }>;
@@ -102,14 +103,7 @@ export async function Header() {
   return (
     <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-6 md:px-16 sticky top-0 z-50">
       <div className="flex items-center">
-        <Link 
-          href={localizeHref("/", locale)} 
-          className="font-display text-display-sm font-medium tracking-[0.15em] text-ink flex items-center gap-1.5 select-none group/logo logo-shine py-1 px-3 -mx-3 rounded-md transition-all"
-        >
-          <span className="text-accent font-serif font-bold transition-transform duration-300 group-hover/logo:scale-110">E</span>
-          <span>LITE</span>
-          <Sparkles className="w-3.5 h-3.5 text-accent opacity-0 group-hover/logo:opacity-100 group-hover/logo:rotate-[120deg] transition-all duration-700 ease-[var(--ease-spring)] shrink-0" />
-        </Link>
+        <Logo locale={locale} variant="dark" />
       </div>
       <nav className="hidden md:flex gap-8 items-center">
         {/* Services Dropdown */}
@@ -121,7 +115,7 @@ export async function Header() {
           <div className="absolute top-[calc(100%-4px)] left-1/2 -translate-x-1/2 pt-3 opacity-0 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:pointer-events-auto transition-all duration-300 ease-out translate-y-2 group-hover/dropdown:translate-y-0 z-50">
             <div className="bg-bg/95 backdrop-blur-md border border-border/60 rounded-lg shadow-xl p-4 w-72 grid grid-cols-1 gap-1">
               <span className="text-[10px] text-accent font-semibold tracking-wider px-3 pb-2 uppercase border-b border-border/20 mb-1 block">
-                Elite Divisions
+                Mondar Divisions
               </span>
               {sortedCategories.map((cat: CategoryType) => {
                 const meta = verticalMeta[cat.slug];

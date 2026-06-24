@@ -2,7 +2,7 @@ import { BrowserContext } from "@playwright/test";
 import { getUserByEmail, getProviderBySlug } from "./db-queries";
 
 export async function loginAsAdmin(context: BrowserContext) {
-  const adminUser = await getUserByEmail("admin@elite-cleaning.ch");
+  const adminUser = await getUserByEmail("admin@mondar.ch");
   if (!adminUser) {
     throw new Error("Admin user not found in database");
   }

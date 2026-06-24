@@ -88,7 +88,7 @@ export function verifyTOTPToken(token: string, secret: string, window = 1): bool
 
 // 5. Get TOTP Authentication URL for QR Code
 export function getTOTPAuthUrl(email: string, secret: string): string {
-  return `otpauth://totp/EliteCleaning:${email}?secret=${secret}&issuer=EliteCleaning`;
+  return `otpauth://totp/Mondar:${email}?secret=${secret}&issuer=Mondar`;
 }
 
 // 6. Generate 6-Digit Email OTP

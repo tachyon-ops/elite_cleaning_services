@@ -31,14 +31,14 @@ export async function resetDatabaseForTest() {
     await prisma.user.deleteMany({
       where: {
         email: {
-          notIn: ["admin@elite-cleaning.ch", "partner@alpineclean.ch"]
+          notIn: ["admin@mondar.ch", "partner@alpineclean.ch"]
         }
       }
     });
 
     // Reset OTP code state on the admin user to ensure clean state
     await prisma.user.updateMany({
-      where: { email: "admin@elite-cleaning.ch" },
+      where: { email: "admin@mondar.ch" },
       data: { emailOtpCode: null, emailOtpExpiresAt: null }
     });
 

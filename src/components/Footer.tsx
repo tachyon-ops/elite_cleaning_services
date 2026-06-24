@@ -6,6 +6,7 @@ import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { COMPANY_CONFIG } from "@/lib/config";
+import { Logo } from "@/components/Logo";
 
 const verticalMeta: Record<string, { link: string }> = {
   domestic: { link: "/book/domestic" },
@@ -59,7 +60,7 @@ export async function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 md:px-16 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 lg:gap-12">
         {/* Col 1 */}
         <div className="text-center md:text-left">
-          <span className="font-display text-display-sm font-bold text-ink-inverse tracking-tight">ELITE</span>
+          <Logo locale={locale} variant="light" />
           <p className="text-body-sm text-ink-subtle mt-4 max-w-[25ch] mx-auto md:mx-0">
             {t("footerSection.tagline")}
           </p>

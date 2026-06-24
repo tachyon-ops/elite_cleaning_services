@@ -6,7 +6,7 @@ import { getProviderBySlug } from "./helpers/db-queries";
 
 const db = new PrismaClient();
 
-test.describe("Elite Cleaning Services - Provider Portal Operations", () => {
+test.describe("Mondar - Provider Portal Operations", () => {
   const testBookingId = "test-booking-provider-1";
   const testOfferId = "test-offer-provider-1";
 

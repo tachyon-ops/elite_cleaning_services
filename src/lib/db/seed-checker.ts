@@ -37,7 +37,7 @@ export async function checkAndSeedDb() {
             content: `# Datenschutzerklärung
 
 ## 1. Verantwortliche Stelle
-Verantwortlich für die Datenverarbeitung auf dieser Plattform ist die **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-Mail: {{CONTACT_EMAIL}}).
+Verantwortlich für die Datenverarbeitung auf dieser Plattform ist die **Mondar AG**, {{CONTACT_ADDRESS}} (E-Mail: {{CONTACT_EMAIL}}).
 
 ## 2. Erhebung und Speicherung personenbezogener Daten
 Wir verarbeiten personenbezogene Daten, die Sie uns bei der Nutzung der Plattform, bei Buchungsanfragen oder bei einer Registrierung übermitteln. Dies umfasst:
@@ -67,7 +67,7 @@ Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Ve
             content: `# Privacy Policy
 
 ## 1. Data Controller
-The data controller responsible for the processing of your personal data on this platform is **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (Email: {{CONTACT_EMAIL}}).
+The data controller responsible for the processing of your personal data on this platform is **Mondar AG**, {{CONTACT_ADDRESS}} (Email: {{CONTACT_EMAIL}}).
 
 ## 2. Collection and Storage of Personal Data
 We collect and process personal data when you interact with our website, request quotes, or place bookings. This includes:
@@ -97,7 +97,7 @@ You have the right to request access, rectification, portability, or erasure of 
             content: `# Politique de confidentialité
 
 ## 1. Responsable du traitement
-Le responsable du traitement des données est **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Le responsable du traitement des données est **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Données collectées
 Nous collectons des données fournies lors des réservations ou inscriptions (nom, adresse, téléphone, e-mail, données de paiement et détails de l'objet à nettoyer). Nos serveurs enregistrent des données techniques (adresse IP, date/heure).
@@ -120,7 +120,7 @@ Les pièces comptables sont conservées pendant **10 ans** (Code suisse des obli
             content: `# Informativa sulla privacy
 
 ## 1. Titolare del trattamento
-Il titolare del trattamento è **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Il titolare del trattamento è **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Dati trattati
 Raccogliamo i dati forniti durante la prenotazione o registrazione (nome, indirizzo, telefono, e-mail, dati di pagamento e dettagli dell'immobile). Registriamo inoltre dati tecnici di navigazione (indirizzo IP, log).
@@ -143,7 +143,7 @@ I registri contabili sono conservati per **10 anni** (Art. 957 del Codice delle 
             content: `# Declaraziun da datas
 
 ## 1. Post responsabel
-Il post responsabel per las datas è **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Il post responsabel per las datas è **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Datas rimnadas
 Nus rimnain datas ch'Els transmettan tras la reservaziun u registraziun (num, adressa, telefon, e-mail, datas da pajament, detagls dal object).
@@ -166,7 +166,7 @@ Ils documents da cassa vegnan conservads per **10 onns** (Art. 957 OR svizzer). 
             content: `# Política de privacidad
 
 ## 1. Responsable del tratamiento
-El responsable del tratamiento es **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+El responsable del tratamiento es **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Datos recopilados
 Recopilamos información al reservar o registrarse (nombre, dirección, e-mail, teléfono, datos de pago y especificaciones de la limpieza). También registramos logs técnicos (dirección IP, hora de acceso).
@@ -189,7 +189,7 @@ Los registros contables se conservan durante **10 años** por ley suiza (Código
             content: `# Política de privacidade
 
 ## 1. Responsável pelo Tratamento de Dados
-O responsável pelo tratamento dos seus dados é a **Elite Cleaning Platform AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+O responsável pelo tratamento dos seus dados é a **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Recolha e Armazenamento de Dados Pessoais
 Recolhemos dados pessoais fornecidos diretamente por si no momento da reserva, registo ou contacto (nome, morada, e-mail, telefone, dados de pagamento e detalhes específicos do imóvel). Os nossos servidores também registam o endereço IP e logs técnicos.
@@ -215,19 +215,19 @@ Retemos dados de faturação durante **10 anos** nos termos do Código das Obrig
             content: `# Allgemeine Geschäftsbedingungen (AGB)
 
 ## 1. Geltungsbereich und Vermittlungsmodell
-Diese AGB regeln die Nutzung der Buchungsplattform der **Elite Cleaning Platform AG** ("Elite"). Elite betreibt einen kuratierten Marktplatz für Reinigungsdienstleistungen in der Schweiz.
-**Elite ist kein Reinigungsunternehmen und stellt selbst keine Reinigungskräfte an. Elite agiert ausschliesslich als Vermittler (Broker).**
+Diese AGB regeln die Nutzung der Buchungsplattform der **Mondar AG** ("Mondar"). Mondar betreibt einen kuratierten Marktplatz für Reinigungsdienstleistungen in der Schweiz.
+**Mondar ist kein Reinigungsunternehmen und stellt selbst keine Reinigungskräfte an. Mondar agiert ausschliesslich als Vermittler (Broker).**
 Mit der Buchung über die Plattform entstehen zwei separate Vertragsverhältnisse:
-1. **Ein Vermittlungsvertrag** zwischen dem Kunden und Elite über die Nutzung der Plattform, die Vermittlung an einen Partner, den Kundenservice und das Inkasso.
+1. **Ein Vermittlungsvertrag** zwischen dem Kunden und Mondar über die Nutzung der Plattform, die Vermittlung an einen Partner, den Kundenservice und das Inkasso.
 2. **Ein Reinigungsvertrag** direkt zwischen dem Kunden und dem zugewiesenen **Partnerunternehmen (Provider)**. Der Partner ist ein eigenständiges, in der Schweiz registriertes Unternehmen und führt die Reinigung unter eigener Verantwortung, Haftung und Leitung aus.
 
 ## 2. Ausschluss der Arbeitgeberhaftung für Kunden
 Da alle Aufträge ausschliesslich an eingetragene Schweizer Unternehmen (AG, GmbH oder im Handelsregister eingetragene Einzelfirmen mit gültiger UID) vermittelt werden, ist der Kunde vollständig von jeglicher Arbeitgeberhaftung geschützt. Es besteht kein Anstellungsverhältnis zwischen dem Kunden und den Reinigungskräften. Der Kunde ist nicht für Sozialabgaben (AHV, IV, EO, ALV), BVG-Beiträge, Unfallversicherung (UVG) oder die Einhaltung des Gesamtarbeitsvertrags (GAV) der Reinigungsbranche verantwortlich.
 
 ## 3. Buchungen, Offerten und Vertragsabschluss
-- **Sofortbuchungen (Gewerbe/Hospitality):** Der Kunde gibt eine verbindliche Buchungsanfrage ab. Der Reinigungsvertrag kommt zustande, sobald Elite die Zuteilung eines Partners bestätigt.
-- **Offertanfragen (Luftfahrt/Yachten/Sonderreinigungen):** Elite erstellt eine individuelle Offerte basierend auf den Kundendaten. Der Vertrag kommt mit der Annahme der Offerte durch den Kunden zustande.
-- **Zahlungen:** Alle Preise verstehen sich in CHF. Die Zahlung erfolgt über Stripe. Je nach Sparte wird bei Buchung eine Anzahlung (30 %) oder Vorauszahlung fällig. Elite zieht diese Beträge im Namen des Partners ein.
+- **Sofortbuchungen (Gewerbe/Hospitality):** Der Kunde gibt eine verbindliche Buchungsanfrage ab. Der Reinigungsvertrag kommt zustande, sobald Mondar die Zuteilung eines Partners bestätigt.
+- **Offertanfragen (Luftfahrt/Yachten/Sonderreinigungen):** Mondar erstellt eine individuelle Offerte basierend auf den Kundendaten. Der Vertrag kommt mit der Annahme der Offerte durch den Kunden zustande.
+- **Zahlungen:** Alle Preise verstehen sich in CHF. Die Zahlung erfolgt über Stripe. Je nach Sparte wird bei Buchung eine Anzahlung (30 %) oder Vorauszahlung fällig. Mondar zieht diese Beträge im Namen des Partners ein.
 
 ## 4. Stornierungen und Umbuchungen
 - Stornierungen oder Verschiebungen **mehr als 7 Tage** vor dem vereinbarten Termin sind kostenlos. Geleistete Anzahlungen von 30% werden vollständig zurückerstattet.
@@ -237,7 +237,7 @@ Da alle Aufträge ausschliesslich an eingetragene Schweizer Unternehmen (AG, Gmb
 ## 5. Haftung, Versicherung und Reklamationen
 - Das ausführende Partnerunternehmen haftet vollumfänglich für Schäden, Mängel oder Verzögerungen bei der Reinigung.
 - Partner sind verpflichtet, eine Betriebshaftpflichtversicherung mit einer Deckung von mindestens **CHF 5 Millionen** zu unterhalten.
-- Elite haftet nicht für Mängel der Reinigung, bietet jedoch eine Vermittlungsstelle bei Streitigkeiten an. Mängel oder Schäden müssen Elite innerhalb von **48 Stunden** nach Fertigstellung an {{CONTACT_EMAIL}} gemeldet werden. Während der Klärung wird die Auszahlung an den Partner blockiert.
+- Mondar haftet nicht für Mängel der Reinigung, bietet jedoch eine Vermittlungsstelle bei Streitigkeiten an. Mängel oder Schäden müssen Mondar innerhalb von **48 Stunden** nach Fertigstellung an {{CONTACT_EMAIL}} gemeldet werden. Während der Klärung wird die Auszahlung an den Partner blockiert.
 
 ## 6. Anwendbares Recht und Gerichtsstand
 Es gilt ausschliesslich Schweizer Recht. Der ausschliessliche Gerichtsstand für alle Streitigkeiten ist Zürich, Schweiz.`
@@ -249,19 +249,19 @@ Es gilt ausschliesslich Schweizer Recht. Der ausschliessliche Gerichtsstand für
             content: `# Terms & Conditions
 
 ## 1. Scope and Intermediary Platform Model
-These Terms & Conditions govern the use of the digital booking platform operated by **Elite Cleaning Platform AG** ("Elite"). Elite operates a vetted marketplace for specialized cleaning services in Switzerland.
-**Crucially, Elite is not a cleaning company and does not employ cleaners. Elite acts strictly as an intermediary (broker).**
+These Terms & Conditions govern the use of the digital booking platform operated by **Mondar AG** ("Mondar"). Mondar operates a vetted marketplace for specialized cleaning services in Switzerland.
+**Crucially, Mondar is not a cleaning company and does not employ cleaners. Mondar acts strictly as an intermediary (broker).**
 By booking through the platform, two separate contracts are formed:
-1. **A Brokerage Agreement** between the Client and Elite, governing the use of the booking platform, matching engine, customer service, and payment processing.
+1. **A Brokerage Agreement** between the Client and Mondar, governing the use of the booking platform, matching engine, customer service, and payment processing.
 2. **A Cleaning Service Agreement** directly between the Client and the assigned **Provider Company** (which is an independent, registered Swiss business). The Provider performs the cleaning services under its own name, liability, and supervision.
 
 ## 2. No Employer Liability for Clients
 Because the cleaning services are exclusively fulfilled by registered Swiss business entities (e.g., GmbH, AG, or registered sole proprietorships with a valid Swiss UID), the Client is entirely insulated from employer-related legal obligations. The Client does not hire individual workers, and is not responsible for Swiss social security declarations (AHV/AVS, IV, EO, ALV), BVG pensions, accident insurance (UVG), or compliance with the cleaning industry's Collective Bargaining Agreement (GAV).
 
 ## 3. Booking, Quote Requests, and Contract Formation
-- **Instant Bookings (Commercial/Hospitality):** The Client makes a binding request. The contract with the Provider is formed once Elite confirms the assignment of a Provider.
-- **Quote Requests (Aviation/Yacht/Special-Services):** The Client submits specifications. Elite coordinates with Providers to issue a binding quote. The contract is formed when the Client accepts the quote.
-- **Payments:** Prices are in CHF. Payments are handled via Stripe. A deposit (typically 30%) or full prepayment is captured at booking. Elite collects payment on behalf of the Provider.
+- **Instant Bookings (Commercial/Hospitality):** The Client makes a binding request. The contract with the Provider is formed once Mondar confirms the assignment of a Provider.
+- **Quote Requests (Aviation/Yacht/Special-Services):** The Client submits specifications. Mondar coordinates with Providers to issue a binding quote. The contract is formed when the Client accepts the quote.
+- **Payments:** Prices are in CHF. Payments are handled via Stripe. A deposit (typically 30%) or full prepayment is captured at booking. Mondar collects payment on behalf of the Provider.
 
 ## 4. Cancellation and Rescheduling Policy
 - Cancellations or rescheduling requests made **more than 7 days** before the scheduled service start are free of charge. The 30% deposit will be fully refunded.
@@ -271,7 +271,7 @@ Because the cleaning services are exclusively fulfilled by registered Swiss busi
 ## 5. Liability, Insurance, and Disputes
 - The performing Provider Company is solely liable for the execution of the cleaning service, including any property damages, timing delays, or quality defects.
 - Providers are contractually required to maintain commercial liability insurance with a minimum coverage of **CHF 5 million**.
-- Elite assumes no liability for the physical cleaning performance but operates a disputes resolution service. Customers must report damages or quality issues within **48 hours** of job completion via {{CONTACT_EMAIL}}. Elite will freeze provider payouts during active dispute mediation.
+- Mondar assumes no liability for the physical cleaning performance but operates a disputes resolution service. Customers must report damages or quality issues within **48 hours** of job completion via {{CONTACT_EMAIL}}. Mondar will freeze provider payouts during active dispute mediation.
 
 ## 6. Governing Law and Jurisdiction
 These terms are governed exclusively by Swiss law. The exclusive venue of jurisdiction for all disputes arising out of or in connection with these terms is Zurich, Switzerland.`
@@ -283,19 +283,19 @@ These terms are governed exclusively by Swiss law. The exclusive venue of jurisd
             content: `# Conditions Générales
 
 ## 1. Modèle d'intermédiaire
-Ces CG régissent l'utilisation de la plateforme de **Elite Cleaning Platform AG** ("Elite"). Elite agit en tant qu'intermédiaire de courtage de nettoyage en Suisse.
-**Elite n'est pas une entreprise de nettoyage et n'emploie pas de nettoyeurs. Elle intervient exclusivement comme courtier/intermédiaire.**
+Ces CG régissent l'utilisation de la plateforme de **Mondar AG** ("Mondar"). Mondar agit en tant qu'intermédiaire de courtage de nettoyage en Suisse.
+**Mondar n'est pas une entreprise de nettoyage et n'emploie pas de nettoyeurs. Elle intervient exclusivement comme courtier/intermédiaire.**
 Avec la réservation, deux contrats distincts sont formés:
-1. **Un contrat de courtage** entre le client et Elite pour l'utilisation de la plateforme et le service client.
+1. **Un contrat de courtage** entre le client et Mondar pour l'utilisation de la plateforme et le service client.
 2. **Un contrat de nettoyage** directement entre le client et **l'entreprise prestataire partenaire** (qui est une entreprise suisse indépendante enregistrée). L'entreprise partenaire exécute le nettoyage sous sa propre responsabilité, responsabilité civile et direction.
 
 ## 2. Exclusion de responsabilité de l'employeur pour le client
 Comme les services sont exclusivement assurés par des entreprises suisses enregistrées (SA, Sàrl ou entreprise individuelle inscrite avec UID), le client est totalement protégé contre les obligations de l'employeur en Suisse. Le client n'emploie aucun travailleur individuel et n'est pas responsable des cotisations sociales suisses (AVS, AI, APG, AC), de la LPP, de l'assurance accident (LAA) ou du respect de la CCT de la branche du nettoyage.
 
 ## 3. Réservation et conclusion du contrat
-- **Prestations standard (Commercial/Hébergement):** Le contrat de nettoyage est conclu dès que Elite confirme l'attribution du partenaire.
-- **Prestations sur devis (Aviation/Yachts/Services Spéciaux):** Elite soumet un devis. Le contrat est conclu lors de l'acceptation de celui-ci par le client.
-- **Paiements:** Prix en CHF via Stripe. Un acompte (30%) ou le montant total est prélevé à la réservation. Elite perçoit les paiements au nom du partenaire.
+- **Prestations standard (Commercial/Hébergement):** Le contrat de nettoyage est conclu dès que Mondar confirme l'attribution du partenaire.
+- **Prestations sur devis (Aviation/Yachts/Services Spéciaux):** Mondar soumet un devis. Le contrat est conclu lors de l'acceptation de celui-ci par le client.
+- **Paiements:** Prix en CHF via Stripe. Un acompte (30%) ou le montant total est prélevé à la réservation. Mondar perçoit les paiements au nom du partenaire.
 
 ## 4. Annulation et modification
 - L'annulation ou la modification est gratuite **plus de 7 jours** avant l'intervention. L'acompte de 30% est intégralement remboursé.
@@ -304,7 +304,7 @@ Comme les services sont exclusivement assurés par des entreprises suisses enreg
 
 ## 5. Responsabilité, assurance et réclamations
 - L'entreprise partenaire est seule responsable de l'exécution et des dommages éventuels. Les partenaires doivent détenir une assurance RC professionnelle de **CHF 5 millions** minimum.
-- Elite n'assume aucune responsabilité directe mais propose une médiation. Les dommages ou défauts doivent être signalés sous **48 heures** à {{CONTACT_EMAIL}}.`
+- Mondar n'assume aucune responsabilité directe mais propose une médiation. Les dommages ou défauts doivent être signalés sous **48 heures** à {{CONTACT_EMAIL}}.`
           },
           {
             locale: "it",
@@ -313,19 +313,19 @@ Comme les services sont exclusivement assurés par des entreprises suisses enreg
             content: `# Termini e Condizioni
 
 ## 1. Modello di intermediazione
-I presenti termini regolano l'uso della piattaforma di **Elite Cleaning Platform AG** ("Elite"). Elite gestisce un mercato curato per servizi di pulizia in Svizzera.
-**Elite non è un'impresa di pulizia e non assume addetti alle pulizie. Agisce esclusivamente come intermediario (broker).**
+I presenti termini regolano l'uso della piattaforma di **Mondar AG** ("Mondar"). Mondar gestisce un mercato curato per servizi di pulizia in Svizzera.
+**Mondar non è un'impresa di pulizia e non assume addetti alle pulizie. Agisce esclusivamente come intermediario (broker).**
 Effettuando una prenotazione, si formano due contratti distinti:
-1. **Un contratto di intermediazione** tra il cliente e Elite per l'uso della piattaforma e il servizio clienti.
+1. **Un contratto di intermediazione** tra il cliente e Mondar per l'uso della piattaforma e il servizio clienti.
 2. **Un contratto di pulizia** direttamente tra il cliente e **l'impresa di pulizie partner** assegnata (azienda svizzera indipendente registrata). Il partner esegue il servizio sotto la propria responsabilità e direzione.
 
 ## 2. Esclusione della responsabilità del datore di lavoro per il cliente
 Poiché le pulizie sono eseguite esclusivamente da società svizzere registrate (AG, GmbH o ditta individuale con UID del partner valida), il cliente è totalmente esonerato dagli obblighi di legge previsti per i datori di lavoro. Il cliente non assume personale e non è responsabile delle dichiarazioni e dei contributi previdenziali (AVS, AI, IPG, AD), della previdenza professionale (LPP), dell'assicurazione contro gli infortuni (LAINF) o della conformità al contratto collettivo di lavoro (CCL) del settore.
 
 ## 3. Prenotazione, preventivi e conclusione del contratto
-- **Prenotazioni istantanee (Uffici/Airbnb):** Il contratto con il partner si conclude con la conferma di assegnazione da parte di Elite.
-- **Richieste di preventivo (Jet/Yacht/Servizi speciali):** Elite coordina l'invio di un preventivo vincolante. Il contratto è concluso quando il cliente lo accetta.
-- **Pagamenti:** Prezzi in CHF gestiti tramite Stripe. All'atto della prenotazione è dovuto un acconto del 30% o il saldo totale. Elite riscuote i fondi per conto del partner.
+- **Prenotazioni istantanee (Uffici/Airbnb):** Il contratto con il partner si conclude con la conferma di assegnazione da parte di Mondar.
+- **Richieste di preventivo (Jet/Yacht/Servizi speciali):** Mondar coordina l'invio di un preventivo vincolante. Il contratto è concluso quando il cliente lo accetta.
+- **Pagamenti:** Prezzi in CHF gestiti tramite Stripe. All'atto della prenotazione è dovuto un acconto del 30% o il saldo totale. Mondar riscuote i fondi per conto del partner.
 
 ## 4. Politica di cancellazione
 - La cancellazione o la modifica è gratuita fino a **7 giorni prima** dell'inizio del servizio. L'acconto del 30% sarà interamente rimborsato.
@@ -334,7 +334,7 @@ Poiché le pulizie sono eseguite esclusivamente da società svizzere registrate 
 
 ## 5. Responsabilità, assicurazione e controversie
 - Il partner è l'unico responsabile dell'esecuzione del servizio e di eventuali danni. Deve possedere un'assicurazione RC aziendale di almeno **CHF 5 milioni**.
-- Elite non è responsabile per la pulizia fisica, ma assiste nella risoluzione delle controversie. Eventuali problemi vanno segnalati entro **48 ore** a {{CONTACT_EMAIL}}.`
+- Mondar non è responsabile per la pulizia fisica, ma assiste nella risoluzione delle controversie. Eventuali problemi vanno segnalati entro **48 ore** a {{CONTACT_EMAIL}}.`
           },
           {
             locale: "rm",
@@ -343,17 +343,17 @@ Poiché le pulizie sono eseguite esclusivamente da società svizzere registrate 
             content: `# Cundizions generalas (CG)
 
 ## 1. Model d'intermediaziun
-Questas CG reglan l'utilisaziun da la plattafurma da **Elite Cleaning Platform AG** ("Elite"). Elite collia clients cun firmas da nettegiada.
-**Elite n'è nagina firma da nettegiada e n'angoscha nagin persunal da nettegiada. Elite è mo in intermediar/broker.**
+Questas CG reglan l'utilisaziun da la plattafurma da **Mondar AG** ("Mondar"). Mondar collia clients cun firmas da nettegiada.
+**Mondar n'è nagina firma da nettegiada e n'angoscha nagin persunal da nettegiada. Mondar è mo in intermediar/broker.**
 Cun far ina reservaziun resultan dus contracts:
-1. **Contract d'intermediaziun** cun Elite per utilisar il portal e l'assistenza.
+1. **Contract d'intermediaziun** cun Mondar per utilisar il portal e l'assistenza.
 2. **Contract da servetsch** directamain tranter il client ed il **partenari (firma da nettegiada independenta)**.
 
 ## 2. Nagina respundabladad d'patrun per clients
 Damai che tuts partenaris èn firmas svizras registradas (AG, GmbH u Einzelfirma cun UID), è il client libers da tuttas obligaziuns da patrun (AHV/AVS, IV, EO, ALV, BVG u GAV da nettegiada).
 
 ## 3. Reservaziun e pajament
-- **Reservaziuns instantas:** Il contract cun il partenari cumenza ushespert che Elite conferma la reservaziun.
+- **Reservaziuns instantas:** Il contract cun il partenari cumenza ushespert che Mondar conferma la reservaziun.
 - **Pajaments:** En CHF via Stripe. In deposit da 30% u il pajament total vegn fatg a la reservaziun.
 
 ## 4. Stornaments
@@ -372,19 +372,19 @@ Damai che tuts partenaris èn firmas svizras registradas (AG, GmbH u Einzelfirma
             content: `# Términos y condiciones
 
 ## 1. Ámbito de aplicación y modelo de intermediación
-Estas condiciones regulan el uso de la plataforma de reservas de **Elite Cleaning Platform AG** ("Elite"). Elite opera un mercado curado para servicios de limpieza en Suiza.
-**Elite no es una empresa de limpieza ni emplea limpiadores. Elite actúa exclusivamente como intermediario (broker).**
+Estas condiciones regulan el uso de la plataforma de reservas de **Mondar AG** ("Mondar"). Mondar opera un mercado curado para servicios de limpieza en Suiza.
+**Mondar no es una empresa de limpieza ni emplea limpiadores. Mondar actúa exclusivamente como intermediario (broker).**
 Al reservar a través de la plataforma, se celebran dos contratos independientes:
-1. **Un acuerdo de intermediación** entre el cliente y Elite para el uso de la plataforma y la atención al cliente.
+1. **Un acuerdo de intermediación** entre el cliente y Mondar para el uso de la plataforma y la atención al cliente.
 2. **Un contrato de servicios de limpieza** directamente entre el cliente y la **empresa proveedora (socio)** asignada (empresa suiza independiente). El socio realiza la limpieza bajo su propia responsabilidad, dirección y seguro.
 
 ## 2. Exclusión de responsabilidad patronal para el cliente
 Dado que todos los servicios son prestados exclusivamente por empresas suizas registradas (AG, GmbH o empresa unipersonal con UID), el cliente está totalmente protegido de las obligaciones del empleador en Suiza (declaraciones a la seguridad social/AHV, pensiones/BVG, seguros de accidentes/UVG o cumplimiento del convenio colectivo de limpieza/GAV).
 
 ## 3. Reservas, cotizaciones y contratación
-- **Reservas instantáneas (Comercial/Alojamiento):** El contrato se formaliza cuando Elite confirma la asignación del socio.
-- **Cotizaciones (Aviación/Yates/Servicios especiales):** El contrato se perfecciona al aceptar la cotización coordinada por Elite.
-- **Pagos:** Precios en CHF a través de Stripe. Se requiere un depósito del 30% o el pago total al reservar. Elite recauda en nombre del socio.
+- **Reservas instantáneas (Comercial/Alojamiento):** El contrato se formaliza cuando Mondar confirma la asignación del socio.
+- **Cotizaciones (Aviación/Yates/Servicios especiales):** El contrato se perfecciona al aceptar la cotización coordinada por Mondar.
+- **Pagos:** Precios en CHF a través de Stripe. Se requiere un depósito del 30% o el pago total al reservar. Mondar recauda en nombre del socio.
 
 ## 4. Política de cancelación y cambios
 - Las cancelaciones o modificaciones con **más de 7 días** de antelación son gratuitas. El depósito del 30% se reembolsará en su totalidad.
@@ -393,7 +393,7 @@ Dado que todos los servicios son prestados exclusivamente por empresas suizas re
 
 ## 5. Responsabilidad, seguros y reclamaciones
 - El socio es el único responsable de la ejecución y los daños causados. Debe contar con un seguro de responsabilidad civil de mínimo **CHF 5 millones**.
-- Elite no asume responsabilidad directa, pero ayuda en la mediación. Las reclamaciones deben notificarse en un plazo de **48 horas** a {{CONTACT_EMAIL}}.`
+- Mondar no asume responsabilidad directa, pero ayuda en la mediación. Las reclamaciones deben notificarse en un plazo de **48 horas** a {{CONTACT_EMAIL}}.`
           },
           {
             locale: "pt",
@@ -402,19 +402,19 @@ Dado que todos los servicios son prestados exclusivamente por empresas suizas re
             content: `# Termos e condições
 
 ## 1. Âmbito e Modelo de Intermediação (Corretagem)
-Estes Termos e Condições regem a utilização da plataforma de reservas operada pela **Elite Cleaning Platform AG** ("Elite"). A Elite opera um mercado curado para serviços de limpeza especializada na Suíça.
-**A Elite não é uma empresa de limpeza e não emprega profissionais de limpeza. A Elite atua estritamente como intermediária (corretora).**
+Estes Termos e Condições regem a utilização da plataforma de reservas operada pela **Mondar AG** ("Mondar"). A Mondar opera um mercado curado para serviços de limpeza especializada na Suíça.
+**A Mondar não é uma empresa de limpeza e não emprega profissionais de limpeza. A Mondar atua estritamente como intermediária (corretora).**
 Ao efetuar uma reserva através da plataforma, celebram-se dois contratos distintos:
-1. **Um Contrato de Mediação** entre o Cliente e a Elite, que rege a utilização da plataforma, serviço de apoio e processamento de pagamentos.
+1. **Um Contrato de Mediação** entre o Cliente e a Mondar, que rege a utilização da plataforma, serviço de apoio e processamento de pagamentos.
 2. **Um Contrato de Prestação de Serviços** diretamente entre o Cliente e a **empresa parceira prestadora (parceiro)** designada (empresa suíça independente registada). O parceiro realiza a limpeza sob a sua própria responsabilidade, direção e seguro.
 
 ## 2. Exclusão de Responsabilidade Patronal para o Cliente
 Dado que os serviços são exclusivamente executados por empresas suíças registadas (SA, Lda ou dita individual com UID válido), o Cliente está totalmente protegido de obrigações laborais. O Cliente não contrata trabalhadores individuais, não sendo responsável por declarações e contribuições sociais (AHV/AVS, IV, EO, ALV), fundos de pensões (BVG), seguro de acidentes (UVG) ou pelo cumprimento do Contrato Coletivo de Trabalho (GAV) do setor de limpeza.
 
 ## 3. Reservas, Orçamentos e Formalização do Contrato
-- **Reservas Instantâneas (Comercial/Alojamento):** O contrato com o parceiro considera-se celebrado assim que a Elite confirme a designação do parceiro.
-- **Pedidos de Orçamento (Aviação/Iates/Serviços Especiais):** A Elite coordena a emissão de um orçamento. O contrato é celebrado com a aceitação do orçamento pelo Cliente.
-- **Pagamento:** Preços em CHF através de Stripe. Cobrado depósito de 30% ou valor total no momento da reserva. A Elite cobra estes valores em nome do parceiro.
+- **Reservas Instantâneas (Comercial/Alojamento):** O contrato com o parceiro considera-se celebrado assim que a Mondar confirme a designação do parceiro.
+- **Pedidos de Orçamento (Aviação/Iates/Serviços Especiais):** A Mondar coordena a emissão de um orçamento. O contrato é celebrado com a aceitação do orçamento pelo Cliente.
+- **Pagamento:** Preços em CHF através de Stripe. Cobrado depósito de 30% ou valor total no momento da reserva. A Mondar cobra estes valores em nome do parceiro.
 
 ## 4. Cancelamentos e Reagendamentos
 - Cancelamentos e alterações com **mais de 7 dias** de antecedência são gratuitos. O depósito de 30% será totalmente reembolsado.
@@ -423,7 +423,7 @@ Dado que os serviços são exclusivamente executados por empresas suíças regis
 
 ## 5. Responsabilidade, Seguros e Litígios
 - A empresa parceira prestadora é a única responsável pela execução do serviço e por eventuais danos. Os parceiros são obrigados a manter seguro de responsabilidade civil de no mínimo **CHF 5 milhões**.
-- A Elite não se responsabiliza diretamente, mas oferece serviço de mediação de disputas. As reclamações devem ser enviadas em até **48 horas** para {{CONTACT_EMAIL}}.
+- A Mondar não se responsabiliza diretamente, mas oferece serviço de mediação de disputas. As reclamações devem ser enviadas em até **48 horas** para {{CONTACT_EMAIL}}.
 
 ## 6. Lei Aplicável e Jurisdição
 Este contrato é regido pela lei suíça. O foro exclusivo de jurisdição é Zurique, Suíça.`
@@ -593,7 +593,7 @@ Pode alterar ou revogar as suas preferências a qualquer momento através do nos
             title: "Über uns",
             content: `# Über uns
 
-Elite Cleaning Services ist die führende Schweizer Vermittlungsplattform für spezialisierte Reinigungsdienstleistungen. Wir schliessen die Lücke zwischen anspruchsvollen Kunden und geprüften, zertifizierten Schweizer Reinigungsunternehmen.
+Mondar Specialty Cleaning ist die führende Schweizer Vermittlungsplattform für spezialisierte Reinigungsdienstleistungen. Wir schliessen die Lücke zwischen anspruchsvollen Kunden und geprüften, zertifizierten Schweizer Reinigungsunternehmen.
 
 ## Unsere Mission
 Wir stehen für kompromisslose Schweizer Qualität, absolute Zuverlässigkeit und diskreten Service. Ob exklusive Privatjets, luxuriöse Yachten, moderne Büros oder sensible Sonderreinigungen – wir vermitteln nur die besten Fachbetriebe des Landes.
@@ -607,7 +607,7 @@ Jeder Partner in unserem Netzwerk wird von unserem Operations-Team eingehend gep
             title: "About Us",
             content: `# About Us
 
-Elite Cleaning Services is the premier Swiss brokerage platform for specialized cleaning solutions. We bridge the gap between high-end clients and vetted, certified Swiss cleaning provider companies.
+Mondar Specialty Cleaning is the premier Swiss brokerage platform for specialized cleaning solutions. We bridge the gap between high-end clients and vetted, certified Swiss cleaning provider companies.
 
 ## Our Mission
 We stand for uncompromising Swiss quality, absolute reliability, and discrete service. Whether it is private aviation detailing, yacht marine care, commercial office upkeep, or sensitive biohazard situations, we dispatch only the top specialist teams in the country.
@@ -621,7 +621,7 @@ Every subcontractor partner in our network is thoroughly audited by our operatio
             title: "À propos de nous",
             content: `# À propos de nous
 
-Elite Cleaning Services est la plateforme suisse de référence pour les solutions de nettoyage spécialisé. Nous faisons le lien entre des clients exigeants et des entreprises de nettoyage suisses agréées et certifiées.
+Mondar Specialty Cleaning est la plateforme suisse de référence pour les solutions de nettoyage spécialisé. Nous faisons le lien entre des clients exigeants et des entreprises de nettoyage suisses agréées et certifiées.
 
 ## Notre mission
 Nous garantissons une qualité de service sans compromis, une fiabilité absolue et une discrétion totale pour les jets privés, les yachts de luxe, les bureaux ou les situations post-incidents.
@@ -635,7 +635,7 @@ Chaque partenaire sous-traitant est rigoureusement audité et doit disposer d'un
             title: "Chi siamo",
             content: `# Chi siamo
 
-Elite Cleaning Services è la principale piattaforma svizzera di intermediazione per soluzioni di pulizia speciali. Colleghiamo clienti premium con imprese di pulizia svizzere selezionate e certificate.
+Mondar Specialty Cleaning è la principale piattaforma svizzera di intermediazione per soluzioni di pulizia speciali. Colleghiamo clienti premium con imprese di pulizia svizzere selezionate e certificate.
 
 ## La nostra missione
 Garantiamo qualità svizzera senza compromessi, massima affidabilità e discrezione per aviazione privata, yacht di lusso, uffici e scenari complessi.
@@ -649,7 +649,7 @@ Tutti i subappaltatori partner sono controllati e devono disporre di assicurazio
             title: "Davart nus",
             content: `# Davart nus
 
-Elite Cleaning Services è la plattafurma svizra principala per netschidadas spezialas. Nus coordinain ils megliers sutcontracturs per servetschs da luxus.
+Mondar Specialty Cleaning è la plattafurma svizra principala per netschidadas spezialas. Nus coordinain ils megliers sutcontracturs per servetschs da luxus.
 
 ## Noss intent
 Nus garantin qualitad svizra, discreziun ed assicuranza per jets privats, iahts, buros u Tatortreinigung.
@@ -663,7 +663,7 @@ Mincha partenari vegn controllà ed obligà d'avair ina assicuranza da responsab
             title: "Sobre nosotros",
             content: `# Sobre nosotros
 
-Elite Cleaning Services es la plataforma suiza líder en intermediación de limpieza especializada. Conectamos a clientes premium con empresas suizas de limpieza evaluadas y certificadas.
+Mondar Specialty Cleaning es la plataforma suiza líder en intermediación de limpieza especializada. Conectamos a clientes premium con empresas suizas de limpieza evaluadas y certificadas.
 
 ## Nuestra misión
 Ofrecemos calidad suiza sin concesiones, confiabilidad absoluta y discreción para la aviación privada, yates de lujo, oficinas corporativas y situaciones complejas.
@@ -677,7 +677,7 @@ Todos los socios son auditados y deben contar con un seguro de responsabilidad c
             title: "Sobre nós",
             content: `# Sobre nós
 
-A Elite Cleaning Services é a principal plataforma de corretagem da Suíça para soluções de limpeza especializada. Fazemos a ponte entre clientes exigentes e empresas prestadoras de serviços de limpeza suíças avaliadas e certificadas.
+A Mondar Specialty Cleaning é a principal plataforma de corretagem da Suíça para soluções de limpeza especializada. Fazemos a ponte entre clientes exigentes e empresas prestadoras de serviços de limpeza suíças avaliadas e certificadas.
 
 ## A Nossa Missão
 Representamos a qualidade suíça sem concessões, fiabilidade absoluta e um serviço discreto. Quer se trate de limpeza de aviação privada, tratamento de iates, manutenção de escritórios comerciais ou limpeza pós-incidentes sensível, enviamos apenas as melhores equipas especializadas do país.
@@ -695,8 +695,8 @@ Cada parceiro subcontratado na nossa rede é rigorosamente auditado pelas nossas
             content: `# Partner-AGB (Dienstleistungsvereinbarung)
 
 ## 1. Geltungsbereich und Status
-Diese Partner-AGB regeln die Zusammenarbeit zwischen der **Elite Cleaning Platform AG** ("Elite") und dem registrierten, selbständigen Reinigungsunternehmen ("Partner"). Der Partner sichert zu, ein in der Schweiz ordnungsgemäss eingetragenes Unternehmen (AG, GmbH oder Einzelfirma) mit gültiger UID-Nummer und Betriebshaftpflichtversicherung zu sein.
-Die Vertragsparteien sind unabhängige Unternehmer. Diese Vereinbarung begründet kein Arbeitsverhältnis, keine Partnerschaft und keine Vertretungsmacht zwischen Elite und dem Partner oder dessen Mitarbeitern.
+Diese Partner-AGB regeln die Zusammenarbeit zwischen der **Mondar AG** ("Mondar") und dem registrierten, selbständigen Reinigungsunternehmen ("Partner"). Der Partner sichert zu, ein in der Schweiz ordnungsgemäss eingetragenes Unternehmen (AG, GmbH oder Einzelfirma) mit gültiger UID-Nummer und Betriebshaftpflichtversicherung zu sein.
+Die Vertragsparteien sind unabhängige Unternehmer. Diese Vereinbarung begründet kein Arbeitsverhältnis, keine Partnerschaft und keine Vertretungsmacht zwischen Mondar und dem Partner oder dessen Mitarbeitern.
 
 ## 2. Einhaltung von Arbeitsrecht und Gesamtarbeitsvertrag (GAV)
 Der Partner ist alleiniger Arbeitgeber des für die Aufträge eingesetzten Reinigungspersonals. Der Partner verpflichtet sich zur:
@@ -709,13 +709,13 @@ Der Partner ist alleiniger Arbeitgeber des für die Aufträge eingesetzten Reini
 - **Qualität:** Der Partner verpflichtet sich, die Reinigungsarbeiten fachgerecht, pünktlich und gemäss den Buchungsspezifikationen durchzuführen.
 
 ## 4. Kundenschutz und Konventionalstrafe (Non-Circumvention)
-Es ist dem Partner strengstens untersagt, mit Kunden, die über die Elite-Plattform vermittelt wurden, direkt oder indirekt Verträge ausserhalb der Plattform abzuschliessen, diese abzuwerben oder direkt in Rechnung zu stellen.
+Es ist dem Partner strengstens untersagt, mit Kunden, die über die Mondar-Plattform vermittelt wurden, direkt oder indirekt Verträge ausserhalb der Plattform abzuschliessen, diese abzuwerben oder direkt in Rechnung zu stellen.
 Bei Verstoss gegen diese Kundenschutzbestimmung schuldet der Partner eine Konventionalstrafe von **CHF 5'000** pro Verstoß. Die Geltendmachung eines darüber hinausgehenden Schadens und die Sperrung des Partnerkontos bleiben vorbehalten. Die Kundenschutzvereinbarung gilt bis **24 Monate** nach Beendigung der Zusammenarbeit fort.
 
 ## 5. Provisionen, Auszahlungen und Rechnungsstellung
-- **Provision:** Elite behält für die Vermittlung und Abwicklung eine Servicegebühr ein (standardmässig **15 %** bei Gewerbe/Hospitality, **20 %** bei Luftfahrt/Yachten).
+- **Provision:** Mondar behält für die Vermittlung und Abwicklung eine Servicegebühr ein (standardmässig **15 %** bei Gewerbe/Hospitality, **20 %** bei Luftfahrt/Yachten).
 - **Auszahlung:** Das Guthaben (Auftragswert abzüglich Provision) wird wöchentlich auf das verknüpfte Stripe Connect Konto überwiesen. Es gilt eine Sicherheitsfrist (Disput-Fenster) von **7 Tagen** ab Auftragsabschluss.
-- **Rechnungskette:** Der Partner ist der steuerliche Leistungserbringer der Reinigung. Elite erstellt im Namen und auf Rechnung des Partners die Kundenrechnung. Elite stellt dem Partner monatlich eine Rechnung über die eingenommenen Provisionen aus.
+- **Rechnungskette:** Der Partner ist der steuerliche Leistungserbringer der Reinigung. Mondar erstellt im Namen und auf Rechnung des Partners die Kundenrechnung. Mondar stellt dem Partner monatlich eine Rechnung über die eingenommenen Provisionen aus.
 
 ## 6. Anwendbares Recht und Gerichtsstand
 Es gilt Schweizer Recht. Ausschliesslicher Gerichtsstand ist Zürich, Schweiz.`
@@ -727,8 +727,8 @@ Es gilt Schweizer Recht. Ausschliesslicher Gerichtsstand ist Zürich, Schweiz.`
             content: `# Provider Terms (Master Services Agreement)
 
 ## 1. Scope and Business Relationship
-These Provider Terms govern the cooperation between **Elite Cleaning Platform AG** ("Elite") and the registered, independent cleaning provider company ("Provider"). The Provider represents that it is a registered Swiss business entity (GmbH, AG, or registered sole proprietorship) holding a valid Swiss UID and commercial liability insurance.
-The relationship is strictly that of independent businesses. Nothing in this agreement constitutes an employment, partnership, or agency relationship between Elite and the Provider, or between Elite and the Provider's employees.
+These Provider Terms govern the cooperation between **Mondar AG** ("Mondar") and the registered, independent cleaning provider company ("Provider"). The Provider represents that it is a registered Swiss business entity (GmbH, AG, or registered sole proprietorship) holding a valid Swiss UID and commercial liability insurance.
+The relationship is strictly that of independent businesses. Nothing in this agreement constitutes an employment, partnership, or agency relationship between Mondar and the Provider, or between Mondar and the Provider's employees.
 
 ## 2. Compliance with Labor Laws and Collective Agreements
 The Provider is the sole employer of the cleaning staff assigned to platform bookings. The Provider is fully responsible for:
@@ -741,13 +741,13 @@ The Provider is the sole employer of the cleaning staff assigned to platform boo
 - **Service Quality:** The Provider must perform the services in a professional manner, using trained staff, and complying with any special specifications detailed in the booking.
 
 ## 4. Non-Circumvention (Kundenschutz)
-The Provider is strictly prohibited from bypassing the Elite platform to directly or indirectly contract, solicit, or invoice clients acquired through the platform. 
-In the event of a breach of this non-circumvention clause, the Provider shall pay Elite a contractual penalty of **CHF 5,000** for each occurrence. Payment of the penalty does not release the Provider from compliance, and Elite reserves the right to claim further damages and suspend the Provider's account. This restriction survives for **24 months** after the termination of the cooperation.
+The Provider is strictly prohibited from bypassing the Mondar platform to directly or indirectly contract, solicit, or invoice clients acquired through the platform. 
+In the event of a breach of this non-circumvention clause, the Provider shall pay Mondar a contractual penalty of **CHF 5,000** for each occurrence. Payment of the penalty does not release the Provider from compliance, and Mondar reserves the right to claim further damages and suspend the Provider's account. This restriction survives for **24 months** after the termination of the cooperation.
 
 ## 5. Platforms Commissions, Payments, and Invoicing
-- **Commission:** Elite retains a commission from the booking total (default **15%** for Commercial/Hospitality, **20%** for Aviation/Yachts, or as negotiated).
+- **Commission:** Mondar retains a commission from the booking total (default **15%** for Commercial/Hospitality, **20%** for Aviation/Yachts, or as negotiated).
 - **Payouts:** Job balances (booking total minus platform commission) are transferred weekly to the Provider's linked Stripe Connect account. Transfer is subject to a **7-day hold period** to allow for customer disputes.
-- **Invoicing:** The Provider is the legal seller of the cleaning service. The platform generates client invoices on the Provider's behalf using the Provider's VAT registration details. Elite issues a monthly invoice to the Provider for platform commissions.
+- **Invoicing:** The Provider is the legal seller of the cleaning service. The platform generates client invoices on the Provider's behalf using the Provider's VAT registration details. Mondar issues a monthly invoice to the Provider for platform commissions.
 
 ## 6. Governing Law and Jurisdiction
 This agreement is governed by Swiss law. The exclusive place of jurisdiction is Zurich, Switzerland.`
@@ -759,8 +759,8 @@ This agreement is governed by Swiss law. The exclusive place of jurisdiction is 
             content: `# Conditions Prestataires (Contrat de partenariat)
 
 ## 1. Cadre général et relation d'affaires
-Ce contrat régit la relation entre **Elite Cleaning Platform AG** ("Elite") et l'entreprise prestataire partenaire indépendante de nettoyage ("Partenaire"). Le Partenaire déclare être une entreprise enregistrée en Suisse (SA, Sàrl ou raison individuelle enregistrée) disposant d'un numéro UID valide et d'une assurance RC professionnelle.
-Les parties sont des entrepreneurs indépendants. Il n'existe aucun rapport de travail ou de mandat exclusif entre Elite et le Partenaire ou ses employés.
+Ce contrat régit la relation entre **Mondar AG** ("Mondar") et l'entreprise prestataire partenaire indépendante de nettoyage ("Partenaire"). Le Partenaire déclare être une entreprise enregistrée en Suisse (SA, Sàrl ou raison individuelle enregistrée) disposant d'un numéro UID valide et d'une assurance RC professionnelle.
+Les parties sont des entrepreneurs indépendants. Il n'existe aucun rapport de travail ou de mandat exclusif entre Mondar et le Partenaire ou ses employés.
 
 ## 2. Conformité aux lois du travail et CCT
 Le Partenaire est l'unique employeur du personnel affecté aux services. Il s'engage à:
@@ -773,13 +773,13 @@ Le Partenaire est l'unique employeur du personnel affecté aux services. Il s'en
 - **Qualité:** Le Partenaire doit fournir des prestations de haute qualité conformes aux détails de la réservation.
 
 ## 4. Clause de non-contournement (Kundenschutz)
-Il est strictement interdit au Partenaire de contourner Elite pour contracter ou facturer en direct des clients obtenus via la plateforme.
-Toute infraction entraîne une pénalité contractuelle de **CHF 5 000** par incident. Elite se réserve le droit de réclamer des dommages-intérêts supplémentaires et de suspendre le compte. Cette interdiction s'applique pendant **24 mois** après la fin du contrat.
+Il est strictement interdit au Partenaire de contourner Mondar pour contracter ou facturer en direct des clients obtenus via la plateforme.
+Toute infraction entraîne une pénalité contractuelle de **CHF 5 000** par incident. Mondar se réserve le droit de réclamer des dommages-intérêts supplémentaires et de suspendre le compte. Cette interdiction s'applique pendant **24 mois** après la fin du contrat.
 
 ## 5. Commissions, versements et facturation
-- **Commission:** Elite retient une commission sur le montant brut (par défaut **15%** pour commercial/hébergement, **20%** pour aviation/yachts).
+- **Commission:** Mondar retient une commission sur le montant brut (par défaut **15%** pour commercial/hébergement, **20%** pour aviation/yachts).
 - **Versements:** Les montants (bruts moins commission) sont versés chaque semaine sur le compte Stripe Connect, après un délai de rétention de **7 jours** pour d'éventuels litiges.
-- **Facturation:** Le Partenaire est le vendeur légal de la prestation. Elite génère la facture client au nom du Partenaire. Elite facture mensuellement la commission au Partenaire.
+- **Facturation:** Le Partenaire est le vendeur légal de la prestation. Mondar génère la facture client au nom du Partenaire. Mondar facture mensuellement la commission au Partenaire.
 
 ## 6. Droit applicable et for compétent
 Le droit suisse régit ce contrat. Le for exclusif est Zurich, Suisse.`
@@ -791,8 +791,8 @@ Le droit suisse régit ce contrat. Le for exclusif est Zurich, Suisse.`
             content: `# Termini Partner (Contratto di servizio)
 
 ## 1. Rapporti contrattuali
-I presenti termini regolano i rapporti tra **Elite Cleaning Platform AG** ("Elite") e l'impresa di pulizia registrata indipendente ("Partner"). Il Partner dichiara di essere una società svizzera registrata (AG, GmbH o ditta industriale) con UID valido e assicurazione RC commerciale attiva.
-Il rapporto tra le parti è esclusivamente di tipo B2B. Non sussiste alcun rapporto di lavoro subordinato o agenzia tra Elite e il Partner o i dipendenti di quest'ultimo.
+I presenti termini regolano i rapporti tra **Mondar AG** ("Mondar") e l'impresa di pulizia registrata indipendente ("Partner"). Il Partner dichiara di essere una società svizzera registrata (AG, GmbH o ditta industriale) con UID valido e assicurazione RC commerciale attiva.
+Il rapporto tra le parti è esclusivamente di tipo B2B. Non sussiste alcun rapporto di lavoro subordinato o agenzia tra Mondar e il Partner o i dipendenti di quest'ultimo.
 
 ## 2. Conformità con le leggi sul lavoro e contratti collettivi (CCL)
 Il Partner è l'unico datore di lavoro del personale incaricato. È pienamente responsabile di:
@@ -805,13 +805,13 @@ Il Partner è l'unico datore di lavoro del personale incaricato. È pienamente r
 - **Qualità:** Il Partner è tenuto a svolgere i lavori a regola d'arte secondo le specifiche concordate.
 
 ## 4. Non elusione (Kundenschutz)
-È fatto divieto al Partner di aggirare la piattaforma fatturando direttamente o stipulando contratti con i clienti acquisiti tramite Elite.
-In caso di violazione, il Partner è tenuto al pagamento di una penale contrattuale di **CHF 5.000** per evento. Elite si riserva il diritto di chiedere risarcimenti maggiori e chiudere il conto. Questo vincolo dura per **24 mesi** dopo il termine del rapporto.
+È fatto divieto al Partner di aggirare la piattaforma fatturando direttamente o stipulando contratti con i clienti acquisiti tramite Mondar.
+In caso di violazione, il Partner è tenuto al pagamento di una penale contrattuale di **CHF 5.000** per evento. Mondar si riserva il diritto di chiedere risarcimenti maggiori e chiudere il conto. Questo vincolo dura per **24 mesi** dopo il termine del rapporto.
 
 ## 5. Provvigioni, liquidazioni e fatturazione
-- **Provvigione:** Trattenuta da Elite (standard **15%** per uffici/Airbnb, **20%** per jet/yacht).
+- **Provvigione:** Trattenuta da Mondar (standard **15%** per uffici/Airbnb, **20%** per jet/yacht).
 - **Liquidazioni:** Il saldo netto è accreditato settimanalmente tramite Stripe Connect dopo una trattenuta di **7 giorni** (finestra di disputa).
-- **Fatturazione:** Il Partner è l'emittente fiscale del servizio. Elite genera le fatture ai clienti per conto del Partner. Elite emette fattura mensile al Partner per le provvigioni.
+- **Fatturazione:** Il Partner è l'emittente fiscale del servizio. Mondar genera le fatture ai clienti per conto del Partner. Mondar emette fattura mensile al Partner per le provvigioni.
 
 ## 6. Legge applicabile e foro competente
 Si applica il diritto svizzero. Foro competente esclusivo è Zurigo, Svizzera.`
@@ -823,7 +823,7 @@ Si applica il diritto svizzero. Foro competente esclusivo è Zurigo, Svizzera.`
             content: `# Cundizions Partenaris (Contract da cooperaziun)
 
 ## 1. Status ed intent
-Questas cundizions reglan la cooperaziun tranter la **Elite Cleaning Platform AG** ("Elite") ed il partenari independent da nettegiada ("Partenari"). Il Partenari sto esser ina firma svizra registrada ed avair ina assicuranza da respundabladad activa.
+Questas cundizions reglan la cooperaziun tranter la **Mondar AG** ("Mondar") ed il partenari independent da nettegiada ("Partenari"). Il Partenari sto esser ina firma svizra registrada ed avair ina assicuranza da respundabladad activa.
 Ils partenaris èn firmas independentas. Negina relaziun da lavur exista cun il portal.
 
 ## 2. Lescha da lavur e GAV
@@ -838,7 +838,7 @@ In contornament direct da clients ch'èn vegnids tranter la plattafurma è stric
 En cas da transgressiuns vegn cargada ina cundiziun da penalitad da CHF **5'000** per cas. Il scumand vala fin **24 onns** suenter il contract.
 
 ## 5. Provision e pajaments
-- **Provision:** Elite deducescha ina provision da **15%** u **20%** (aviation/yachts).
+- **Provision:** Mondar deducescha ina provision da **15%** u **20%** (aviation/yachts).
 - **Pajaments:** Transmissiun emnala tras Stripe connect suenter ina pausa da disputs da **7 dis**.
 
 ## 6. Gerichstand
@@ -851,8 +851,8 @@ Gerichtstand exclusiv è Turitg, Svizra.`
             content: `# Condiciones de Socios (Acuerdo de servicios)
 
 ## 1. Ámbito y relación comercial
-Estas condiciones rigen la relación entre **Elite Cleaning Platform AG** ("Elite") y la empresa de limpieza independiente registrada ("Socio"). El Socio garantiza que es una entidad comercial suiza registrada (GmbH, AG o empresa unipersonal) con UID activo y seguro de responsabilidad civil.
-La relación es estrictamente B2B. No existe relación laboral ni representación comercial entre Elite y el Socio o sus empleados.
+Estas condiciones rigen la relación entre **Mondar AG** ("Mondar") y la empresa de limpieza independiente registrada ("Socio"). El Socio garantiza que es una entidad comercial suiza registrada (GmbH, AG o empresa unipersonal) con UID activo y seguro de responsabilidad civil.
+La relación es estrictamente B2B. No existe relación laboral ni representación comercial entre Mondar y el Socio o sus empleados.
 
 ## 2. Cumplimiento laboral y convenios colectivos
 El Socio es el empleador directo del personal de limpieza. El Socio se compromete a:
@@ -865,13 +865,13 @@ El Socio es el empleador directo del personal de limpieza. El Socio se compromet
 - **Calidad:** El Socio se compromete a realizar los trabajos de forma profesional según la reserva.
 
 ## 4. Cláusula de no elusión (Non-Circumvention)
-Se prohíbe estrictamente al Socio contactar, facturar o prestar servicios directamente a clientes obtenidos a través de la plataforma sin pasar por Elite.
+Se prohíbe estrictamente al Socio contactar, facturar o prestar servicios directamente a clientes obtenidos a través de la plataforma sin pasar por Mondar.
 La infracción de esta cláusula conllevará una penalización contractual de **CHF 5.000** por ocurrencia. Se mantiene la validez de esta restricción durante **24 meses** tras finalizar la relación comercial.
 
 ## 5. Comisiones, pagos y facturas
-- **Comisión:** Elite retiene una comisión del total de la reserva (por defecto **15%** en comercial/alojamiento y **20%** en aviación/yates).
+- **Comisión:** Mondar retiene una comisión del total de la reserva (por defecto **15%** en comercial/alojamiento y **20%** en aviación/yates).
 - **Pagos:** El saldo (total menos comisión) se transfiere semanalmente al Socio a través de Stripe Connect, sujeto a un período de retención de **7 días** por disputas.
-- **Facturas:** El Socio es el vendedor del servicio. Elite genera facturas al cliente en su nombre. Elite emite una factura mensual de comisiones al Socio.
+- **Facturas:** El Socio es el vendedor del servicio. Mondar genera facturas al cliente en su nombre. Mondar emite una factura mensual de comisiones al Socio.
 
 ## 6. Ley aplicable y jurisdicción
 Se rige por el derecho suizo. La jurisdicción exclusiva corresponde a Zúrich, Suiza.`
@@ -883,8 +883,8 @@ Se rige por el derecho suizo. La jurisdicción exclusiva corresponde a Zúrich, 
             content: `# Termos de Parceiro (Contrato de Prestação de Serviços)
 
 ## 1. Âmbito e Relação Comercial
-Estes Termos de Parceiro regem a cooperação entre a **Elite Cleaning Platform AG** ("Elite") e a empresa parceira de limpeza independente registada ("Parceiro"). O Parceiro declara ser uma entidade empresarial registada na Suíça (SA, Lda ou firma individual) com UID válido e seguro de responsabilidade civil ativa.
-A relação é estritamente de caráter empresarial (B2B). Não existe qualquer relação laboral ou agência entre a Elite e o Parceiro ou os seus colaboradores.
+Estes Termos de Parceiro regem a cooperação entre a **Mondar AG** ("Mondar") e a empresa parceira de limpeza independente registada ("Parceiro"). O Parceiro declara ser uma entidade empresarial registada na Suíça (SA, Lda ou firma individual) com UID válido e seguro de responsabilidade civil ativa.
+A relação é estritamente de caráter empresarial (B2B). Não existe qualquer relação laboral ou agência entre a Mondar e o Parceiro ou os seus colaboradores.
 
 ## 2. Conformidade com as Leis de Trabalho e Convenção Coletiva (GAV)
 O Parceiro é o único empregador do pessoal alocado aos serviços. É responsável por:
@@ -897,13 +897,13 @@ O Parceiro é o único empregador do pessoal alocado aos serviços. É responsá
 - **Qualidade:** O Parceiro deve realizar o serviço de forma profissional de acordo com as especificações da reserva.
 
 ## 4. Não Contorno de Clientes (Non-Circumvention)
-O Parceiro está estritamente proibido de contornar a plataforma para contratar, angariar ou faturar diretamente clientes obtidos através da plataforma Elite.
+O Parceiro está estritamente proibido de contornar a plataforma para contratar, angariar ou faturar diretamente clientes obtidos através da plataforma Mondar.
 Qualquer violação desta cláusula incorre numa penalização contratual de **CHF 5.000** por ocorrência. Esta restrição sobrevive por **24 meses** após a cessação da cooperação.
 
 ## 5. Comissões, Pagamentos e Faturação
-- **Comissão:** A Elite retém uma comissão sobre o valor do serviço (padrão de **15%** em comercial/alojamento e **20%** em aviação/yates).
+- **Comissão:** A Mondar retém uma comissão sobre o valor do serviço (padrão de **15%** em comercial/alojamento e **20%** em aviação/yates).
 - **Pagamentos:** O saldo líquido (valor total menos comissão) é transferido semanalmente para a conta Stripe Connect do Parceiro, sujeito a uma retenção de **7 dias** para disputas.
-- **Faturação:** O Parceiro é o vendedor legal do serviço. A Elite gera a fatura do cliente em nome do Parceiro. A Elite faturará mensalmente a comissão ao Parceiro.
+- **Faturação:** O Parceiro é o vendedor legal do serviço. A Mondar gera a fatura do cliente em nome do Parceiro. A Mondar faturará mensalmente a comissão ao Parceiro.
 
 ## 6. Lei Aplicável e Jurisdição
 Este contrato é regido pela lei suíça. O foro exclusivo de jurisdição é Zurique, Suíça.`
@@ -918,13 +918,13 @@ Este contrato é regido pela lei suíça. O foro exclusivo de jurisdição é Zu
             content: `# Impressum
 
 ## Diensteanbieter
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Kontakt
 E-Mail: {{CONTACT_EMAIL}}  
 Telefon: {{CONTACT_PHONE}}  
-Webseite: www.elite-cleaning.ch  
+Webseite: www.mondar.ch  
 
 ## Handelsregister & MWST
 Handelsregisteramt des Kantons Zürich  
@@ -934,7 +934,7 @@ Unternehmens-Identifikationsnummer (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Gründer & CEO  
 
 ## Haftungsausschluss
-Die Elite Cleaning Platform AG ist Plattformbetreiberin und Vermittlerin. Elite erbringt selbst keine physischen Reinigungsdienstleistungen und stellt keine Reinigungskräfte an. Die Haftung für die Ausführung der Reinigung, Sachschäden oder qualitative Mängel liegt vollumfänglich beim jeweils ausführenden, selbständigen Partnerunternehmen (Subunternehmer).`
+Die Mondar AG ist Plattformbetreiberin und Vermittlerin. Mondar erbringt selbst keine physischen Reinigungsdienstleistungen und stellt keine Reinigungskräfte an. Die Haftung für die Ausführung der Reinigung, Sachschäden oder qualitative Mängel liegt vollumfänglich beim jeweils ausführenden, selbständigen Partnerunternehmen (Subunternehmer).`
           },
           {
             locale: "en",
@@ -943,13 +943,13 @@ Die Elite Cleaning Platform AG ist Plattformbetreiberin und Vermittlerin. Elite 
             content: `# Imprint (Legal Notice)
 
 ## Service Provider
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact Information
 Email: {{CONTACT_EMAIL}}  
 Phone: {{CONTACT_PHONE}}  
-Website: www.elite-cleaning.ch  
+Website: www.mondar.ch  
 
 ## Commercial Registration & VAT
 Commercial Registry of the Canton of Zurich  
@@ -959,7 +959,7 @@ UID / Corporate Identification Number: CHE-123.456.789 MWST
 Nuno Ribeiro, Founder & CEO  
 
 ## Legal Disclaimer
-Elite Cleaning Platform AG is the platform operator and broker. Elite does not perform physical cleaning services and does not employ cleaners. All liability for the physical cleaning services, property damage, or operational defects rests entirely with the respective independent subcontractor partner company assigned to the job.`
+Mondar AG is the platform operator and broker. Mondar does not perform physical cleaning services and does not employ cleaners. All liability for the physical cleaning services, property damage, or operational defects rests entirely with the respective independent subcontractor partner company assigned to the job.`
           },
           {
             locale: "fr",
@@ -968,13 +968,13 @@ Elite Cleaning Platform AG is the platform operator and broker. Elite does not p
             content: `# Mentions Légales
 
 ## Fournisseur de services
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact
 E-mail: {{CONTACT_EMAIL}}  
 Téléphone: {{CONTACT_PHONE}}  
-Web: www.elite-cleaning.ch  
+Web: www.mondar.ch  
 
 ## Registre du commerce et TVA
 Registre du commerce du canton de Zurich  
@@ -984,7 +984,7 @@ Numéro d'identification des entreprises (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Fondateur & CEO  
 
 ## Exclusion de responsabilité
-Elite Cleaning Platform AG est l'exploitant et le courtier de la plateforme. Elite ne fournit pas elle-même de services de nettoyage physiques et n'emploie pas de nettoyeurs. Toute responsabilité concernant l'exécution des nettoyages, les dommages matériels ou les défauts opérationnels incombe exclusivement à l'entreprise prestataire partenaire suisse indépendante affectée au service.`
+Mondar AG est l'exploitant et le courtier de la plateforme. Mondar ne fournit pas elle-même de services de nettoyage physiques et n'emploie pas de nettoyeurs. Toute responsabilité concernant l'exécution des nettoyages, les dommages matériels ou les défauts opérationnels incombe exclusivement à l'entreprise prestataire partenaire suisse indépendante affectée au service.`
           },
           {
             locale: "it",
@@ -993,13 +993,13 @@ Elite Cleaning Platform AG est l'exploitant et le courtier de la plateforme. Eli
             content: `# Impressum (Note Legali)
 
 ## Fornitore di servizi
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contatti
 E-mail: {{CONTACT_EMAIL}}  
 Telefono: {{CONTACT_PHONE}}  
-Sito web: www.elite-cleaning.ch  
+Sito web: www.mondar.ch  
 
 ## Registro di commercio & IVA
 Ufficio del registro di commercio del Canton Zurigo  
@@ -1009,7 +1009,7 @@ Numero UID: CHE-123.456.789 MWST
 Nuno Ribeiro, Fondatore & CEO  
 
 ## Esclusione di responsabilità
-Elite Cleaning Platform AG è il gestore e l'intermediario della piattaforma. Elite non esegue direttamente i servizi di pulizia e non assume personale per le pulizie. Qualsiasi responsabilità per le prestazioni fisiche, danni materiali o carenze di qualità ricade esclusivamente sulla ditta di pulizia partner svizzera indipendente assegnata al lavoro.`
+Mondar AG è il gestore e l'intermediario della piattaforma. Mondar non esegue direttamente i servizi di pulizia e non assume personale per le pulizie. Qualsiasi responsabilità per le prestazioni fisiche, danni materiali o carenze di qualità ricade esclusivamente sulla ditta di pulizia partner svizzera indipendente assegnata al lavoro.`
           },
           {
             locale: "rm",
@@ -1018,13 +1018,13 @@ Elite Cleaning Platform AG è il gestore e l'intermediario della piattaforma. El
             content: `# Impressum
 
 ## Post responsabel
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact
 E-mail: {{CONTACT_EMAIL}}  
 Telefon: {{CONTACT_PHONE}}  
-Web: www.elite-cleaning.ch  
+Web: www.mondar.ch  
 
 ## Register commercial
 Uffizi dal register commercial dal chantun Turitg  
@@ -1034,7 +1034,7 @@ Numer UID: CHE-123.456.789 MWST
 Nuno Ribeiro, CEO & Founder  
 
 ## Exclusion da responsabladad
-Elite Cleaning Platform AG è la plattafurma d'intermediaziun. Elite na fa naginas nettegiadas sezza. La responsabladad per la nettegiada e donns materialas è tar la firma independenta.`
+Mondar AG è la plattafurma d'intermediaziun. Mondar na fa naginas nettegiadas sezza. La responsabladad per la nettegiada e donns materialas è tar la firma independenta.`
           },
           {
             locale: "es",
@@ -1043,13 +1043,13 @@ Elite Cleaning Platform AG è la plattafurma d'intermediaziun. Elite na fa nagin
             content: `# Aviso Legal
 
 ## Proveedor del servicio
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contacto
 E-mail: {{CONTACT_EMAIL}}  
 Teléfono: {{CONTACT_PHONE}}  
-Sitio web: www.elite-cleaning.ch  
+Sitio web: www.mondar.ch  
 
 ## Registro mercantil e IVA
 Oficina del registro mercantil del Cantón de Zúrich  
@@ -1059,7 +1059,7 @@ Número de identificación empresarial (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Fundador y CEO  
 
 ## Exclusión de responsabilidad
-Elite Cleaning Platform AG es el operador y corredor de la plataforma. Elite no realiza servicios de limpieza físicos ni emplea limpiadores. Toda responsabilidad por la prestación del servicio de limpieza, daños materiales o deficiencias de calidad corresponde exclusivamente a la empresa proveedora colaboradora suiza asignada.`
+Mondar AG es el operador y corredor de la plataforma. Mondar no realiza servicios de limpieza físicos ni emplea limpiadores. Toda responsabilidad por la prestación del servicio de limpieza, daños materiales o deficiencias de calidad corresponde exclusivamente a la empresa proveedora colaboradora suiza asignada.`
           },
           {
             locale: "pt",
@@ -1068,20 +1068,20 @@ Elite Cleaning Platform AG es el operador y corredor de la plataforma. Elite no 
             content: `# Impressum (Aviso Legal)
 
 ## Prestador de Serviços
-**Elite Cleaning Platform AG**  
+**Mondar AG**  
 {{CONTACT_ADDRESS}}  
 
 ## Contacto
 E-mail: {{CONTACT_EMAIL}}  
 Telefone: {{CONTACT_PHONE}}  
-Website: www.elite-cleaning.ch  
+Website: www.mondar.ch  
 
 ## Registo Comercial e IVA
 ## Representantes Autorizados
 Nuno Ribeiro, Fundador e CEO
 
 ## Exclusão de Responsabilidade
-A Elite não assume qualquer responsabilidade pela exatidão, precisão, atualidade ou integridade das informações contidas neste website. A responsabilidade pela prestação dos serviços físicos de limpeza recai exclusivamente sobre o parceiro subcontratado independente que executa o serviço.`
+A Mondar não assume qualquer responsabilidade pela exatidão, precisão, atualidade ou integridade das informações contidas neste website. A responsabilidade pela prestação dos serviços físicos de limpeza recai exclusivamente sobre o parceiro subcontratado independente que executa o serviço.`
           }
         ];
       } else if (key === "building-care") {

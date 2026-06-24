@@ -443,7 +443,7 @@ export async function requestPasswordResetProvider(email: string) {
     // Send SMTP email
     const emailResult = await sendEmail({
       to: user.email,
-      subject: "Elite Cleaning Services - Partner Password Reset Request",
+      subject: "Mondar - Partner Password Reset Request",
       html: `
         <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
           <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">PARTNER PORTAL PASSWORD RESET</h2>

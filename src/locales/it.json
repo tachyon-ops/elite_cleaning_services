@@ -34,7 +34,7 @@
   },
   "admin": {
     "sidebar": {
-      "title": "CONTROLLO ELITE",
+      "title": "CONTROLLO MONDAR",
       "subtitle": "Operazioni Backoffice",
       "dashboard": "Dashboard",
       "bookings": "Prenotazioni & Invio",
@@ -214,11 +214,11 @@
     "subtitle": "FAQ",
     "title": "Domande frequenti",
     "q1": "Effettuate le pulizie voi stessi?",
-    "a1": "No, Elite agisce come piattaforma di intermediazione verificata. Gestiamo prenotazioni, audit di qualità, assicurazioni e pagamentos, mentre affidiamo l'esecuzione fisica a subappaltatori svizzeri certificati e specializzati.",
+    "a1": "No, Mondar agisce come piattaforma di intermediazione verificata. Gestiamo prenotazioni, audit di qualità, assicurazioni e pagamentos, mentre affidiamo l'esecuzione fisica a subappaltatori svizzeri certificati e specializzati.",
     "q2": "Dove operate?",
     "a2": "Stiamo lanciando i servizi iniziali a Zurigo, sul lago di Zurigo e nei comuni limitrofi, con piani di espansione in altri cantoni svizzeri nelle fasi successive.",
     "q3": "Cosa succede se qualcosa viene danneggiato durante una sessione?",
-    "a3": "Tutti i subappaltatori assegnati sono tenuti ad avere un'assicurazione di responsabilità civile. Nel raro caso di danni, Elite gestisce il reclamo e garantisce una soluzione attraverso la promessa della nostra piattaforma.",
+    "a3": "Tutti i subappaltatori assegnati sono tenuti ad avere un'assicurazione di responsabilità civile. Nel raro caso di danni, Mondar gestisce il reclamo e garantisce una soluzione attraverso la promessa della nostra piattaforma.",
     "q4": "I miei dati sono protetti in conformità al GDPR?",
     "a4": "Sì. Tutti i server applicativi, le istanze di Supabase e i registri sono ospitati in data center europei. Non tracciamo i cookie senza consenso e puoi esportare o cancellare i dati del tuo account in qualsiasi momento."
   },
@@ -237,11 +237,11 @@
     "impressum": "Impressum",
     "providerTerms": "Termini Partner",
     "tagline": "Intermediazione svizzera di pulizia di precisione. Discreta eleganza, esecuzione impeccabile.",
-    "copyright": "Elite Cleaning Services. Tutti i diritti riservati."
+    "copyright": "Mondar Specialty Cleaning. Tutti i diritti riservati."
   },
   "providers": {
     "nav": {
-      "brand": "ELITE CLEANING",
+      "brand": "MONDAR",
       "signIn": "Accedi",
       "apply": "Candidati"
     },
@@ -301,10 +301,10 @@
       "catMoveout": "Pulizia fine locazione"
     },
     "footer": {
-      "copyright": "Elite Cleaning Platform AG. Tutti i diritti riservati ai partner svizzeri."
+      "copyright": "Mondar AG. Tutti i diritti riservati ai partner svizzeri."
     },
     "login": {
-      "nav": "ELITE PARTNER HUB",
+      "nav": "MONDAR PARTNER HUB",
       "mfaTitle": "Autenticazione a due fattori",
       "mfaDesc": "Inserisci il token di verifica per autorizzare l'accesso",
       "partnerLogin": "Accesso Partner",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "ACCESSO IN CORSO...",
       "notRegistered": "Non sei ancora registrato?",
       "submitApplication": "Invia candidatura",
-      "copyright": "Elite Cleaning Platform AG. Accesso operatore sicuro.",
+      "copyright": "Mondar AG. Accesso operatore sicuro.",
       "forgotPassword": "Password dimenticata?",
       "forgotPasswordTitle": "Reimposta la password",
       "forgotPasswordDesc": "Inserisci la tua email di partner per richiedere un codice di ripristino.",

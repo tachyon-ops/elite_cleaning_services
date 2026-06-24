@@ -200,8 +200,8 @@ async function main() {
   // 5. Create default superadmin
   await prisma.user.create({
     data: {
-      email: 'admin@elite-cleaning.ch',
-      name: 'Elite Administrator',
+      email: 'admin@mondar.ch',
+      name: 'Mondar Administrator',
       passwordHash: 'admin123', // plain for dev convenience
       role: 'super_admin',
       locale: 'en'
@@ -220,7 +220,7 @@ async function main() {
     }
   });
 
-  console.log('Users created: admin@elite-cleaning.ch (admin123), partner@alpineclean.ch (partner123)');
+  console.log('Users created: admin@mondar.ch (admin123), partner@alpineclean.ch (partner123)');
 }
 
 main()

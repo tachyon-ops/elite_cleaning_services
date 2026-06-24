@@ -5,7 +5,7 @@ import { loginAsAdmin } from "./helpers/auth";
 
 const db = new PrismaClient();
 
-test.describe("Elite Cleaning Services - Admin Dashboard Operations", () => {
+test.describe("Mondar - Admin Dashboard Operations", () => {
   const testBookingId = "test-booking-admin-1";
 
   test.beforeEach(async ({ context }) => {

@@ -566,7 +566,7 @@ export default function BookingPage() {
       detailsText = `Special service request details.`;
     }
 
-    const waMsg = `Elite Cleaning Services Booking Request
+    const waMsg = `Mondar Booking Request
 ---------------------------------------
 Division: ${vertical.toUpperCase()}
 Frequency: ${frequencyLabel}
@@ -625,7 +625,7 @@ Please help me schedule this service manually. Thank you!`;
           detailsText = `Special service request details.`;
         }
 
-        const waMsg = `Elite Cleaning Services Booking Request
+        const waMsg = `Mondar Booking Request
 ---------------------------------------
 Booking ID: ${res.bookingId}
 Division: ${vertical.toUpperCase()}
@@ -777,7 +777,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <span>{t("callDispatch").replace("{phone}", contactPhone)}</span>
                   </a>
                    <a
-                    href={`https://wa.me/${whatsappNumber}?text=Hello%20Elite%20Concierge,%20I'd%20like%20to%2520inquire%2520about%2520a%2520specialty%2520post-incident%2520clean.`}
+                    href={`https://wa.me/${whatsappNumber}?text=Hello%20Mondar%20Concierge,%20I'd%20like%20to%2520inquire%2520about%2520a%2520specialty%2520post-incident%2520clean.`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-3 w-full bg-accent hover:bg-accent-hover text-ink-inverse py-3 rounded-md font-semibold transition-colors shadow-sm"

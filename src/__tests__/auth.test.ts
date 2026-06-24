@@ -35,7 +35,7 @@ describe("auth-utils", () => {
       const email = "user@test.ch";
       const secret = "JBSWY3DPEHPK3PXP";
       const url = getTOTPAuthUrl(email, secret);
-      expect(url).toBe("otpauth://totp/EliteCleaning:user@test.ch?secret=JBSWY3DPEHPK3PXP&issuer=EliteCleaning");
+      expect(url).toBe("otpauth://totp/Mondar:user@test.ch?secret=JBSWY3DPEHPK3PXP&issuer=Mondar");
     });
   });
 

@@ -34,7 +34,7 @@
   },
   "admin": {
     "sidebar": {
-      "title": "ELITE CONTROL",
+      "title": "MONDAR CONTROL",
       "subtitle": "Backoffice Ops",
       "dashboard": "Dashboard",
       "bookings": "Bookings & Dispatch",
@@ -226,11 +226,11 @@
     "subtitle": "FAQ",
     "title": "Frequently Asked Questions",
     "q1": "Do you do the cleaning yourselves?",
-    "a1": "No, Elite acts as a vetted brokerage layer. We manage bookings, quality audits, insurance, and payments, while dispatching the physical service to certified Swiss specialty subcontractors.",
+    "a1": "No, Mondar acts as a vetted brokerage layer. We manage bookings, quality audits, insurance, and payments, while dispatching the physical service to certified Swiss specialty subcontractors.",
     "q2": "Where do you operate?",
     "a2": "We are launching initial service dispatches in Zurich, Lake Zurich, and surrounding municipalities, planning expansion to further Swiss cantons in later phases.",
     "q3": "What if something is damaged during a session?",
-    "a3": "All assigned subcontractors are vetted to carry liability insurance. In the rare event of damage, Elite mediates the claim and guarantees resolution through our platform pledge.",
+    "a3": "All assigned subcontractors are vetted to carry liability insurance. In the rare event of damage, Mondar mediates the claim and guarantees resolution through our platform pledge.",
     "q4": "Is my data GDPR secure?",
     "a4": "Yes. All application servers, Supabase instances, and logs are hosted in European datacenters. We do not track cookies without consent, and you can export or purge your account records at any time."
   },
@@ -249,11 +249,11 @@
     "impressum": "Imprint",
     "providerTerms": "Provider Terms",
     "tagline": "Precision Swiss cleaning brokerage. Confident restraint, immaculate execution.",
-    "copyright": "Elite Cleaning Services. All rights reserved."
+    "copyright": "Mondar Specialty Cleaning. All rights reserved."
   },
   "providers": {
     "nav": {
-      "brand": "ELITE CLEANING",
+      "brand": "MONDAR",
       "signIn": "Sign In",
       "apply": "Apply to Join"
     },
@@ -333,10 +333,10 @@
       "chatOptOut": "No, prefer masked SMS/phone calls directly"
     },
     "footer": {
-      "copyright": "Elite Cleaning Platform AG. All Swiss partner rights reserved."
+      "copyright": "Mondar AG. All Swiss partner rights reserved."
     },
     "login": {
-      "nav": "ELITE PARTNER HUB",
+      "nav": "MONDAR PARTNER HUB",
       "mfaTitle": "Multi-Factor Authentication",
       "mfaDesc": "Enter verification token to authorize access",
       "partnerLogin": "Partner Log In",
@@ -351,7 +351,7 @@
       "btnLoggingIn": "LOGGING IN...",
       "notRegistered": "Not yet registered?",
       "submitApplication": "Submit Application",
-      "copyright": "Elite Cleaning Platform AG. Secure dispatcher access.",
+      "copyright": "Mondar AG. Secure dispatcher access.",
       "forgotPassword": "Forgot Password?",
       "forgotPasswordTitle": "Reset Password",
       "forgotPasswordDesc": "Enter your partner email to request a reset code.",

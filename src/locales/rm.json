@@ -34,7 +34,7 @@
   },
   "admin": {
     "sidebar": {
-      "title": "CONTROLLA ELITE",
+      "title": "CONTROLLA MONDAR",
       "subtitle": "Operaziuns da Backoffice",
       "dashboard": "Dashboard",
       "bookings": "Reservaziuns & Dispatch",
@@ -214,11 +214,11 @@
     "subtitle": "FAQ",
     "title": "Dumandas frequentes",
     "q1": "Fais vus la pulizia sezs?",
-    "a1": "Na, Elite acts as a vetted brokerage layer. Nus administrain las reservaziuns, ils audits da qualitad, las assicuranza ed ils pajaments, coordinond il labor corporal cun subinterprendiders svizzers spezialisads e verifikads.",
+    "a1": "Na, Mondar acts as a vetted brokerage layer. Nus administrain las reservaziuns, ils audits da qualitad, las assicuranza ed ils pajaments, coordinond il labor corporal cun subinterprendiders svizzers spezialisads e verifikads.",
     "q2": "Nua operais vus?",
     "a2": "Nus cumnzain noss servischs a Turitg, a la Riva da Turitg e vischinanzas, cun l'intenziun da s'extender sin auters chantuns pli tard.",
     "q3": "Tge schabegia sche insatge vegn donnegià durant in servisch?",
-    "a3": "Tuts subinterprendiders assignads ston avair ina assicuranza da responsabladad. En il cas rar da donns, Elite mediatescha il cas e garantescha ina schliaziun tras la promessa da nostra plattafurma.",
+    "a3": "Tuts subinterprendiders assignads ston avair ina assicuranza da responsabladad. En il cas rar da donns, Mondar mediatescha il cas e garantescha ina schliaziun tras la promessa da nostra plattafurma.",
     "q4": "Èn mias datas segiras tenor GDPR?",
     "a4": "Gea. Tuts servers d'applicaziun, instanzas Supabase e protocols èn ospitads en centers da datas europeics. Nus na suandain nagins cookies senza consentiment, e ti po exportar u stidar tias datas da cont a mintga mument."
   },
@@ -237,11 +237,11 @@
     "impressum": "Impressum",
     "providerTerms": "Cundizions Partenaris",
     "tagline": "Intermediaziun svizra da pulizia da precisaziun. Discreta eleganza, execuziun perfetga.",
-    "copyright": "Elite Cleaning Services. Tuts dretgs reservads."
+    "copyright": "Mondar Specialty Cleaning. Tuts dretgs reservads."
   },
   "providers": {
     "nav": {
-      "brand": "ELITE CLEANING",
+      "brand": "MONDAR",
       "signIn": "S'annunziar",
       "apply": "Candidar"
     },
@@ -301,10 +301,10 @@
       "catMoveout": "Netschidadas da midada"
     },
     "footer": {
-      "copyright": "Elite Cleaning Platform AG. Tut ils dretgs da partenaris svizzers reservads."
+      "copyright": "Mondar AG. Tut ils dretgs da partenaris svizzers reservads."
     },
     "login": {
-      "nav": "ELITE PARTNER HUB",
+      "nav": "MONDAR PARTNER HUB",
       "mfaTitle": "Autentificaziun multi-facturs",
       "mfaDesc": "Endatai il token da verifikaziun per autorisar l'access",
       "partnerLogin": "Login da partenaris",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "S'ANNUNZIOND...",
       "notRegistered": "Betg anc registrà?",
       "submitApplication": "Trametter la candidatura",
-      "copyright": "Elite Cleaning Platform AG. Access da disponent segirà.",
+      "copyright": "Mondar AG. Access da disponent segirà.",
       "forgotPassword": "Passpled sblundrà?",
       "forgotPasswordTitle": "Restabilir il passpled",
       "forgotPasswordDesc": "Endrizzai voss e-mail da partenari per dumandar in code da restabiliment.",
