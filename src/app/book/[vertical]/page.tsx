@@ -1981,9 +1981,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <p className="text-[#a6a6a6]">
                       {t("subcontractorNetworkNote")}
                     </p>
-                    <p className="text-[#a6a6a6]">
-                      {t("dispatchDeskNote")}
-                    </p>
+                    <p className="text-[#a6a6a6]" dangerouslySetInnerHTML={{ __html: t("dispatchDeskNote") }} />
                     <div className="border-t border-border pt-4 text-caption uppercase text-accent font-semibold flex justify-between">
                       <span>{t("quoteStatus")}</span>
                       <span>{t("quotePending")}</span>
@@ -2328,7 +2326,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                       <Clock className="w-4 h-4" /> {t("reviewPending")}
                     </span>
                     <p>{t("subcontractorNetworkNote")}</p>
-                    <p>{t("dispatchDeskNote")}</p>
+                    <p dangerouslySetInnerHTML={{ __html: t("dispatchDeskNote") }} />
                     <div className="border-t border-border pt-4 text-caption uppercase text-accent font-semibold flex justify-between">
                       <span>{t("quoteStatus")}</span>
                       <span>{t("quotePending")}</span>
