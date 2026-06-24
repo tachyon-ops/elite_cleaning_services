@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Sparkles, Bot } from "lucide-react";
+import Script from "next/script";
 
 interface Message {
   id: string;
@@ -54,48 +55,93 @@ export function AIChatBubble() {
 
     setMessages((prev) => [...prev, assistantMsg]);
 
+    const SYSTEM_PROMPT = `You are the Mondar Assistant, a premium, luxury Swiss dispatch concierge.
+Your brand is "Mondar" (recently rebranded from "Elite Cleaning Services").
+Always maintain a highly professional, helpful, and luxury tone suitable for premium Swiss cleaning dispatches.
+
+Here are the details of our services and pricing:
+- Home & Villa Cleaning: From CHF 80 (Base rate)
+- Offices & Commercial: From CHF 150 (Per m² base)
+- Airbnb & Hospitality: From CHF 120 (Flat rate per turnover)
+- Aviation & Yacht Detailing: Bespoke quote-on-request (compiled by our Zürich dispatch desk within 4 hours). We service private jets, turboprops, helicopters at Swiss hangars/FBOs (including Zurich Airport FBO), and vessels/yachts on Lake Zurich and other Swiss lakes.
+- Building Care (B2B recurring common-area cleaning) and Restaurant & Kitchen cleaning are also available.
+
+If the user wants to book or get a quote, guide them to use our dynamic booking intake wizard directly from the home page.
+Keep your responses concise, clear, and elegant. Speak the same language as the user (English, German, French, etc.).`;
+
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+      const puter = (window as any).puter;
+      if (puter) {
+        const history = [...messages, userMsg].map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          content: m.content,
+        }));
+        
+        const puterMessages = [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...history
+        ];
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
+        const response = await puter.ai.chat(puterMessages, { stream: true, model: "gpt-4o-mini" });
+        let accumulatedText = "";
+        
+        for await (const chunk of response) {
+          const chunkText = typeof chunk === "string" ? chunk : (chunk.text || chunk.message?.content || "");
+          if (chunkText) {
+            accumulatedText += chunkText;
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedText }
+                  : msg
+              )
+            );
+          }
+        }
+      } else {
+        // Fallback to local server route
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [...messages, userMsg].map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+        if (!response.ok) {
+          throw new Error("Failed to send message");
+        }
 
-      if (!reader) {
-        throw new Error("No reader available");
-      }
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
 
-      let done = false;
-      let accumulatedText = "";
+        if (!reader) {
+          throw new Error("No reader available");
+        }
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          accumulatedText += chunk;
-          
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: accumulatedText }
-                : msg
-            )
-          );
+        let done = false;
+        let accumulatedText = "";
+
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            accumulatedText += chunk;
+            
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedText }
+                  : msg
+              )
+            );
+          }
         }
       }
     } catch (error) {
@@ -114,6 +160,7 @@ export function AIChatBubble() {
 
   return (
     <>
+      <Script src="https://js.puter.com/v2/" strategy="afterInteractive" />
       {/* Floating Bubble Button */}
       <div className="fixed bottom-[88px] right-6 z-50">
         <button
