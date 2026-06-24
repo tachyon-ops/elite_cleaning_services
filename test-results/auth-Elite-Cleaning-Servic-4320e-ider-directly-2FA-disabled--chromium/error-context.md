@@ -6,30 +6,55 @@
 
 # Test info
 
-- Name: auth.spec.ts >> Elite Cleaning Services - Authentication Flows >> should successfully login as Admin with 2FA OTP code
-- Location: src/__tests__/e2e/auth.spec.ts:7:7
+- Name: auth.spec.ts >> Elite Cleaning Services - Authentication Flows >> should successfully login as Provider directly (2FA disabled)
+- Location: src/__tests__/e2e/auth.spec.ts:42:7
 
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
+Error: expect(locator).toBeVisible() failed
 
-```
-Error: locator.fill: Test timeout of 30000ms exceeded.
+Locator: locator('h2:has-text(\'Alpine Cleaning Services AG\')')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
 Call log:
-  - waiting for locator('input[type=\'email\']')
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('h2:has-text(\'Alpine Cleaning Services AG\')')
 
 ```
-
-# Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e3]:
-    - heading "404" [level=1] [ref=e4]
-    - heading "This page could not be found." [level=2] [ref=e6]
-  - alert [ref=e7]
+- text: Demo Store
+- navigation:
+  - link "ELITE PARTNER HUB":
+    - /url: /en/providers
+- img
+- heading "Partner Log In" [level=2]
+- paragraph: Access your marketplace dispatch control panel
+- text: Partner Email
+- textbox "partner@alpineclean.ch"
+- text: Password
+- textbox "••••••••": partner123
+- button:
+  - img
+- button "Forgot Password?"
+- button "SECURE ENTER"
+- text: Not yet registered?
+- link "Submit Application":
+  - /url: /en/providers/apply
+- contentinfo: © 2026 Elite Cleaning Platform AG. Secure dispatcher access.
+- alert
+- img
+- heading "Cookie Settings" [level=3]
+- paragraph:
+  - text: We use cookies to enhance your experience. By clicking 'Accept All', you consent to our use of cookies. Read our
+  - link "Cookie Policy":
+    - /url: /en/legal/cookies
+  - text: .
+- button "Necessary Only"
+- button "Accept All"
 ```
 
 # Test source
@@ -47,8 +72,7 @@ Call log:
   10 |     await page.screenshot({ path: "src/__tests__/e2e/snapshots/admin-login-empty.png" });
   11 | 
   12 |     // 2. Fill credentials
-> 13 |     await page.locator("input[type='email']").fill("admin@elite-cleaning.ch");
-     |                                               ^ Error: locator.fill: Test timeout of 30000ms exceeded.
+  13 |     await page.locator("input[type='email']").fill("admin@elite-cleaning.ch");
   14 |     await page.locator("input[type='password']").fill("admin123");
   15 |     await page.screenshot({ path: "src/__tests__/e2e/snapshots/admin-login-filled.png" });
   16 | 
@@ -92,7 +116,8 @@ Call log:
   54 | 
   55 |     // 4. Verify redirect to partner account dashboard
   56 |     await expect(page).toHaveURL(/\/en\/providers\/account/);
-  57 |     await expect(page.locator("h2:has-text('Alpine Cleaning Services AG')")).toBeVisible();
+> 57 |     await expect(page.locator("h2:has-text('Alpine Cleaning Services AG')")).toBeVisible();
+     |                                                                              ^ Error: expect(locator).toBeVisible() failed
   58 |     await page.screenshot({ path: "src/__tests__/e2e/snapshots/provider-dashboard.png" });
   59 |   });
   60 | });

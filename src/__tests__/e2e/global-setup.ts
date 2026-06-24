@@ -13,6 +13,8 @@ export default async function globalSetup() {
     fs.copyFileSync(dbPath, bakPath);
   }
 
+
+
   try {
     console.log("Preparing clean database for E2E tests...");
     // 2. Push schema with force-reset and seed the database
