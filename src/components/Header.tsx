@@ -163,7 +163,7 @@ export async function Header() {
         <Link href={localizeHref("/#how-it-works", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.howItWorks")}</Link>
         <Link href={localizeHref("/providers", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
       </nav>
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 pr-12 md:pr-0 lg:pr-24">
         <LanguageSwitcher />
         <Link
           href={localizeHref("/book/general", locale)}
