@@ -650,5 +650,31 @@
     "restaurantQuoteDesc": "Restaurant and kitchen extraction cleanings require professional certification reviews.",
     "thankYouBuildingCare": "Thank you. Your Building Care quote request has been sent to our desk for review. We will notify you at:",
     "thankYouRestaurant": "Thank you. Your Restaurant cleaning quote request has been sent to our desk for review. We will notify you at:"
+  },
+  "contactPage": {
+    "title": "Contact Us",
+    "emailCardTitle": "Email Us",
+    "emailCardDesc": "Send us an email anytime",
+    "emailCardAction": "Send Email",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Quick messaging & support",
+    "whatsappCardAction": "Chat on WhatsApp",
+    "phoneCardTitle": "Call Us",
+    "phoneCardDesc": "Speak directly with dispatch",
+    "phoneCardAction": "Call Support",
+    "addressCardTitle": "Our Office",
+    "addressCardDesc": "Visit our headquarters",
+    "addressCardAction": "Get Directions",
+    "formTitle": "Send a Message",
+    "formDesc": "Fill out the form below and we will get back to you shortly.",
+    "fieldName": "Your Name",
+    "fieldEmail": "Email Address",
+    "fieldPhone": "Phone Number (Optional)",
+    "fieldSubject": "Subject",
+    "fieldMessage": "Message",
+    "btnSubmit": "Send Message",
+    "btnSubmitting": "Sending...",
+    "successMessage": "Thank you! Your message has been sent successfully. We will get back to you shortly.",
+    "errorMessage": "Something went wrong. Please try again or contact us directly."
   }
 }

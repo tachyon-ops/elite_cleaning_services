@@ -1114,3 +1114,86 @@ export async function resetPasswordAdmin(email: string, code: string, passwordNe
     return { success: false, error: error.message };
   }
 }
+
+// 21. Update logged in admin user profile
+export async function updateAdminProfile(name: string, email: string) {
+  try {
+    const admin = await getLoggedInAdmin();
+    if (!admin) {
+      throw new Error("Unauthorized");
+    }
+
+    // Check if email is already taken by another user
+    const existing = await db.user.findFirst({
+      where: {
+        email: email.trim().toLowerCase(),
+        NOT: { id: admin.id }
+      }
+    });
+    if (existing) {
+      throw new Error("Email is already registered by another account.");
+    }
+
+    const updated = await db.user.update({
+      where: { id: admin.id },
+      data: {
+        name: name.trim(),
+        email: email.trim().toLowerCase()
+      }
+    });
+
+    // Update session cookies if necessary
+    const cookieStore = await cookies();
+    cookieStore.set("admin_user_id", updated.id, {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24
+    });
+
+    return { success: true, user: updated };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 22. Change logged in admin password
+export async function changeAdminPassword(passwordCurrent: string, passwordNew: string) {
+  try {
+    const admin = await getLoggedInAdmin();
+    if (!admin) {
+      throw new Error("Unauthorized");
+    }
+
+    if (passwordNew.length < 8) {
+      throw new Error("New password must be at least 8 characters long.");
+    }
+
+    // Fetch full user record to verify password
+    const user = await db.user.findUnique({
+      where: { id: admin.id }
+    });
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    if (user.passwordHash) {
+      const isValid = verifyPassword(passwordCurrent, user.passwordHash);
+      if (!isValid) {
+        throw new Error("Current password is incorrect.");
+      }
+    }
+
+    const newHash = hashPassword(passwordNew);
+    await db.user.update({
+      where: { id: admin.id },
+      data: { passwordHash: newHash }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

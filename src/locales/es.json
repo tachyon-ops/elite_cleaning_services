@@ -565,5 +565,31 @@
     "quoteSummaryTitle": "Desglose del presupuesto",
     "confirmSendWhatsapp": "Confirmar y enviar por WhatsApp",
     "whatsappDispatchNotice": "Su reserva se procesará manualmente. Haga clic a continuación para verificar los detalles y enviar su solicitud por WhatsApp."
+  },
+  "contactPage": {
+    "title": "Contacto",
+    "emailCardTitle": "Escríbanos",
+    "emailCardDesc": "Envíenos un correo electrónico en cualquier momento",
+    "emailCardAction": "Enviar correo",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Mensajería rápida y soporte",
+    "whatsappCardAction": "Chatear por WhatsApp",
+    "phoneCardTitle": "Llámenos",
+    "phoneCardDesc": "Hable directamente con despacho",
+    "phoneCardAction": "Llamar a Soporte",
+    "addressCardTitle": "Nuestra Oficina",
+    "addressCardDesc": "Visite nuestra sede principal",
+    "addressCardAction": "Cómo llegar",
+    "formTitle": "Enviar un mensaje",
+    "formDesc": "Complete el formulario a continuación y nos pondremos en contacto con usted en breve.",
+    "fieldName": "Su Nombre",
+    "fieldEmail": "Correo electrónico",
+    "fieldPhone": "Número de teléfono (Opcional)",
+    "fieldSubject": "Asunto",
+    "fieldMessage": "Mensaje",
+    "btnSubmit": "Enviar mensaje",
+    "btnSubmitting": "Enviando...",
+    "successMessage": "¡Gracias! Su mensaje ha sido enviado con éxito. Nos pondremos en contacto con usted en breve.",
+    "errorMessage": "Algo salió mal. Por favor, inténtelo de nuevo o contáctenos directamente."
   }
 }

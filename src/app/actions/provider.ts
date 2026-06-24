@@ -237,6 +237,8 @@ export async function getProviderPortalData(companyId: string) {
       where: { email, role: "provider_staff" },
       select: {
         email: true,
+        name: true,
+        phone: true,
         twoFactorEnabled: true
       }
     });
@@ -510,6 +512,79 @@ export async function resetPasswordProvider(email: string, code: string, passwor
         after: "redacted",
         actorUserId: user.id
       }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 21. Get logged in provider staff user
+export async function getLoggedInProviderUser() {
+  const cookieStore = await cookies();
+  const authenticated = cookieStore.get("provider_session")?.value === "true";
+  if (!authenticated) return null;
+  const email = cookieStore.get("provider_email")?.value || "";
+  return db.user.findFirst({
+    where: { email, role: "provider_staff" }
+  });
+}
+
+// 22. Update logged in provider staff user profile
+export async function updateProviderProfile(name: string, phone: string) {
+  try {
+    const user = await getLoggedInProviderUser();
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const updated = await db.user.update({
+      where: { id: user.id },
+      data: {
+        name: name.trim(),
+        phone: phone.trim()
+      }
+    });
+
+    return { success: true, user: updated };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 23. Change logged in provider staff user password
+export async function changeProviderPassword(passwordCurrent: string, passwordNew: string) {
+  try {
+    const user = await getLoggedInProviderUser();
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    if (passwordNew.length < 8) {
+      throw new Error("New password must be at least 8 characters long.");
+    }
+
+    // Verify current password
+    const fullUser = await db.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!fullUser) {
+      throw new Error("User not found.");
+    }
+
+    if (fullUser.passwordHash) {
+      const isValid = verifyPassword(passwordCurrent, fullUser.passwordHash);
+      if (!isValid) {
+        throw new Error("Current password is incorrect.");
+      }
+    }
+
+    const newHash = hashPassword(passwordNew);
+    await db.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash }
     });
 
     return { success: true };

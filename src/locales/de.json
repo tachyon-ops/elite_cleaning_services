@@ -650,5 +650,31 @@
     "restaurantQuoteDesc": "Die Reinigung von Restaurant-Küchenabluftanlagen erfordert eine zertifizierte Brandschutz-Prüfung.",
     "thankYouBuildingCare": "Vielen Dank. Ihre Anfrage für Liegenschaftsunterhalt wurde zur Überprüfung weitergeleitet. Wir benachrichtigen Sie unter:",
     "thankYouRestaurant": "Vielen Dank. Ihre Anfrage für Restaurantreinigung wurde zur Überprüfung weitergeleitet. Wir benachrichtigen Sie unter:"
+  },
+  "contactPage": {
+    "title": "Kontakt",
+    "emailCardTitle": "E-Mail schreiben",
+    "emailCardDesc": "Senden Sie uns jederzeit eine E-Mail",
+    "emailCardAction": "E-Mail senden",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Schnelle Nachrichten & Support",
+    "whatsappCardAction": "Auf WhatsApp chatten",
+    "phoneCardTitle": "Anrufen",
+    "phoneCardDesc": "Sprechen Sie direkt mit dem Dispatcher",
+    "phoneCardAction": "Support anrufen",
+    "addressCardTitle": "Hauptsitz",
+    "addressCardDesc": "Besuchen Sie unser Büro",
+    "addressCardAction": "Wegbeschreibung",
+    "formTitle": "Nachricht senden",
+    "formDesc": "Füllen Sie das Formular aus und wir melden uns in Kürze bei Ihnen.",
+    "fieldName": "Ihr Name",
+    "fieldEmail": "E-Mail-Adresse",
+    "fieldPhone": "Telefonnummer (Optional)",
+    "fieldSubject": "Betreff",
+    "fieldMessage": "Nachricht",
+    "btnSubmit": "Nachricht senden",
+    "btnSubmitting": "Wird gesendet...",
+    "successMessage": "Vielen Dank! Ihre Nachricht wurde erfolgreich gesendet. Wir werden uns in Kürze bei Ihnen melden.",
+    "errorMessage": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt."
   }
 }

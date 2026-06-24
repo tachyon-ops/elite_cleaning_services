@@ -565,5 +565,31 @@
     "quoteSummaryTitle": "Resumo do Orçamento",
     "confirmSendWhatsapp": "Confirmar e Enviar por WhatsApp",
     "whatsappDispatchNotice": "A sua reserva será processada manualmente. Clique abaixo para verificar os detalhes e enviar o seu pedido de reserva via WhatsApp."
+  },
+  "contactPage": {
+    "title": "Contacto",
+    "emailCardTitle": "Envie um e-mail",
+    "emailCardDesc": "Envie-nos um e-mail a qualquer momento",
+    "emailCardAction": "Enviar e-mail",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Mensagens rápidas e suporte",
+    "whatsappCardAction": "Conversar no WhatsApp",
+    "phoneCardTitle": "Ligue-nos",
+    "phoneCardDesc": "Fale diretamente com a nossa equipa",
+    "phoneCardAction": "Ligar para o Suporte",
+    "addressCardTitle": "O nosso escritório",
+    "addressCardDesc": "Visite a nossa sede",
+    "addressCardAction": "Como chegar",
+    "formTitle": "Enviar uma mensagem",
+    "formDesc": "Preencha o formulário abaixo e entraremos em contacto consigo em breve.",
+    "fieldName": "O seu nome",
+    "fieldEmail": "Endereço de e-mail",
+    "fieldPhone": "Número de telefone (Opcional)",
+    "fieldSubject": "Assunto",
+    "fieldMessage": "Mensagem",
+    "btnSubmit": "Enviar mensagem",
+    "btnSubmitting": "A enviar...",
+    "successMessage": "Obrigado! A sua mensagem foi enviada com sucesso. Entraremos em contacto brevemente.",
+    "errorMessage": "Ocorreu um erro. Por favor, tente novamente ou contacte-nos diretamente."
   }
 }

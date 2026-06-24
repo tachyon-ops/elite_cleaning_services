@@ -16,7 +16,9 @@ import {
   isProviderAuthenticated,
   generateProvider2FASecret,
   enableProvider2FA,
-  disableProvider2FA
+  disableProvider2FA,
+  updateProviderProfile,
+  changeProviderPassword
 } from "@/app/actions/provider";
 import {
   ShieldAlert,
@@ -67,6 +69,21 @@ export default function ProviderDashboardPage() {
   const [totpError, setTotpError] = useState("");
   const [loading2FA, setLoading2FA] = useState(false);
 
+  // Profile Editor state variables
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [profileError, setProfileError] = useState("");
+
+  // Password Editor state variables
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   // Load provider details
   const loadData = async (targetId: string) => {
     setLoading(true);
@@ -78,10 +95,64 @@ export default function ProviderDashboardPage() {
         bookings: res.bookings
       });
       setUserProfile(res.user);
+      setProfileName(res.user?.name || "");
+      setProfilePhone(res.user?.phone || "");
     } else {
       setError(res.error || "Failed to load portal data");
     }
     setLoading(false);
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingProfile(true);
+    setProfileSuccess("");
+    setProfileError("");
+
+    if (!profileName.trim()) {
+      setProfileError("Name is required.");
+      setUpdatingProfile(false);
+      return;
+    }
+
+    const res = await updateProviderProfile(profileName, profilePhone);
+    setUpdatingProfile(false);
+    if (res.success) {
+      setProfileSuccess("Profile details updated successfully.");
+      if (companyId) loadData(companyId);
+    } else {
+      setProfileError(res.error || "Failed to update profile.");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangingPassword(true);
+    setPasswordSuccess("");
+    setPasswordError("");
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("All password fields are required.");
+      setChangingPassword(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      setChangingPassword(false);
+      return;
+    }
+
+    const res = await changeProviderPassword(currentPassword, newPassword);
+    setChangingPassword(false);
+    if (res.success) {
+      setPasswordSuccess("Password updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } else {
+      setPasswordError(res.error || "Failed to change password.");
+    }
   };
 
   const handleStart2FA = async () => {
@@ -562,6 +633,123 @@ export default function ProviderDashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Profile Details Form */}
+          <form onSubmit={handleUpdateProfile} className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-6">
+            <h3 className="text-body-md font-semibold text-[#f2f2f2]">Edit Profile Details</h3>
+            
+            {profileSuccess && (
+              <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded text-body-xs">
+                {profileSuccess}
+              </div>
+            )}
+            {profileError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded text-body-xs">
+                {profileError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={profilePhone}
+                  onChange={(e) => setProfilePhone(e.target.value)}
+                  placeholder="e.g. +41 79 123 45 67"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={updatingProfile}
+              className="bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer uppercase tracking-wider"
+            >
+              {updatingProfile ? "SAVING..." : "UPDATE PROFILE"}
+            </button>
+          </form>
+
+          {/* Change Password Form */}
+          <form onSubmit={handleChangePassword} className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-6">
+            <h3 className="text-body-md font-semibold text-[#f2f2f2]">Change Password</h3>
+
+            {passwordSuccess && (
+              <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded text-body-xs">
+                {passwordSuccess}
+              </div>
+            )}
+            {passwordError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded text-body-xs">
+                {passwordError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer uppercase tracking-wider"
+            >
+              {changingPassword ? "CHANGING..." : "CHANGE PASSWORD"}
+            </button>
+          </form>
 
           {/* Listings & Capabilities */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-4">

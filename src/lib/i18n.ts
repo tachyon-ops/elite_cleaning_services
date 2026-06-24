@@ -152,6 +152,15 @@ export function localizeHref(href: string, locale: string): string {
       es: "/sobre-nosotros",
       pt: "/sobre-nos"
     },
+    "/contact": {
+      de: "/kontakt",
+      en: "/contact",
+      fr: "/contact",
+      it: "/contatto",
+      rm: "/contact",
+      es: "/contacto",
+      pt: "/contacto"
+    },
     "/legal/provider-terms": {
       de: "/rechtliches/partner-agb",
       en: "/legal/provider-terms",

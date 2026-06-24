@@ -17,7 +17,7 @@ export async function checkAndSeedDb() {
     }
 
     // Seed localized pages
-    const pageKeys = ["privacy", "terms", "cookies", "about", "provider-terms", "impressum", "building-care", "restaurant"];
+    const pageKeys = ["privacy", "terms", "cookies", "about", "provider-terms", "impressum", "building-care", "restaurant", "contact"];
     for (const key of pageKeys) {
       let page = await db.page.findUnique({ where: { key } });
       if (!page) {
@@ -593,13 +593,21 @@ Pode alterar ou revogar as suas preferências a qualquer momento através do nos
             title: "Über uns",
             content: `# Über uns
 
-Mondar Specialty Cleaning ist die führende Schweizer Vermittlungsplattform für spezialisierte Reinigungsdienstleistungen. Wir schliessen die Lücke zwischen anspruchsvollen Kunden und geprüften, zertifizierten Schweizer Reinigungsunternehmen.
+Mondar Specialty Cleaning ist eine vertrauenswürdige Schweizer Vermittlungsplattform für spezialisierte Reinigungsdienstleistungen. Wir schliessen die Lücke zwischen anspruchsvollen Kunden und sorgfältig ausgewählten, zertifizierten Schweizer Reinigungsunternehmen.
+
+![Mondar – Reinheit und Glanz](/images/about_1.png)
+
+Die Geschichte von Mondar beginnt mit einem Wort und einer gemeinsamen Erkenntnis. Der Name „Mondar“ ist vom italienischen Verb *mondare* inspiriert, was so viel bedeutet wie „reinigen, säubern, purifizieren oder polieren“ – die Kunst, das Überflüssige zu entfernen, um das Wesentliche in seiner ganzen Reinheit zum Vorschein zu bringen.
+
+Die Idee entstand, als unsere Gründer selbst vor der Herausforderung standen, verlässliche, hochspezialisierte Reinigungsdienste für komplexe Anforderungen zu finden. Als sie erkannten, dass dieses Bedürfnis kein Einzelfall war, beschlossen sie, eine verlässliche Brücke zu bauen. Mondar wurde ins Leben gerufen, um diese Verbindungen zu vereinfachen und eine sauberere, harmonischere und positivere Welt zu schaffen. Wir glauben, dass ein gepflegter Raum Klarheit bringt und den Weg für eine glänzende Zukunft ebnet.
+
+![Unsere Spezialreinigung im Einsatz](/images/about_2.png)
 
 ## Unsere Mission
-Wir stehen für kompromisslose Schweizer Qualität, absolute Zuverlässigkeit und diskreten Service. Ob exklusive Privatjets, luxuriöse Yachten, moderne Büros oder sensible Sonderreinigungen – wir vermitteln nur die besten Fachbetriebe des Landes.
+Wir setzen uns für hohe Schweizer Qualitätsstandards, Zuverlässigkeit und diskreten Service ein. Ob private Luftfahrt, Yachtpflege, gewerbliche Büroreinigung oder sensible Sonderreinigungen – wir vermitteln qualifizierte Fachbetriebe.
 
 ## Schweizer Präzision und Sicherheit
-Jeder Partner in unserem Netzwerk wird von unserem Operations-Team eingehend geprüft. Wir verlangen den Nachweis einer Betriebshaftpflichtversicherung mit einer Deckung von mindestens CHF 5 Mio., einen einwandfreien Leumund des Personals und nachweisbare Fachexpertise.`
+Unsere Partnerunternehmen werden sorgfältig überprüft. Wir achten auf wichtige Qualitätsstandards wie eine Betriebshaftpflichtversicherung mit einer Deckung von mindestens CHF 5 Mio., einen einwandfreien Leumund des eingesetzten Personals und nachweisbare Branchenreferenzen.`
           },
           {
             locale: "en",
@@ -607,13 +615,21 @@ Jeder Partner in unserem Netzwerk wird von unserem Operations-Team eingehend gep
             title: "About Us",
             content: `# About Us
 
-Mondar Specialty Cleaning is the premier Swiss brokerage platform for specialized cleaning solutions. We bridge the gap between high-end clients and vetted, certified Swiss cleaning provider companies.
+Mondar Specialty Cleaning is a trusted Swiss brokerage platform for specialized cleaning solutions. We bridge the gap between high-end clients and vetted, certified Swiss cleaning provider companies.
+
+![Mondar – Purify & Polish](/images/about_1.png)
+
+The story of Mondar begins with a word and a shared realization. The name "Mondar" is inspired by the Italian verb *mondare*, which means "to clean, to prune, to purify, or to polish"—the art of removing the superfluous to reveal the pristine essence underneath.
+
+The idea was born when our founders experienced firsthand the difficulty of sourcing reliable, highly specialized cleaning services for complex needs. Recognizing that many others shared this exact challenge, they set out to build a trusted bridge. Mondar was created to simplify these connections, fostering a cleaner, more harmonious, and positive environment. We believe that a polished space leads to a clearer mind and a brighter tomorrow.
+
+![Our Premium Specialist Cleaning in Action](/images/about_2.png)
 
 ## Our Mission
-We stand for uncompromising Swiss quality, absolute reliability, and discrete service. Whether it is private aviation detailing, yacht marine care, commercial office upkeep, or sensitive biohazard situations, we dispatch only the top specialist teams in the country.
+We stand for high Swiss quality standards, reliability, and discrete service. Whether it is private aviation detailing, yacht marine care, commercial office upkeep, or specialized cleaning situations, we connect you with vetted specialist teams.
 
-## Swiss Precision and Security
-Every subcontractor partner in our network is thoroughly audited by our operations desk. We enforce minimum standards including a CHF 5 million commercial liability coverage, clean criminal records for all staff, and proven industry references.`
+## Swiss Quality and Security
+Our provider partners are carefully verified by our operations desk. We look for established standards including a CHF 5 million commercial liability coverage, clean records for staff, and proven industry references.`
           },
           {
             locale: "fr",
@@ -621,13 +637,21 @@ Every subcontractor partner in our network is thoroughly audited by our operatio
             title: "À propos de nous",
             content: `# À propos de nous
 
-Mondar Specialty Cleaning est la plateforme suisse de référence pour les solutions de nettoyage spécialisé. Nous faisons le lien entre des clients exigeants et des entreprises de nettoyage suisses agréées et certifiées.
+Mondar Specialty Cleaning est une plateforme suisse de confiance pour les solutions de nettoyage spécialisé. Nous faisons le lien entre des clients exigeants et des entreprises de nettoyage suisses agréées et certifiées.
+
+![Mondar – Pureté et Polissage](/images/about_1.png)
+
+L'histoire de Mondar commence par un mot et un constat partagé. Le nom « Mondar » s'inspire du verbe italien *mondare*, qui signifie « nettoyer, émonder, purifier ou polir » – l'art de retirer le superflu pour révéler l'essence pure des choses.
+
+L'idée est née lorsque nos fondateurs ont été confrontés eux-mêmes à la difficulté de trouver des services de nettoyage hautement spécialisés et fiables pour des besoins complexes. Constatant que beaucoup d'autres partageaient ce besoin, ils ont décidé de bâtir une passerelle de confiance. Mondar a été créée pour simplifier ces mises en relation et favoriser un environnement plus propre, plus harmonieux et positif. Nous croyons qu'un espace soigné contribue à un esprit plus serein et à un avenir plus prometteur.
+
+![Nos équipes spécialisées en action](/images/about_2.png)
 
 ## Notre mission
-Nous garantissons une qualité de service sans compromis, une fiabilité absolue et une discrétion totale pour les jets privés, les yachts de luxe, les bureaux ou les situations post-incidents.
+Nous nous engageons à offrir des standards de qualité suisses élevés, une grande fiabilité et une discrétion attentive. Qu'il s'agisse de la préparation de jets privés, de l'entretien de yachts, de la maintenance de bureaux commerciaux ou de nettoyages spécifiques, nous vous mettons en relation avec des équipes spécialisées et qualifiées.
 
-## Précision et sécurité
-Chaque partenaire sous-traitant est rigoureusement audité et doit disposer d'une assurance RC professionnelle de CHF 5 millions minimum.`
+## Précision et sécurité suisses
+Nos entreprises partenaires sont soigneusement vérifiées par notre équipe opérationnelle. Nous veillons au respect de critères de qualité, notamment une assurance RC professionnelle d'une couverture minimale de CHF 5 millions, des antécédents professionnels irréprochables pour le personnel et des références confirmées dans le secteur.`
           },
           {
             locale: "it",
@@ -635,13 +659,21 @@ Chaque partenaire sous-traitant est rigoureusement audité et doit disposer d'un
             title: "Chi siamo",
             content: `# Chi siamo
 
-Mondar Specialty Cleaning è la principale piattaforma svizzera di intermediazione per soluzioni di pulizia speciali. Colleghiamo clienti premium con imprese di pulizia svizzere selezionate e certificate.
+Mondar Specialty Cleaning è una fidata piattaforma svizzera di intermediazione per soluzioni di pulizia specializzate. Colleghiamo clienti premium con imprese di pulizia svizzere selezionate e certificate.
+
+![Mondar – Purezza e Lucidatura](/images/about_1.png)
+
+La storia di Mondar nasce da una parola e da un'esigenza condivisa. Il nome "Mondar" si ispira infatti al verbo italiano *mondare*: pulire, mondare, purificare o lucidare – l'arte di rimuovere il superfluo per rivelare la pura essenza sottostante.
+
+L'idea è nata quando i nostri fondatori hanno vissuto in prima persona la difficoltà di trovare servizi di pulizia altamente specializzati e affidabili per esigenze complesse. Rendendosi conto che molti altri condividevano la stessa necessità, hanno deciso di costruire un ponte di fiducia. Mondar è stata creata per semplificare queste connessioni, promuovendo un ambiente più pulito, armonioso e positivo. Crediamo che uno spazio curato porti a una mente più lucida e a un domani migliore.
+
+![I nostri team specializzati all'opera](/images/about_2.png)
 
 ## La nostra missione
-Garantiamo qualità svizzera senza compromessi, massima affidabilità e discrezione per aviazione privata, yacht di lusso, uffici e scenari complessi.
+Ci impegniamo per elevati standard di qualità svizzera, affidabilità e discrezione. Che si tratti di manutenzione di aerei privati, cura di yacht, gestione di uffici commerciali o interventi di pulizia speciali, vi mettiamo in contatto con team specializzati e qualificati.
 
-## Precisione e sicurezza
-Tutti i subappaltatori partner sono controllati e devono disporre di assicurazione RC commerciale con copertura minima di CHF 5 milioni.`
+## Precisione e sicurezza svizzera
+Le imprese partner della nostra rete sono accuratamente verificate dal nostro team operativo. Richiediamo standard stabiliti, tra cui una copertura assicurativa di responsabilità civile commerciale di almeno CHF 5 milioni, fedina penale pulita per il personale e comprovate referenze nel settore.`
           },
           {
             locale: "rm",
@@ -649,13 +681,21 @@ Tutti i subappaltatori partner sono controllati e devono disporre di assicurazio
             title: "Davart nus",
             content: `# Davart nus
 
-Mondar Specialty Cleaning è la plattafurma svizra principala per netschidadas spezialas. Nus coordinain ils megliers sutcontracturs per servetschs da luxus.
+Mondar Specialty Cleaning è ina plattafurma svizra fidaivla per schubergiar spezial. Nus coordinain partenaris verifitgads per differents servetschs.
+
+![Mondar – Purezza e Glanz](/images/about_1.png)
+
+L'istorgia da Mondar cumenza cun in pled ed ina constataziun cuminaivla. Il num "Mondar" è inspirà dal verb talian *mondare*, che munta tant sco "schubergiar, mundar, purifitgar u polir" – l'art da toraer davent il superflus per far cumparair la pura essenza.
+
+L'idea è naschida cur che noss fundaturs han sez gì difficultads da chattar servetschs da nettegiada fidaivels e fitg spezialisads per basegns cumplexs. Cun vesair che blers auters avevan il medem basegn, han els decis da construir ina punt fidaivla. Mondar è vegnida creada per simplifitgar questas relaziuns e promover in ambient pli schuber, pli armonic e positiv. Nus cartin che in spazi curà maina a dapli clarezza ed a in futur plain perspectivas.
+
+![Noss partenaris en acziun](/images/about_2.png)
 
 ## Noss intent
-Nus garantin qualitad svizra, discreziun ed assicuranza per jets privats, iahts, buros u Tatortreinigung.
+Nus s'engaschain per auts standards da qualitad svizra, fidaivladad e discreziun. Co saja quai per aviun specifics, iahts, biros u nettegiadas spezialas – nus coordinain partenaris verifitgads e qualifitgads.
 
 ## Segirezza e confurmitad
-Mincha partenari vegn controllà ed obligà d'avair ina assicuranza da responsabladad da CHF 5 milliuns.`
+Noss partenaris da nettegiada vegnan controllads cun quità. Nus prevesaim standards impurtants sco ina assicuranza da responsabladad da minimalmain CHF 5 milliuns, in certificat da mastergn e referenzas cumprovadas.`
           },
           {
             locale: "es",
@@ -663,13 +703,21 @@ Mincha partenari vegn controllà ed obligà d'avair ina assicuranza da responsab
             title: "Sobre nosotros",
             content: `# Sobre nosotros
 
-Mondar Specialty Cleaning es la plataforma suiza líder en intermediación de limpieza especializada. Conectamos a clientes premium con empresas suizas de limpieza evaluadas y certificadas.
+Mondar Specialty Cleaning es una plataforma suiza de confianza en intermediación de limpieza especializada. Conectamos a clientes premium con empresas suizas de limpieza evaluadas y certificadas.
+
+![Mondar – Pureza y Pulido](/images/about_1.png)
+
+La historia de Mondar comienza con una palabra y una necesidad compartida. El nombre "Mondar" se inspira en el verbo italiano *mondare*, que significa "limpiar, podar, purificar o pulir": el arte de eliminar lo superfluo para revelar la esencia pura de las cosas.
+
+La idea nació cuando nuestros fundadores experimentaron en carne propia la dificultad de encontrar servicios de limpieza fiables y altamente especializados para necesidades complejas. Al darse cuenta de que muchas otras personas compartían este mismo desafío, decidieron construir un puente de confianza. Mondar fue creada para simplificar estas conexiones, fomentando un entorno más limpio, armonioso y positivo. Creemos que un espacio cuidado contribuye a una mente más despejada y a un futuro mejor.
+
+![Nuestros equipos de limpieza especializados en acción](/images/about_2.png)
 
 ## Nuestra misión
-Ofrecemos calidad suiza sin concesiones, confiabilidad absoluta y discreción para la aviación privada, yates de lujo, oficinas corporativas y situaciones complejas.
+Nos comprometemos con altos estándares de calidad suiza, confiabilidad y discreción. Ya sea para la aviación privada, el mantenimiento de yates, la limpieza de oficinas corporativas o situaciones de limpieza especiales, le conectamos con equipos especializados y cualificados.
 
-## Precisión y seguridad
-Todos los socios son auditados y deben contar con un seguro de responsabilidad civil comercial de mínimo CHF 5 millones.`
+## Precisión y seguridad suiza
+Nuestras empresas colaboradoras son cuidadosamente verificadas por nuestro equipo de operaciones. Evaluamos estándares establecidos, incluyendo un seguro de responsabilidad civil comercial con una cobertura mínima de CHF 5 millones, antecedentes limpios para el personal y referencias comprobadas en el sector.`
           },
           {
             locale: "pt",
@@ -677,13 +725,21 @@ Todos los socios son auditados y deben contar con un seguro de responsabilidad c
             title: "Sobre nós",
             content: `# Sobre nós
 
-A Mondar Specialty Cleaning é a principal plataforma de corretagem da Suíça para soluções de limpeza especializada. Fazemos a ponte entre clientes exigentes e empresas prestadoras de serviços de limpeza suíças avaliadas e certificadas.
+A Mondar Specialty Cleaning é uma plataforma de mediação de confiança na Suíça para soluções de limpeza especializada. Fazemos a ponte entre clientes exigentes e empresas prestadoras de serviços de limpeza suíças avaliadas e certificadas.
+
+![Mondar – Pureza e Polimento](/images/about_1.png)
+
+A história da Mondar começa com uma palavra e uma necessidade partilhada. O nome "Mondar" inspira-se no verbo italiano *mondare*, que significa "limpar, podar, purificar ou polir" — a arte de remover o supérfluo para revelar a essência pura que está por baixo.
+
+A ideia nasceu quando os nossos fundadores sentiram na pele a dificuldade em encontrar serviços de limpeza fiáveis e altamente especializados para necessidades complexas. Ao perceberem que muitas outras pessoas partilhavam desse mesmo desafio, decidiram construir uma ponte de confiança. A Mondar foi criada para simplificar estas ligações, promovendo um ambiente mais limpo, harmonioso e positivo. Acreditamos que um espaço cuidado contribui para uma mente mais clara e para um futuro melhor.
+
+![As nossas equipas de limpeza especializadas em ação](/images/about_2.png)
 
 ## A Nossa Missão
-Representamos a qualidade suíça sem concessões, fiabilidade absoluta e um serviço discreto. Quer se trate de limpeza de aviação privada, tratamento de iates, manutenção de escritórios comerciais ou limpeza pós-incidentes sensível, enviamos apenas as melhores equipas especializadas do país.
+Comprometemo-nos com elevados padrões de qualidade suíça, fiabilidade e discrição. Quer se trate de limpeza de aviação privada, tratamento de iates, manutenção de escritórios comerciais ou situações de limpeza específicas, ligamo-lo a equipas especializadas e qualificadas.
 
 ## Precisão e Segurança Suíça
-Cada parceiro subcontratado na nossa rede é rigorosamente auditado pelas nossas operações. Exigimos requisitos mínimos que incluem uma cobertura de seguro de responsabilidade civil comercial de CHF 5 milhões, registo criminal limpo de todo o pessoal e referências comprovadas no setor.`
+Os nossos parceiros são cuidadosamente verificados pela nossa equipa de operações. Procuramos padrões estabelecidos, incluindo uma cobertura de seguro de responsabilidade civil comercial de pelo menos CHF 5 milhões, registo criminal limpo para o pessoal envolvido e referências comprovadas no setor.`
           }
         ];
       } else if (key === "provider-terms") {
@@ -1166,6 +1222,65 @@ We provide premium cleaning services for commercial kitchens, front-of-house, an
 Professional cleaning and fire compliance certification for restaurant kitchens.`
           });
         }
+      } else if (key === "contact") {
+        translations = [
+          {
+            locale: "de",
+            slug: "kontakt",
+            title: "Kontakt",
+            content: `# Kontakt
+
+Haben Sie Fragen oder wünschen Sie ein individuelles Angebot? Kontaktieren Sie uns über einen der folgenden Kanäle oder senden Sie uns direkt eine Nachricht über das Kontaktformular. Wir freuen uns auf Ihre Anfrage.`
+          },
+          {
+            locale: "en",
+            slug: "contact",
+            title: "Contact",
+            content: `# Contact Us
+
+Do you have questions or would like to request a custom quote? Get in touch with us using one of the channels below or send us a message directly through the contact form. We look forward to hearing from you.`
+          },
+          {
+            locale: "fr",
+            slug: "contact",
+            title: "Contact",
+            content: `# Contactez-nous
+
+Vous avez des questions ou souhaitez demander un devis personnalisé ? Contactez-nous via l'un des canaux ci-dessous ou envoyez-nous un message directement via le formulaire de contact. Nous nous réjouissons de votre message.`
+          },
+          {
+            locale: "it",
+            slug: "contatto",
+            title: "Contatti",
+            content: `# Contatti
+
+Avete domande o desiderate richiedere un preventivo personalizzato? Contattateci tramite uno dei canali sottostanti o inviateci un messaggio direttamente tramite il modulo di contatto. Saremo lieti di rispondervi.`
+          },
+          {
+            locale: "rm",
+            slug: "contact",
+            title: "Contact",
+            content: `# Contact
+
+Hais Vus dumondas u giavischais in'offerta individuala? Silsuenter contactai nus tras in dals chanals u tarmettai directamain in messadi tras il formular da contact. Nus ans legrain sin Vossa dumonda.`
+          },
+          {
+            locale: "es",
+            slug: "contacto",
+            title: "Contacto",
+            content: `# Contacto
+
+¿Tiene alguna pregunta o desea solicitar un presupuesto personalizado? Póngase en contacto con nosotros a través de uno de los siguientes canales o envíenos un mensaje directamente a través del formulario de contacto. Esperamos saber de usted.`
+          },
+          {
+            locale: "pt",
+            slug: "contacto",
+            title: "Contacto",
+            content: `# Contacto
+
+Tem alguma dúvida ou deseja solicitar um orçamento personalizado? Entre em contacto connosco através de um dos canais abaixo ou envie-nos uma mensagem diretamente através do formulário de contacto. Aguardamos o seu contacto.`
+          }
+        ];
       }
       
       for (const t of translations) {
@@ -1184,8 +1299,8 @@ Professional cleaning and fire compliance certification for restaurant kitchens.
               content: t.content
             }
           });
-        } else if (existingTrans.content.length < 500) {
-          console.log(`Updating placeholder translation for ${key} in ${t.locale}`);
+        } else if (existingTrans.content !== t.content && (existingTrans.content.length < 500 || key === "about")) {
+          console.log(`Updating translation for ${key} in ${t.locale}`);
           await db.pageTranslation.update({
             where: { id: existingTrans.id },
             data: {

@@ -565,5 +565,31 @@
     "quoteSummaryTitle": "Riepilogo del preventivo",
     "confirmSendWhatsapp": "Conferma e invia tramite WhatsApp",
     "whatsappDispatchNotice": "La tua prenotazione sarà elaborata manualmente. Clicca sotto per verificare i dettagli e inviare la richiesta tramite WhatsApp."
+  },
+  "contactPage": {
+    "title": "Contattaci",
+    "emailCardTitle": "Scrivici una e-mail",
+    "emailCardDesc": "Inviaci un'e-mail in qualsiasi momento",
+    "emailCardAction": "Invia E-mail",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Messaggistica veloce & supporto",
+    "whatsappCardAction": "Chatta su WhatsApp",
+    "phoneCardTitle": "Chiamaci",
+    "phoneCardDesc": "Parla direttamente con la centrale",
+    "phoneCardAction": "Chiama il Supporto",
+    "addressCardTitle": "Sede centrale",
+    "addressCardDesc": "Visita la nostra sede",
+    "addressCardAction": "Ottieni indicazioni",
+    "formTitle": "Invia un messaggio",
+    "formDesc": "Compila il modulo sottostante e ti risponderemo al più presto.",
+    "fieldName": "Il tuo nome",
+    "fieldEmail": "Indirizzo e-mail",
+    "fieldPhone": "Numero di telefono (Opzionale)",
+    "fieldSubject": "Oggetto",
+    "fieldMessage": "Messaggio",
+    "btnSubmit": "Invia Messaggio",
+    "btnSubmitting": "Invio in corso...",
+    "successMessage": "Grazie! Il tuo messaggio è stato inviato con successo. Ti risponderemo a breve.",
+    "errorMessage": "Qualcosa è andato storto. Riprova o contattaci direttamente."
   }
 }

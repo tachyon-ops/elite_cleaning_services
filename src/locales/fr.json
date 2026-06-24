@@ -565,5 +565,31 @@
     "quoteSummaryTitle": "Détail du devis en direct",
     "confirmSendWhatsapp": "Confirmer et envoyer par WhatsApp",
     "whatsappDispatchNotice": "Votre réservation sera traitée manuellement. Cliquez ci-dessous pour vérifier les détails et envoyer votre demande par WhatsApp."
+  },
+  "contactPage": {
+    "title": "Contactez-nous",
+    "emailCardTitle": "Écrivez-nous",
+    "emailCardDesc": "Envoyez-nous un e-mail à tout moment",
+    "emailCardAction": "Envoyer un e-mail",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Messagerie rapide & support",
+    "whatsappCardAction": "Discuter sur WhatsApp",
+    "phoneCardTitle": "Appelez-nous",
+    "phoneCardDesc": "Parlez directement avec le dispatching",
+    "phoneCardAction": "Appeler le support",
+    "addressCardTitle": "Siège social",
+    "addressCardDesc": "Visitez nos bureaux",
+    "addressCardAction": "Itinéraire",
+    "formTitle": "Envoyer un message",
+    "formDesc": "Remplissez le formulaire ci-dessous et nous vous répondrons sous peu.",
+    "fieldName": "Votre nom",
+    "fieldEmail": "Adresse e-mail",
+    "fieldPhone": "Numéro de téléphone (Optionnel)",
+    "fieldSubject": "Sujet",
+    "fieldMessage": "Message",
+    "btnSubmit": "Envoyer le message",
+    "btnSubmitting": "Envoi en cours...",
+    "successMessage": "Merci ! Votre message a bien été envoyé. Nous vous contacterons sous peu.",
+    "errorMessage": "Une erreur est survenue. Veuillez réessayer ou nous contacter directement."
   }
 }

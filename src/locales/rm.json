@@ -565,5 +565,31 @@
     "quoteSummaryTitle": "Detagl dal preventiv actual",
     "confirmSendWhatsapp": "Confermar & trametter via WhatsApp",
     "whatsappDispatchNotice": "Vossa reservaziun vegn procedida manualmain. Clicchei sutvart per verificar ils detagls e trametter vossa damonda via WhatsApp."
+  },
+  "contactPage": {
+    "title": "Contact",
+    "emailCardTitle": "Tarmetter e-mail",
+    "emailCardDesc": "Tramettai adina in e-mail",
+    "emailCardAction": "Tarmetter e-mail",
+    "whatsappCardTitle": "WhatsApp",
+    "whatsappCardDesc": "Messadis sperts & sustegn",
+    "whatsappCardAction": "Chattar sin WhatsApp",
+    "phoneCardTitle": "Telefonar",
+    "phoneCardDesc": "Discutai directamain cun la centrala",
+    "phoneCardAction": "Telefonar al sustegn",
+    "addressCardTitle": "Sedia principalas",
+    "addressCardDesc": "Besaiai noss biro",
+    "addressCardAction": "Descripziun da via",
+    "formTitle": "Tarmetter in messadi",
+    "formDesc": "Empleni il formular e nus ans mellen dynamicamain en curt temp.",
+    "fieldName": "Voss num",
+    "fieldEmail": "Adressa d'e-mail",
+    "fieldPhone": "Numer da telefon (Opziunal)",
+    "fieldSubject": "Tema",
+    "fieldMessage": "Messadi",
+    "btnSubmit": "Tarmetter messadi",
+    "btnSubmitting": "Trametta...",
+    "successMessage": "Faschai bleras gratias! Voss messadi è vegni tarmess cun success. Nus ans mellen en curt temp.",
+    "errorMessage": "Insatge n'ha betg funcziunà. Emprovai anc ina giada u contactai nus directamain."
   }
 }

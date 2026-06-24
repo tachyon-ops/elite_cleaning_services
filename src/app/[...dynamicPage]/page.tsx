@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { InPlacePageEditor } from "@/components/InPlacePageEditor";
 import { checkAndSeedDb } from "@/lib/db/seed-checker";
+import { ContactSection } from "@/components/ContactSection";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,9 @@ function renderMarkdownToHtml(md: string): string {
 
   // Inline Code
   html = html.replace(/`(.*?)`/g, '<code class="bg-bg-subtle px-1.5 py-0.5 rounded text-sm font-mono border border-border/50 text-ink">$1</code>');
+
+  // Images
+  html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="my-8 rounded-xl shadow-lg border border-border/30 max-w-full h-auto mx-auto" />');
 
   // Links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-accent hover:text-accent-hover underline">$1</a>');
@@ -140,6 +144,11 @@ export default async function DynamicStaticPage({ params }: PageProps) {
   const phone = showPhone ? (phoneRes?.value || "+41 (0) 44 123 4567") : "";
   const address = addressRes?.value || "Bahnhofstrasse 12, 8001 Zürich, Switzerland";
 
+  const whatsappNumRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_number" } });
+  const whatsappLabelRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_label" } });
+  const whatsappNum = whatsappNumRes?.value || "";
+  const whatsappLabel = whatsappLabelRes?.value || "";
+
   // Replace placeholders dynamically
   const contentWithConfig = translation.content
     .replaceAll("{{CONTACT_EMAIL}}", email)
@@ -153,7 +162,7 @@ export default async function DynamicStaticPage({ params }: PageProps) {
       <Header />
 
       <main className="flex-1 bg-bg py-16 md:py-24">
-        <div className="max-w-4xl mx-auto px-6">
+        <div className={`mx-auto px-6 transition-all duration-500 ${translation.page.key === "contact" ? "max-w-6xl" : "max-w-4xl"}`}>
           {/* Main article layout */}
           <article className="prose prose-invert max-w-none">
             <div 
@@ -161,6 +170,18 @@ export default async function DynamicStaticPage({ params }: PageProps) {
               className="text-body-md text-ink-subtle"
             />
           </article>
+
+          {translation.page.key === "contact" && (
+            <ContactSection
+              locale={locale}
+              email={email}
+              phone={phone}
+              showPhone={showPhone}
+              address={address}
+              whatsappNum={whatsappNum}
+              whatsappLabel={whatsappLabel}
+            />
+          )}
         </div>
       </main>
 
