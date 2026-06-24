@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Plane, Ship, Building2, Home, Shield, ChevronDown, Key } from "lucide-react";
+import { Sparkles, Plane, Ship, Building2, Home, Shield, ChevronDown, Key, Building, ChefHat } from "lucide-react";
 import { db } from "@/lib/db";
 import { cookies, headers } from "next/headers";
 import { getTranslationsForLocale, translate, localizeHref } from "@/lib/i18n";
@@ -70,6 +70,22 @@ const verticalMeta: Record<string, {
     description: "Restorative cleaning, trauma-incident assistance, and hoarding support. Confidential booking.",
     priceText: "PHONE ONLY",
     link: "/book/special-services",
+  },
+  "building-care": {
+    icon: Building,
+    subtitle: "BUILDING CARE",
+    title: "Building Care",
+    description: "Common-area cleaning, entrances, and staircase care for premium residential buildings.",
+    priceText: "QUOTE ON REQUEST",
+    link: "/book/building-care",
+  },
+  restaurant: {
+    icon: ChefHat,
+    subtitle: "RESTAURANT & KITCHEN",
+    title: "Restaurant & Kitchen",
+    description: "Certified kitchen extraction compliance (Tier A) and nightly after-hours maintenance (Tier B).",
+    priceText: "QUOTE ON REQUEST",
+    link: "/book/restaurant",
   }
 };
 
@@ -90,7 +106,7 @@ export async function Header() {
     where: { active: true }
   }) as CategoryType[];
 
-  const displayOrder = ["domestic", "moveout", "aviation", "yacht", "commercial", "hospitality", "special"];
+  const displayOrder = ["domestic", "moveout", "aviation", "yacht", "commercial", "hospitality", "special", "building-care", "restaurant"];
 
   const sortedCategories = activeCategories.sort((a: CategoryType, b: CategoryType) => {
     const indexA = displayOrder.indexOf(a.slug);
