@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Sparkles, Bot } from "lucide-react";
-import Script from "next/script";
 
 interface Message {
   id: string;
@@ -21,6 +20,12 @@ export function AIChatBubble() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  
+  // Rate limit and chat mode states
+  const [remainingLimit, setRemainingLimit] = useState<number | null>(null);
+  const [maxLimit, setMaxLimit] = useState<number | null>(null);
+  const [chatMode, setChatMode] = useState<"ai" | "offline" | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -30,6 +35,23 @@ export function AIChatBubble() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // Load initial limit status on chat window open
+  useEffect(() => {
+    if (isOpen) {
+      fetch("/api/chat")
+        .then((res) => {
+          const limitHeader = res.headers.get("X-RateLimit-Limit");
+          const remainingHeader = res.headers.get("X-RateLimit-Remaining");
+          const chatModeHeader = res.headers.get("X-Chat-Mode");
+
+          if (limitHeader) setMaxLimit(parseInt(limitHeader, 10));
+          if (remainingHeader) setRemainingLimit(parseInt(remainingHeader, 10));
+          if (chatModeHeader) setChatMode(chatModeHeader as "ai" | "offline");
+        })
+        .catch((err) => console.error("Error loading chat limit status:", err));
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,93 +77,56 @@ export function AIChatBubble() {
 
     setMessages((prev) => [...prev, assistantMsg]);
 
-    const SYSTEM_PROMPT = `You are the Mondar Assistant, a premium, luxury Swiss dispatch concierge.
-Your brand is "Mondar" (recently rebranded from "Elite Cleaning Services").
-Always maintain a highly professional, helpful, and luxury tone suitable for premium Swiss cleaning dispatches.
-
-Here are the details of our services and pricing:
-- Home & Villa Cleaning: From CHF 80 (Base rate)
-- Offices & Commercial: From CHF 150 (Per m² base)
-- Airbnb & Hospitality: From CHF 120 (Flat rate per turnover)
-- Aviation & Yacht Detailing: Bespoke quote-on-request (compiled by our Zürich dispatch desk within 4 hours). We service private jets, turboprops, helicopters at Swiss hangars/FBOs (including Zurich Airport FBO), and vessels/yachts on Lake Zurich and other Swiss lakes.
-- Building Care (B2B recurring common-area cleaning) and Restaurant & Kitchen cleaning are also available.
-
-If the user wants to book or get a quote, guide them to use our dynamic booking intake wizard directly from the home page.
-Keep your responses concise, clear, and elegant. Speak the same language as the user (English, German, French, etc.).`;
-
     try {
-      const puter = (window as any).puter;
-      if (puter) {
-        const history = [...messages, userMsg].map((m) => ({
-          role: m.role === "user" ? "user" : "assistant",
-          content: m.content,
-        }));
-        
-        const puterMessages = [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...history
-        ];
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMsg].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
 
-        const response = await puter.ai.chat(puterMessages, { stream: true, model: "gpt-4o-mini" });
-        let accumulatedText = "";
-        
-        for await (const chunk of response) {
-          const chunkText = typeof chunk === "string" ? chunk : (chunk.text || chunk.message?.content || "");
-          if (chunkText) {
-            accumulatedText += chunkText;
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMessageId
-                  ? { ...msg, content: accumulatedText }
-                  : msg
-              )
-            );
-          }
-        }
-      } else {
-        // Fallback to local server route
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [...messages, userMsg].map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        });
+      const limitHeader = response.headers.get("X-RateLimit-Limit");
+      const remainingHeader = response.headers.get("X-RateLimit-Remaining");
+      const chatModeHeader = response.headers.get("X-Chat-Mode");
 
-        if (!response.ok) {
-          throw new Error("Failed to send message");
-        }
+      if (limitHeader) setMaxLimit(parseInt(limitHeader, 10));
+      if (remainingHeader) setRemainingLimit(parseInt(remainingHeader, 10));
+      if (chatModeHeader) setChatMode(chatModeHeader as "ai" | "offline");
 
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
 
-        if (!reader) {
-          throw new Error("No reader available");
-        }
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-        let done = false;
-        let accumulatedText = "";
+      if (!reader) {
+        throw new Error("No reader available");
+      }
 
-        while (!done) {
-          const { value, done: readerDone } = await reader.read();
-          done = readerDone;
-          if (value) {
-            const chunk = decoder.decode(value, { stream: true });
-            accumulatedText += chunk;
-            
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMessageId
-                  ? { ...msg, content: accumulatedText }
-                  : msg
-              )
-            );
-          }
+      let done = false;
+      let accumulatedText = "";
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedText += chunk;
+          
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: accumulatedText }
+                : msg
+            )
+          );
         }
       }
     } catch (error) {
@@ -160,7 +145,6 @@ Keep your responses concise, clear, and elegant. Speak the same language as the 
 
   return (
     <>
-      <Script src="https://js.puter.com/v2/" strategy="afterInteractive" />
       {/* Floating Bubble Button */}
       <div className="fixed bottom-[88px] right-6 z-50">
         <button
@@ -237,6 +221,24 @@ Keep your responses concise, clear, and elegant. Speak the same language as the 
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Rate Limit Indicator / Mode Badge */}
+          {(remainingLimit !== null || chatMode) && (
+            <div className="px-4 py-1.5 bg-bg-subtle border-t border-border/30 flex justify-between items-center text-[10px] text-ink-subtle select-none">
+              <span>
+                {chatMode === "offline" ? (
+                  <span className="text-amber-600 dark:text-amber-500 font-medium">Concierge Mode (Offline)</span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-500 font-medium">AI Agent Mode (Online)</span>
+                )}
+              </span>
+              {remainingLimit !== null && maxLimit !== null && (
+                <span>
+                  AI Queries: <strong className="font-semibold">{remainingLimit}</strong>/{maxLimit}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Input Form */}
           <form onSubmit={handleSubmit} className="border-t border-border/40 p-3 bg-bg flex gap-2">
