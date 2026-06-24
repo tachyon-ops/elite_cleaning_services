@@ -34,7 +34,7 @@ export function LanguageSwitcher() {
         <button
           type="button"
           disabled={isPending}
-          className="inline-flex items-center justify-between gap-2 border border-border/40 bg-bg/5 hover:bg-accent-soft/30 hover:border-accent/30 px-3 py-1.5 rounded-sm select-none transition-all cursor-pointer text-body-xs font-semibold tracking-wider text-ink-muted hover:text-ink disabled:opacity-40"
+          className="inline-flex items-center justify-between gap-1.5 md:gap-2 border border-border/40 bg-bg/5 hover:bg-accent-soft/30 hover:border-accent/30 px-2 py-1 md:px-3 md:py-1.5 rounded-sm select-none transition-all cursor-pointer text-[10px] md:text-body-xs font-semibold tracking-wider text-ink-muted hover:text-ink disabled:opacity-40"
         >
           <Globe className="w-3.5 h-3.5 text-accent shrink-0" />
           <span className="uppercase">{activeLang.code}</span>

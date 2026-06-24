@@ -117,7 +117,7 @@ export async function Header() {
   });
 
   return (
-    <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-6 md:px-16 sticky top-0 z-50">
+    <header className="h-[80px] bg-bg/85 backdrop-blur-md border-b border-border/30 flex items-center justify-between px-3 md:px-16 sticky top-0 z-50">
       <div className="flex items-center">
         <Logo locale={locale} variant="dark" />
       </div>
@@ -163,11 +163,11 @@ export async function Header() {
         <Link href={localizeHref("/#how-it-works", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.howItWorks")}</Link>
         <Link href={localizeHref("/providers", locale)} className="text-body-sm font-medium text-ink-muted hover:text-ink transition-colors">{t("nav.partnerPortal")}</Link>
       </nav>
-      <div className="flex items-center gap-6 pr-12 md:pr-0 lg:pr-24">
+      <div className="flex items-center gap-2 md:gap-6 pr-28 md:pr-24 lg:pr-32">
         <LanguageSwitcher />
         <Link
           href={localizeHref("/book/general", locale)}
-          className="bg-accent hover:bg-accent-hover text-ink-inverse text-body-xs tracking-wider uppercase font-semibold py-3 px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer"
+          className="bg-accent hover:bg-accent-hover text-ink-inverse text-[10px] md:text-body-xs tracking-wider uppercase font-semibold py-2 px-3 md:py-3 md:px-6 rounded-sm shadow-sm transition-all hover:shadow-md cursor-pointer whitespace-nowrap"
         >
           {t("nav.getQuote")}
         </Link>
