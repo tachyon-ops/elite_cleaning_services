@@ -40,6 +40,7 @@ export default function AdminSettingsPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactAddress, setContactAddress] = useState("");
   const [showPhone, setShowPhone] = useState(true);
+  const [showOffice, setShowOffice] = useState(true);
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const [whatsappSuccess, setWhatsappSuccess] = useState("");
   const [whatsappError, setWhatsappError] = useState("");
@@ -75,6 +76,7 @@ export default function AdminSettingsPage() {
       const resEmail = await getSystemSetting("contact_email");
       const resAddress = await getSystemSetting("contact_address");
       const resShowPhone = await getSystemSetting("show_phone_number");
+      const resShowOffice = await getSystemSetting("show_office_address");
       if (resNum.success && resNum.value) {
         setWhatsappNumber(resNum.value);
       }
@@ -95,6 +97,9 @@ export default function AdminSettingsPage() {
       }
       if (resShowPhone.success) {
         setShowPhone(resShowPhone.value !== "false");
+      }
+      if (resShowOffice.success) {
+        setShowOffice(resShowOffice.value !== "false");
       }
     } else {
       setError("Failed to load administrative session. Please log in.");
@@ -187,9 +192,10 @@ export default function AdminSettingsPage() {
     const resEmail = await updateSystemSetting("contact_email", contactEmail);
     const resAddress = await updateSystemSetting("contact_address", contactAddress);
     const resShowPhone = await updateSystemSetting("show_phone_number", showPhone ? "true" : "false");
+    const resShowOffice = await updateSystemSetting("show_office_address", showOffice ? "true" : "false");
     
     setSavingWhatsapp(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success) {
       setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -201,6 +207,7 @@ export default function AdminSettingsPage() {
         resEmail.error || 
         resAddress.error || 
         resShowPhone.error || 
+        resShowOffice.error || 
         "Failed to update settings."
       );
     }
@@ -420,6 +427,24 @@ export default function AdminSettingsPage() {
                   </div>
                   <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
                     {t("admin.settings.showPhoneDesc")}
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-[#262626]/40">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="showOfficeCheckbox"
+                      checked={showOffice}
+                      onChange={(e) => setShowOffice(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+                    />
+                    <label htmlFor="showOfficeCheckbox" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                      {t("admin.settings.showOfficeLabel")}
+                    </label>
+                  </div>
+                  <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+                    {t("admin.settings.showOfficeDesc")}
                   </p>
                 </div>
               </div>

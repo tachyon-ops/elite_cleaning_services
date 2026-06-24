@@ -138,11 +138,13 @@ export default async function DynamicStaticPage({ params }: PageProps) {
   const phoneRes = await db.systemSetting.findUnique({ where: { key: "contact_phone" } });
   const addressRes = await db.systemSetting.findUnique({ where: { key: "contact_address" } });
   const showPhoneRes = await db.systemSetting.findUnique({ where: { key: "show_phone_number" } });
+  const showOfficeRes = await db.systemSetting.findUnique({ where: { key: "show_office_address" } });
 
   const email = emailRes?.value || "ops@elite-cleaning.ch";
   const showPhone = showPhoneRes?.value !== "false";
   const phone = showPhone ? (phoneRes?.value || "+41 (0) 44 123 4567") : "";
   const address = addressRes?.value || "Bahnhofstrasse 12, 8001 Zürich, Switzerland";
+  const showOffice = showOfficeRes ? showOfficeRes.value !== "false" : true;
 
   const whatsappNumRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_number" } });
   const whatsappLabelRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_label" } });
@@ -180,6 +182,7 @@ export default async function DynamicStaticPage({ params }: PageProps) {
               address={address}
               whatsappNum={whatsappNum}
               whatsappLabel={whatsappLabel}
+              showOffice={showOffice}
             />
           )}
         </div>

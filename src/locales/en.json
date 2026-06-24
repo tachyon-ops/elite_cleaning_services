@@ -124,7 +124,9 @@
       "autoCheckoutLabel": "Enable Auto-Checkout & Online Deposits",
       "autoCheckoutDesc": "When enabled, clients check out and pay deposits online via credit card. When disabled, bookings are routed to WhatsApp dispatch for manual validation.",
       "showPhoneLabel": "Display Phone Number on Website",
-      "showPhoneDesc": "When enabled, the company's contact phone number is displayed in the footer, booking pages, and dynamic pages. When disabled, the phone number is completely hidden."
+      "showPhoneDesc": "When enabled, the company's contact phone number is displayed in the footer, booking pages, and dynamic pages. When disabled, the phone number is completely hidden.",
+      "showOfficeLabel": "Display Office Address on Website",
+      "showOfficeDesc": "If enabled, the office address card will be displayed on the contact page. If disabled, it will be hidden."
     }
   },
   "partner": {

@@ -124,7 +124,9 @@
       "autoCheckoutLabel": "Auto-Checkout & Online-Anzahlungen aktivieren",
       "autoCheckoutDesc": "Wenn aktiviert, checken Kunden online aus und zahlen Anzahlungen per Kreditkarte. Wenn deaktiviert, werden Buchungen an den WhatsApp-Dispatch weitergeleitet.",
       "showPhoneLabel": "Telefonnummer auf Website anzeigen",
-      "showPhoneDesc": "Wenn aktiviert, wird die Telefonnummer im Footer, auf den Buchungsseiten und in dynamischen Dokumenten angezeigt. Wenn deaktiviert, wird sie komplett ausgeblendet."
+      "showPhoneDesc": "Wenn aktiviert, wird die Telefonnummer im Footer, auf den Buchungsseiten und in dynamischen Dokumenten angezeigt. Wenn deaktiviert, wird sie komplett ausgeblendet.",
+      "showOfficeLabel": "Firmenadresse auf Website anzeigen",
+      "showOfficeDesc": "Wenn aktiviert, wird das Adressfeld / Firmenadresse auf der Kontaktseite angezeigt. Wenn deaktiviert, wird es ausgeblendet."
     }
   },
   "partner": {

@@ -12,6 +12,7 @@ interface ContactSectionProps {
   address: string;
   whatsappNum: string;
   whatsappLabel: string;
+  showOffice: boolean;
 }
 
 export function ContactSection({
@@ -22,6 +23,7 @@ export function ContactSection({
   address,
   whatsappNum,
   whatsappLabel,
+  showOffice,
 }: ContactSectionProps) {
   const dictionary = getTranslationsForLocale(locale);
   
@@ -146,33 +148,35 @@ export function ContactSection({
           )}
 
           {/* Address Card */}
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-start gap-4 p-5 bg-bg-subtle/40 hover:bg-bg-subtle border border-border/30 hover:border-accent rounded-lg transition-all duration-300 group shadow-sm hover:shadow"
-          >
-            <div className="p-3 bg-accent/10 border border-accent/25 rounded-full text-accent group-hover:bg-accent group-hover:text-ink-inverse transition-colors shrink-0">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div className="space-y-1 min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 text-body-sm font-bold text-ink uppercase tracking-wider">
-                {t("contactPage.addressCardTitle")}
-                <ExternalLink className="w-3 h-3 text-ink-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
+          {showOffice && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-4 p-5 bg-bg-subtle/40 hover:bg-bg-subtle border border-border/30 hover:border-accent rounded-lg transition-all duration-300 group shadow-sm hover:shadow"
+            >
+              <div className="p-3 bg-accent/10 border border-accent/25 rounded-full text-accent group-hover:bg-accent group-hover:text-ink-inverse transition-colors shrink-0">
+                <MapPin className="w-5 h-5" />
               </div>
-              <p className="text-caption text-ink-subtle">{t("contactPage.addressCardDesc")}</p>
-              <p className="text-body-sm text-ink font-medium leading-relaxed">{address}</p>
-            </div>
-            <div className="relative w-16 h-16 rounded overflow-hidden border border-border shrink-0 hidden sm:block">
-              <Image
-                src="/images/contact_details.png"
-                alt="Office detail"
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
-            </div>
-          </a>
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 text-body-sm font-bold text-ink uppercase tracking-wider">
+                  {t("contactPage.addressCardTitle")}
+                  <ExternalLink className="w-3 h-3 text-ink-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <p className="text-caption text-ink-subtle">{t("contactPage.addressCardDesc")}</p>
+                <p className="text-body-sm text-ink font-medium leading-relaxed">{address}</p>
+              </div>
+              <div className="relative w-16 h-16 rounded overflow-hidden border border-border shrink-0 hidden sm:block">
+                <Image
+                  src="/images/contact_details.png"
+                  alt="Office detail"
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              </div>
+            </a>
+          )}
         </div>
       </div>
 

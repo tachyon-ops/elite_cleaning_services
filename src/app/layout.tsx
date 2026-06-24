@@ -6,6 +6,8 @@ import { LanguageProvider } from "@/components/LanguageProvider";
 import { CookieBanner } from "@/components/CookieBanner";
 import { DemoStoreRibbon } from "@/components/DemoStoreRibbon";
 import { AIChatBubble } from "@/components/AIChatBubble";
+import { FloatingWhatsAppButton } from "@/components/FloatingWhatsAppButton";
+import { db } from "@/lib/db";
 import "./globals.css";
 
 const inter = Inter({
@@ -76,6 +78,10 @@ export default async function RootLayout({
   const locale = localeHeader || cookieStore.get("NEXT_LOCALE")?.value || "de";
   const dictionary = getTranslationsForLocale(locale);
 
+  // Fetch WhatsApp configuration
+  const whatsappNumberRes = await db.systemSetting.findUnique({ where: { key: "whatsapp_number" } });
+  const whatsappNumber = whatsappNumberRes?.value || "41791234567";
+
   return (
     <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
@@ -84,6 +90,7 @@ export default async function RootLayout({
           {children}
           <CookieBanner />
           <AIChatBubble />
+          <FloatingWhatsAppButton whatsappNumber={whatsappNumber} />
         </LanguageProvider>
       </body>
     </html>

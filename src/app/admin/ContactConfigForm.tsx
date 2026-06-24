@@ -12,6 +12,7 @@ interface ContactConfigFormProps {
   initialContactAddress: string;
   initialAutoCheckout: boolean;
   initialShowPhone: boolean;
+  initialShowOffice: boolean;
 }
 
 export function ContactConfigForm({
@@ -21,7 +22,8 @@ export function ContactConfigForm({
   initialContactEmail,
   initialContactAddress,
   initialAutoCheckout,
-  initialShowPhone
+  initialShowPhone,
+  initialShowOffice
 }: ContactConfigFormProps) {
   const { t } = useLanguage();
   
@@ -32,6 +34,7 @@ export function ContactConfigForm({
   const [contactAddress, setContactAddress] = useState(initialContactAddress);
   const [autoCheckout, setAutoCheckout] = useState(initialAutoCheckout);
   const [showPhone, setShowPhone] = useState(initialShowPhone);
+  const [showOffice, setShowOffice] = useState(initialShowOffice);
   
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
@@ -58,9 +61,10 @@ export function ContactConfigForm({
     const resEmail = await updateSystemSetting("contact_email", contactEmail);
     const resAddress = await updateSystemSetting("contact_address", contactAddress);
     const resShowPhone = await updateSystemSetting("show_phone_number", showPhone ? "true" : "false");
+    const resShowOffice = await updateSystemSetting("show_office_address", showOffice ? "true" : "false");
 
     setSaving(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success) {
       setSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -72,6 +76,7 @@ export function ContactConfigForm({
         resEmail.error || 
         resAddress.error || 
         resShowPhone.error || 
+        resShowOffice.error || 
         "Failed to update settings."
       );
     }
@@ -194,6 +199,24 @@ export function ContactConfigForm({
             </div>
             <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
               {t("admin.settings.showPhoneDesc")}
+            </p>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-[#262626]/40">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="showOfficeCheckboxDashboard"
+                checked={showOffice}
+                onChange={(e) => setShowOffice(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+              />
+              <label htmlFor="showOfficeCheckboxDashboard" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                {t("admin.settings.showOfficeLabel")}
+              </label>
+            </div>
+            <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+              {t("admin.settings.showOfficeDesc")}
             </p>
           </div>
         </div>
