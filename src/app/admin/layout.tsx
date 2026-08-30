@@ -22,6 +22,11 @@ export default async function AdminLayout({
 
   const cookieStore = await cookies();
   const isAuthenticated = cookieStore.get("admin_session")?.value === "true";
+  
+  if (!isAuthenticated) {
+    redirect("/admin/login");
+  }
+
   const admin = await getLoggedInAdmin();
   const isSuperAdmin = admin?.role === "super_admin";
 
