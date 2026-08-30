@@ -29,7 +29,6 @@
     "react": "^19.0.0-rc-66a30550-20241107",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0-rc-66a30550-20241107",
-    "resend": "^4.0.1",
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.5.5"
   },

@@ -16,7 +16,7 @@ description: >
 
 - **Name:** Elite Cleaning Services
 - **Purpose (one sentence):** A modern, Swiss-based booking platform for specialty cleaning (aviation, yacht, commercial, hospitality, special-services) utilizing vetted subcontractors.
-- **Primary stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Supabase (Postgres & Auth), Stripe, Resend.
+- **Primary stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Supabase (Postgres & Auth), Stripe, Nodemailer (mail.mondar.ch).
 - **Repository layout:** Single-repo application with both client-facing booking flows and admin dashboards.
 
 ---

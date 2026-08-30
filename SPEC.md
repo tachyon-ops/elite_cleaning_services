@@ -399,7 +399,7 @@ cancelled_by_ops. Refunds calculated per policy.
 | Database       | PostgreSQL via **Supabase / Dedicated Postgres**      | Auth, RLS, storage, EU/CH region               |
 | Auth           | Supabase Auth + custom OTP for guests                 | Email/password + magic link built-in           |
 | Payments       | **Stripe** (Checkout, Subscriptions, Customer Portal) | Industry standard                              |
-| Email          | **Resend** (or Postmark)                              | Modern, EU region available                    |
+| Email          | **SMTP / Nodemailer** (`mail.mondar.ch`)              | Dedicated Swiss mail server                    |
 | File storage   | Supabase Storage / S3-compatible storage              | Already in the stack                           |
 | Hosting        | **Self-Hosted Docker / Dedicated Server / VPS**       | Full autonomy, Swiss data sovereignty          |
 | Analytics      | **Plausible** (self-hostable, GDPR-friendly)          | No cookie banner needed for analytics          |
