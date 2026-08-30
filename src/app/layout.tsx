@@ -86,7 +86,7 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
         <LanguageProvider locale={locale} dictionary={dictionary}>
-          <DemoStoreRibbon />
+          {/* <DemoStoreRibbon /> */}
           {children}
           <CookieBanner />
           <AIChatBubble />
