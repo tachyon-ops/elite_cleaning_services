@@ -370,7 +370,7 @@ cancelled_by_ops. Refunds calculated per policy.
 - All user data export endpoint (`/account/data-export` returns JSON of everything we hold)
 - Account deletion: `/account/delete` triggers full erasure within 30 days (immediate for guest emails)
 - Audit log of every admin action on personal data
-- EU/CH hosting (Vercel Frankfurt, Supabase eu-central-1, or Swiss provider like Infomaniak)
+- EU/CH hosting (Swiss dedicated server, Infomaniak, or private Linux/Docker in Switzerland)
 - DPAs with: Stripe, email provider (Resend/Postmark), hosting, analytics provider
 - Encryption at rest (DB) and in transit (TLS everywhere, HSTS)
 - Password hashing: bcrypt or argon2 (never plain or md5)
@@ -396,15 +396,15 @@ cancelled_by_ops. Refunds calculated per policy.
 | Framework      | **Next.js 15 (App Router)**                           | Best ecosystem, server components, easy deploy |
 | Language       | TypeScript                                            | Type safety end-to-end                         |
 | Styling        | Tailwind + shadcn/ui                                  | Fast, beautiful defaults, no design lock-in    |
-| Database       | PostgreSQL via **Supabase**                           | Auth, RLS, storage, EU region — all in one     |
+| Database       | PostgreSQL via **Supabase / Dedicated Postgres**      | Auth, RLS, storage, EU/CH region               |
 | Auth           | Supabase Auth + custom OTP for guests                 | Email/password + magic link built-in           |
 | Payments       | **Stripe** (Checkout, Subscriptions, Customer Portal) | Industry standard                              |
 | Email          | **Resend** (or Postmark)                              | Modern, EU region available                    |
-| File storage   | Supabase Storage                                      | Already in the stack                           |
-| Hosting        | **Vercel** (Frankfurt region)                         | Zero-config Next.js                            |
+| File storage   | Supabase Storage / S3-compatible storage              | Already in the stack                           |
+| Hosting        | **Self-Hosted Docker / Dedicated Server / VPS**       | Full autonomy, Swiss data sovereignty          |
 | Analytics      | **Plausible** (self-hostable, GDPR-friendly)          | No cookie banner needed for analytics          |
-| Error tracking | Sentry                                                | Self-host or use EU region                     |
-| CMS (optional) | Sanity or none (MDX for legal pages)                  | Keep simple                                    |
+| Error tracking | Sentry (Self-hosted or EU region)                     | Operational reliability                        |
+| CMS (optional) | MDX / Database dynamic content                        | Keep simple                                    |
 
 > Alternative if you prefer: SvelteKit + Drizzle + Lucia. Both work. Next.js has more AI training data, so AI agents build it more reliably.
 

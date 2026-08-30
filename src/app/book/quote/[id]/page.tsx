@@ -429,7 +429,7 @@ export default function QuoteAcceptancePage() {
       {/* Footer */}
       <footer className="border-t border-[#262626] bg-[#0d0d0d] py-8 text-center text-caption text-[#737373]">
         <div className="max-w-7xl mx-auto px-6 space-y-2">
-          <p>© 2026 Mondar AG. Switzerland. All Rights Reserved.</p>
+          <p>© 2026 Mondar. Switzerland. All Rights Reserved.</p>
           <p className="font-mono text-body-xs">Secure mock platform payment. No actual funds are charged.</p>
         </div>
       </footer>

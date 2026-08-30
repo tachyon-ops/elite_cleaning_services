@@ -301,7 +301,7 @@
       "catMoveout": "Nettoyage de fin de bail"
     },
     "footer": {
-      "copyright": "Mondar AG. Tous droits réservés aux partenaires suisses."
+      "copyright": "Mondar. Tous droits réservés aux partenaires suisses."
     },
     "login": {
       "nav": "MONDAR PARTNER HUB",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "CONNEXION EN COURS...",
       "notRegistered": "Pas encore inscrit ?",
       "submitApplication": "Déposer une candidature",
-      "copyright": "Mondar AG. Accès répartiteur sécurisé.",
+      "copyright": "Mondar. Accès répartiteur sécurisé.",
       "forgotPassword": "Mot de passe oublié ?",
       "forgotPasswordTitle": "Réinitialiser le mot de passe",
       "forgotPasswordDesc": "Saisissez votre e-mail de partenaire pour demander un code de réinitialisation.",

@@ -23,11 +23,15 @@ yarn-error.log*
 .env.local
 .env
 
-# Vercel
-.vercel
+# OS files
+.DS_Store
+Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Scratch & Temporary test scripts
+/scratch
 
 # SQLite databases
 *.db

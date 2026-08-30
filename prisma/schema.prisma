@@ -167,6 +167,9 @@ model Booking {
   providerOfferId       String?
   providerPayoutAmountChf Decimal?
   commissionAmountChf   Decimal?
+  promoCampaignId       String?
+  promoCampaign         PromoCampaign?   @relation("PromoBookings", fields: [promoCampaignId], references: [id], onDelete: SetNull)
+  promoDiscountChf      Decimal?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
@@ -181,6 +184,7 @@ model Booking {
   @@index([customerId])
   @@index([guestEmail])
   @@index([providerTeamId])
+  @@index([promoCampaignId])
 }
 
 // 8. Booking Quotes
@@ -548,4 +552,49 @@ model JobOccurrence {
   updatedAt         DateTime        @updatedAt
 
   @@index([contractId])
+}
+
+// --- MARKETING & CAMPAIGNS ---
+
+// 24. Marketing Promo Campaigns
+model PromoCampaign {
+  id                String       @id @default(uuid())
+  name              String                              // "Marina Summer 2026", "Airport Lounge Drop"
+  code              String       @unique                // "MARINA10", "SUMMER25" — URL promo code
+  discountType      String                              // "percentage" | "fixed"
+  discountValue     Decimal                             // 10 (= 10%) or 20.00 (= CHF 20)
+  vertical          String?                             // null = all verticals, or "commercial", "yacht", etc.
+  description       String?                             // Internal notes
+  pamphletHeadline  String?                             // Custom headline for printed pamphlet
+  pamphletSubtext   String?                             // Custom body text for pamphlet
+  pamphletVerticals String?                             // JSON array of selected verticals e.g. '["aviation","yacht","home"]'
+  pamphletHtml      String?                             // Custom user-edited HTML template if modified directly
+  pamphletTheme     String?                             // "classic" | "modern" | "minimal" | "bespoke"
+  pamphletImage     String?                             // Custom or preset hero image URL
+  pamphletPalette   String?                             // "gold" | "emerald" | "navy" | "burgundy" | "monochrome"
+  pamphletLocation  String?                             // e.g. "Zürich", "Geneva", "Zug", "St. Moritz"
+  validFrom         DateTime     @default(now())
+  validUntil        DateTime?                           // null = no expiry
+  maxRedemptions    Int?                                // null = unlimited
+  totalRedemptions  Int          @default(0)
+  active            Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  scans             PromoScan[]
+  bookings          Booking[]    @relation("PromoBookings")
+}
+
+// 25. QR Scan Tracking
+model PromoScan {
+  id              String        @id @default(uuid())
+  campaignId      String
+  campaign        PromoCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  scannedAt       DateTime      @default(now())
+  ipAddress       String?
+  userAgent       String?
+  referrer        String?
+
+  @@index([campaignId])
+  @@index([scannedAt])
 }

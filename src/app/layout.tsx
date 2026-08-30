@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   description: "Bespoke specialty cleaning for aviation, yacht, commercial, and luxury residential properties in Switzerland. Book online with vetted Swiss experts.",
   keywords: ["specialty cleaning", "private jet cleaning", "yacht detailing Switzerland", "office cleaning Zurich", "luxury villa cleaning", "Mondar cleaning", "commercial cleaning Swiss"],
-  authors: [{ name: "Mondar AG" }],
-  creator: "Mondar AG",
+  authors: [{ name: "Mondar" }],
+  creator: "Mondar",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://mondar.ch"),
   openGraph: {
     title: "Mondar | Specialty Cleaning Services",

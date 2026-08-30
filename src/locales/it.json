@@ -301,7 +301,7 @@
       "catMoveout": "Pulizia fine locazione"
     },
     "footer": {
-      "copyright": "Mondar AG. Tutti i diritti riservati ai partner svizzeri."
+      "copyright": "Mondar. Tutti i diritti riservati ai partner svizzeri."
     },
     "login": {
       "nav": "MONDAR PARTNER HUB",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "ACCESSO IN CORSO...",
       "notRegistered": "Non sei ancora registrato?",
       "submitApplication": "Invia candidatura",
-      "copyright": "Mondar AG. Accesso operatore sicuro.",
+      "copyright": "Mondar. Accesso operatore sicuro.",
       "forgotPassword": "Password dimenticata?",
       "forgotPasswordTitle": "Reimposta la password",
       "forgotPasswordDesc": "Inserisci la tua email di partner per richiedere un codice di ripristino.",

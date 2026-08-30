@@ -337,7 +337,7 @@
       "chatOptOut": "Nein, anonymisierte SMS/Anrufe bevorzugen"
     },
     "footer": {
-      "copyright": "Mondar AG. Alle Schweizer Partnerrechte vorbehalten."
+      "copyright": "Mondar. Alle Schweizer Partnerrechte vorbehalten."
     },
     "login": {
       "nav": "MONDAR PARTNER HUB",
@@ -355,7 +355,7 @@
       "btnLoggingIn": "ANMELDUNG LÄUFT...",
       "notRegistered": "Noch nicht registriert?",
       "submitApplication": "Bewerbung einreichen",
-      "copyright": "Mondar AG. Sicherer Dispatcher-Zugang.",
+      "copyright": "Mondar. Sicherer Dispatcher-Zugang.",
       "forgotPassword": "Passwort vergessen?",
       "forgotPasswordTitle": "Passwort zurücksetzen",
       "forgotPasswordDesc": "Geben Sie Ihre Partner-E-Mail-Adresse ein, um einen Reset-Code anzufordern.",

@@ -37,7 +37,7 @@ export async function checkAndSeedDb() {
             content: `# Datenschutzerklärung
 
 ## 1. Verantwortliche Stelle
-Verantwortlich für die Datenverarbeitung auf dieser Plattform ist die **Mondar AG**, {{CONTACT_ADDRESS}} (E-Mail: {{CONTACT_EMAIL}}).
+Verantwortlich für die Datenverarbeitung auf dieser Plattform ist die **Mondar**, {{CONTACT_ADDRESS}} (E-Mail: {{CONTACT_EMAIL}}).
 
 ## 2. Erhebung und Speicherung personenbezogener Daten
 Wir verarbeiten personenbezogene Daten, die Sie uns bei der Nutzung der Plattform, bei Buchungsanfragen oder bei einer Registrierung übermitteln. Dies umfasst:
@@ -67,7 +67,7 @@ Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Ve
             content: `# Privacy Policy
 
 ## 1. Data Controller
-The data controller responsible for the processing of your personal data on this platform is **Mondar AG**, {{CONTACT_ADDRESS}} (Email: {{CONTACT_EMAIL}}).
+The data controller responsible for the processing of your personal data on this platform is **Mondar**, {{CONTACT_ADDRESS}} (Email: {{CONTACT_EMAIL}}).
 
 ## 2. Collection and Storage of Personal Data
 We collect and process personal data when you interact with our website, request quotes, or place bookings. This includes:
@@ -97,7 +97,7 @@ You have the right to request access, rectification, portability, or erasure of 
             content: `# Politique de confidentialité
 
 ## 1. Responsable du traitement
-Le responsable du traitement des données est **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Le responsable du traitement des données est **Mondar**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Données collectées
 Nous collectons des données fournies lors des réservations ou inscriptions (nom, adresse, téléphone, e-mail, données de paiement et détails de l'objet à nettoyer). Nos serveurs enregistrent des données techniques (adresse IP, date/heure).
@@ -120,7 +120,7 @@ Les pièces comptables sont conservées pendant **10 ans** (Code suisse des obli
             content: `# Informativa sulla privacy
 
 ## 1. Titolare del trattamento
-Il titolare del trattamento è **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Il titolare del trattamento è **Mondar**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Dati trattati
 Raccogliamo i dati forniti durante la prenotazione o registrazione (nome, indirizzo, telefono, e-mail, dati di pagamento e dettagli dell'immobile). Registriamo inoltre dati tecnici di navigazione (indirizzo IP, log).
@@ -143,7 +143,7 @@ I registri contabili sono conservati per **10 anni** (Art. 957 del Codice delle 
             content: `# Declaraziun da datas
 
 ## 1. Post responsabel
-Il post responsabel per las datas è **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+Il post responsabel per las datas è **Mondar**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Datas rimnadas
 Nus rimnain datas ch'Els transmettan tras la reservaziun u registraziun (num, adressa, telefon, e-mail, datas da pajament, detagls dal object).
@@ -166,7 +166,7 @@ Ils documents da cassa vegnan conservads per **10 onns** (Art. 957 OR svizzer). 
             content: `# Política de privacidad
 
 ## 1. Responsable del tratamiento
-El responsable del tratamiento es **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+El responsable del tratamiento es **Mondar**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Datos recopilados
 Recopilamos información al reservar o registrarse (nombre, dirección, e-mail, teléfono, datos de pago y especificaciones de la limpieza). También registramos logs técnicos (dirección IP, hora de acceso).
@@ -189,7 +189,7 @@ Los registros contables se conservan durante **10 años** por ley suiza (Código
             content: `# Política de privacidade
 
 ## 1. Responsável pelo Tratamento de Dados
-O responsável pelo tratamento dos seus dados é a **Mondar AG**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
+O responsável pelo tratamento dos seus dados é a **Mondar**, {{CONTACT_ADDRESS}} (E-mail: {{CONTACT_EMAIL}}).
 
 ## 2. Recolha e Armazenamento de Dados Pessoais
 Recolhemos dados pessoais fornecidos diretamente por si no momento da reserva, registo ou contacto (nome, morada, e-mail, telefone, dados de pagamento e detalhes específicos do imóvel). Os nossos servidores também registam o endereço IP e logs técnicos.
@@ -215,7 +215,7 @@ Retemos dados de faturação durante **10 anos** nos termos do Código das Obrig
             content: `# Allgemeine Geschäftsbedingungen (AGB)
 
 ## 1. Geltungsbereich und Vermittlungsmodell
-Diese AGB regeln die Nutzung der Buchungsplattform der **Mondar AG** ("Mondar"). Mondar betreibt einen kuratierten Marktplatz für Reinigungsdienstleistungen in der Schweiz.
+Diese AGB regeln die Nutzung der Buchungsplattform der **Mondar** ("Mondar"). Mondar betreibt einen kuratierten Marktplatz für Reinigungsdienstleistungen in der Schweiz.
 **Mondar ist kein Reinigungsunternehmen und stellt selbst keine Reinigungskräfte an. Mondar agiert ausschliesslich als Vermittler (Broker).**
 Mit der Buchung über die Plattform entstehen zwei separate Vertragsverhältnisse:
 1. **Ein Vermittlungsvertrag** zwischen dem Kunden und Mondar über die Nutzung der Plattform, die Vermittlung an einen Partner, den Kundenservice und das Inkasso.
@@ -249,7 +249,7 @@ Es gilt ausschliesslich Schweizer Recht. Der ausschliessliche Gerichtsstand für
             content: `# Terms & Conditions
 
 ## 1. Scope and Intermediary Platform Model
-These Terms & Conditions govern the use of the digital booking platform operated by **Mondar AG** ("Mondar"). Mondar operates a vetted marketplace for specialized cleaning services in Switzerland.
+These Terms & Conditions govern the use of the digital booking platform operated by **Mondar** ("Mondar"). Mondar operates a vetted marketplace for specialized cleaning services in Switzerland.
 **Crucially, Mondar is not a cleaning company and does not employ cleaners. Mondar acts strictly as an intermediary (broker).**
 By booking through the platform, two separate contracts are formed:
 1. **A Brokerage Agreement** between the Client and Mondar, governing the use of the booking platform, matching engine, customer service, and payment processing.
@@ -283,7 +283,7 @@ These terms are governed exclusively by Swiss law. The exclusive venue of jurisd
             content: `# Conditions Générales
 
 ## 1. Modèle d'intermédiaire
-Ces CG régissent l'utilisation de la plateforme de **Mondar AG** ("Mondar"). Mondar agit en tant qu'intermédiaire de courtage de nettoyage en Suisse.
+Ces CG régissent l'utilisation de la plateforme de **Mondar** ("Mondar"). Mondar agit en tant qu'intermédiaire de courtage de nettoyage en Suisse.
 **Mondar n'est pas une entreprise de nettoyage et n'emploie pas de nettoyeurs. Elle intervient exclusivement comme courtier/intermédiaire.**
 Avec la réservation, deux contrats distincts sont formés:
 1. **Un contrat de courtage** entre le client et Mondar pour l'utilisation de la plateforme et le service client.
@@ -313,7 +313,7 @@ Comme les services sont exclusivement assurés par des entreprises suisses enreg
             content: `# Termini e Condizioni
 
 ## 1. Modello di intermediazione
-I presenti termini regolano l'uso della piattaforma di **Mondar AG** ("Mondar"). Mondar gestisce un mercato curato per servizi di pulizia in Svizzera.
+I presenti termini regolano l'uso della piattaforma di **Mondar** ("Mondar"). Mondar gestisce un mercato curato per servizi di pulizia in Svizzera.
 **Mondar non è un'impresa di pulizia e non assume addetti alle pulizie. Agisce esclusivamente come intermediario (broker).**
 Effettuando una prenotazione, si formano due contratti distinti:
 1. **Un contratto di intermediazione** tra il cliente e Mondar per l'uso della piattaforma e il servizio clienti.
@@ -343,7 +343,7 @@ Poiché le pulizie sono eseguite esclusivamente da società svizzere registrate 
             content: `# Cundizions generalas (CG)
 
 ## 1. Model d'intermediaziun
-Questas CG reglan l'utilisaziun da la plattafurma da **Mondar AG** ("Mondar"). Mondar collia clients cun firmas da nettegiada.
+Questas CG reglan l'utilisaziun da la plattafurma da **Mondar** ("Mondar"). Mondar collia clients cun firmas da nettegiada.
 **Mondar n'è nagina firma da nettegiada e n'angoscha nagin persunal da nettegiada. Mondar è mo in intermediar/broker.**
 Cun far ina reservaziun resultan dus contracts:
 1. **Contract d'intermediaziun** cun Mondar per utilisar il portal e l'assistenza.
@@ -372,7 +372,7 @@ Damai che tuts partenaris èn firmas svizras registradas (AG, GmbH u Einzelfirma
             content: `# Términos y condiciones
 
 ## 1. Ámbito de aplicación y modelo de intermediación
-Estas condiciones regulan el uso de la plataforma de reservas de **Mondar AG** ("Mondar"). Mondar opera un mercado curado para servicios de limpieza en Suiza.
+Estas condiciones regulan el uso de la plataforma de reservas de **Mondar** ("Mondar"). Mondar opera un mercado curado para servicios de limpieza en Suiza.
 **Mondar no es una empresa de limpieza ni emplea limpiadores. Mondar actúa exclusivamente como intermediario (broker).**
 Al reservar a través de la plataforma, se celebran dos contratos independientes:
 1. **Un acuerdo de intermediación** entre el cliente y Mondar para el uso de la plataforma y la atención al cliente.
@@ -402,7 +402,7 @@ Dado que todos los servicios son prestados exclusivamente por empresas suizas re
             content: `# Termos e condições
 
 ## 1. Âmbito e Modelo de Intermediação (Corretagem)
-Estes Termos e Condições regem a utilização da plataforma de reservas operada pela **Mondar AG** ("Mondar"). A Mondar opera um mercado curado para serviços de limpeza especializada na Suíça.
+Estes Termos e Condições regem a utilização da plataforma de reservas operada pela **Mondar** ("Mondar"). A Mondar opera um mercado curado para serviços de limpeza especializada na Suíça.
 **A Mondar não é uma empresa de limpeza e não emprega profissionais de limpeza. A Mondar atua estritamente como intermediária (corretora).**
 Ao efetuar uma reserva através da plataforma, celebram-se dois contratos distintos:
 1. **Um Contrato de Mediação** entre o Cliente e a Mondar, que rege a utilização da plataforma, serviço de apoio e processamento de pagamentos.
@@ -751,7 +751,7 @@ Os nossos parceiros são cuidadosamente verificados pela nossa equipa de operaç
             content: `# Partner-AGB (Dienstleistungsvereinbarung)
 
 ## 1. Geltungsbereich und Status
-Diese Partner-AGB regeln die Zusammenarbeit zwischen der **Mondar AG** ("Mondar") und dem registrierten, selbständigen Reinigungsunternehmen ("Partner"). Der Partner sichert zu, ein in der Schweiz ordnungsgemäss eingetragenes Unternehmen (AG, GmbH oder Einzelfirma) mit gültiger UID-Nummer und Betriebshaftpflichtversicherung zu sein.
+Diese Partner-AGB regeln die Zusammenarbeit zwischen der **Mondar** ("Mondar") und dem registrierten, selbständigen Reinigungsunternehmen ("Partner"). Der Partner sichert zu, ein in der Schweiz ordnungsgemäss eingetragenes Unternehmen (AG, GmbH oder Einzelfirma) mit gültiger UID-Nummer und Betriebshaftpflichtversicherung zu sein.
 Die Vertragsparteien sind unabhängige Unternehmer. Diese Vereinbarung begründet kein Arbeitsverhältnis, keine Partnerschaft und keine Vertretungsmacht zwischen Mondar und dem Partner oder dessen Mitarbeitern.
 
 ## 2. Einhaltung von Arbeitsrecht und Gesamtarbeitsvertrag (GAV)
@@ -783,7 +783,7 @@ Es gilt Schweizer Recht. Ausschliesslicher Gerichtsstand ist Zürich, Schweiz.`
             content: `# Provider Terms (Master Services Agreement)
 
 ## 1. Scope and Business Relationship
-These Provider Terms govern the cooperation between **Mondar AG** ("Mondar") and the registered, independent cleaning provider company ("Provider"). The Provider represents that it is a registered Swiss business entity (GmbH, AG, or registered sole proprietorship) holding a valid Swiss UID and commercial liability insurance.
+These Provider Terms govern the cooperation between **Mondar** ("Mondar") and the registered, independent cleaning provider company ("Provider"). The Provider represents that it is a registered Swiss business entity (GmbH, AG, or registered sole proprietorship) holding a valid Swiss UID and commercial liability insurance.
 The relationship is strictly that of independent businesses. Nothing in this agreement constitutes an employment, partnership, or agency relationship between Mondar and the Provider, or between Mondar and the Provider's employees.
 
 ## 2. Compliance with Labor Laws and Collective Agreements
@@ -815,7 +815,7 @@ This agreement is governed by Swiss law. The exclusive place of jurisdiction is 
             content: `# Conditions Prestataires (Contrat de partenariat)
 
 ## 1. Cadre général et relation d'affaires
-Ce contrat régit la relation entre **Mondar AG** ("Mondar") et l'entreprise prestataire partenaire indépendante de nettoyage ("Partenaire"). Le Partenaire déclare être une entreprise enregistrée en Suisse (SA, Sàrl ou raison individuelle enregistrée) disposant d'un numéro UID valide et d'une assurance RC professionnelle.
+Ce contrat régit la relation entre **Mondar** ("Mondar") et l'entreprise prestataire partenaire indépendante de nettoyage ("Partenaire"). Le Partenaire déclare être une entreprise enregistrée en Suisse (SA, Sàrl ou raison individuelle enregistrée) disposant d'un numéro UID valide et d'une assurance RC professionnelle.
 Les parties sont des entrepreneurs indépendants. Il n'existe aucun rapport de travail ou de mandat exclusif entre Mondar et le Partenaire ou ses employés.
 
 ## 2. Conformité aux lois du travail et CCT
@@ -847,7 +847,7 @@ Le droit suisse régit ce contrat. Le for exclusif est Zurich, Suisse.`
             content: `# Termini Partner (Contratto di servizio)
 
 ## 1. Rapporti contrattuali
-I presenti termini regolano i rapporti tra **Mondar AG** ("Mondar") e l'impresa di pulizia registrata indipendente ("Partner"). Il Partner dichiara di essere una società svizzera registrata (AG, GmbH o ditta industriale) con UID valido e assicurazione RC commerciale attiva.
+I presenti termini regolano i rapporti tra **Mondar** ("Mondar") e l'impresa di pulizia registrata indipendente ("Partner"). Il Partner dichiara di essere una società svizzera registrata (AG, GmbH o ditta industriale) con UID valido e assicurazione RC commerciale attiva.
 Il rapporto tra le parti è esclusivamente di tipo B2B. Non sussiste alcun rapporto di lavoro subordinato o agenzia tra Mondar e il Partner o i dipendenti di quest'ultimo.
 
 ## 2. Conformità con le leggi sul lavoro e contratti collettivi (CCL)
@@ -879,7 +879,7 @@ Si applica il diritto svizzero. Foro competente esclusivo è Zurigo, Svizzera.`
             content: `# Cundizions Partenaris (Contract da cooperaziun)
 
 ## 1. Status ed intent
-Questas cundizions reglan la cooperaziun tranter la **Mondar AG** ("Mondar") ed il partenari independent da nettegiada ("Partenari"). Il Partenari sto esser ina firma svizra registrada ed avair ina assicuranza da respundabladad activa.
+Questas cundizions reglan la cooperaziun tranter la **Mondar** ("Mondar") ed il partenari independent da nettegiada ("Partenari"). Il Partenari sto esser ina firma svizra registrada ed avair ina assicuranza da respundabladad activa.
 Ils partenaris èn firmas independentas. Negina relaziun da lavur exista cun il portal.
 
 ## 2. Lescha da lavur e GAV
@@ -907,7 +907,7 @@ Gerichtstand exclusiv è Turitg, Svizra.`
             content: `# Condiciones de Socios (Acuerdo de servicios)
 
 ## 1. Ámbito y relación comercial
-Estas condiciones rigen la relación entre **Mondar AG** ("Mondar") y la empresa de limpieza independiente registrada ("Socio"). El Socio garantiza que es una entidad comercial suiza registrada (GmbH, AG o empresa unipersonal) con UID activo y seguro de responsabilidad civil.
+Estas condiciones rigen la relación entre **Mondar** ("Mondar") y la empresa de limpieza independiente registrada ("Socio"). El Socio garantiza que es una entidad comercial suiza registrada (GmbH, AG o empresa unipersonal) con UID activo y seguro de responsabilidad civil.
 La relación es estrictamente B2B. No existe relación laboral ni representación comercial entre Mondar y el Socio o sus empleados.
 
 ## 2. Cumplimiento laboral y convenios colectivos
@@ -939,7 +939,7 @@ Se rige por el derecho suizo. La jurisdicción exclusiva corresponde a Zúrich, 
             content: `# Termos de Parceiro (Contrato de Prestação de Serviços)
 
 ## 1. Âmbito e Relação Comercial
-Estes Termos de Parceiro regem a cooperação entre a **Mondar AG** ("Mondar") e a empresa parceira de limpeza independente registada ("Parceiro"). O Parceiro declara ser uma entidade empresarial registada na Suíça (SA, Lda ou firma individual) com UID válido e seguro de responsabilidade civil ativa.
+Estes Termos de Parceiro regem a cooperação entre a **Mondar** ("Mondar") e a empresa parceira de limpeza independente registada ("Parceiro"). O Parceiro declara ser uma entidade empresarial registada na Suíça (SA, Lda ou firma individual) com UID válido e seguro de responsabilidade civil ativa.
 A relação é estritamente de caráter empresarial (B2B). Não existe qualquer relação laboral ou agência entre a Mondar e o Parceiro ou os seus colaboradores.
 
 ## 2. Conformidade com as Leis de Trabalho e Convenção Coletiva (GAV)
@@ -974,7 +974,7 @@ Este contrato é regido pela lei suíça. O foro exclusivo de jurisdição é Zu
             content: `# Impressum
 
 ## Diensteanbieter
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Kontakt
@@ -990,7 +990,7 @@ Unternehmens-Identifikationsnummer (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Gründer & CEO  
 
 ## Haftungsausschluss
-Die Mondar AG ist Plattformbetreiberin und Vermittlerin. Mondar erbringt selbst keine physischen Reinigungsdienstleistungen und stellt keine Reinigungskräfte an. Die Haftung für die Ausführung der Reinigung, Sachschäden oder qualitative Mängel liegt vollumfänglich beim jeweils ausführenden, selbständigen Partnerunternehmen (Subunternehmer).`
+Die Mondar ist Plattformbetreiberin und Vermittlerin. Mondar erbringt selbst keine physischen Reinigungsdienstleistungen und stellt keine Reinigungskräfte an. Die Haftung für die Ausführung der Reinigung, Sachschäden oder qualitative Mängel liegt vollumfänglich beim jeweils ausführenden, selbständigen Partnerunternehmen (Subunternehmer).`
           },
           {
             locale: "en",
@@ -999,7 +999,7 @@ Die Mondar AG ist Plattformbetreiberin und Vermittlerin. Mondar erbringt selbst 
             content: `# Imprint (Legal Notice)
 
 ## Service Provider
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact Information
@@ -1015,7 +1015,7 @@ UID / Corporate Identification Number: CHE-123.456.789 MWST
 Nuno Ribeiro, Founder & CEO  
 
 ## Legal Disclaimer
-Mondar AG is the platform operator and broker. Mondar does not perform physical cleaning services and does not employ cleaners. All liability for the physical cleaning services, property damage, or operational defects rests entirely with the respective independent subcontractor partner company assigned to the job.`
+Mondar is the platform operator and broker. Mondar does not perform physical cleaning services and does not employ cleaners. All liability for the physical cleaning services, property damage, or operational defects rests entirely with the respective independent subcontractor partner company assigned to the job.`
           },
           {
             locale: "fr",
@@ -1024,7 +1024,7 @@ Mondar AG is the platform operator and broker. Mondar does not perform physical 
             content: `# Mentions Légales
 
 ## Fournisseur de services
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact
@@ -1040,7 +1040,7 @@ Numéro d'identification des entreprises (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Fondateur & CEO  
 
 ## Exclusion de responsabilité
-Mondar AG est l'exploitant et le courtier de la plateforme. Mondar ne fournit pas elle-même de services de nettoyage physiques et n'emploie pas de nettoyeurs. Toute responsabilité concernant l'exécution des nettoyages, les dommages matériels ou les défauts opérationnels incombe exclusivement à l'entreprise prestataire partenaire suisse indépendante affectée au service.`
+Mondar est l'exploitant et le courtier de la plateforme. Mondar ne fournit pas elle-même de services de nettoyage physiques et n'emploie pas de nettoyeurs. Toute responsabilité concernant l'exécution des nettoyages, les dommages matériels ou les défauts opérationnels incombe exclusivement à l'entreprise prestataire partenaire suisse indépendante affectée au service.`
           },
           {
             locale: "it",
@@ -1049,7 +1049,7 @@ Mondar AG est l'exploitant et le courtier de la plateforme. Mondar ne fournit pa
             content: `# Impressum (Note Legali)
 
 ## Fornitore di servizi
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contatti
@@ -1065,7 +1065,7 @@ Numero UID: CHE-123.456.789 MWST
 Nuno Ribeiro, Fondatore & CEO  
 
 ## Esclusione di responsabilità
-Mondar AG è il gestore e l'intermediario della piattaforma. Mondar non esegue direttamente i servizi di pulizia e non assume personale per le pulizie. Qualsiasi responsabilità per le prestazioni fisiche, danni materiali o carenze di qualità ricade esclusivamente sulla ditta di pulizia partner svizzera indipendente assegnata al lavoro.`
+Mondar è il gestore e l'intermediario della piattaforma. Mondar non esegue direttamente i servizi di pulizia e non assume personale per le pulizie. Qualsiasi responsabilità per le prestazioni fisiche, danni materiali o carenze di qualità ricade esclusivamente sulla ditta di pulizia partner svizzera indipendente assegnata al lavoro.`
           },
           {
             locale: "rm",
@@ -1074,7 +1074,7 @@ Mondar AG è il gestore e l'intermediario della piattaforma. Mondar non esegue d
             content: `# Impressum
 
 ## Post responsabel
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contact
@@ -1090,7 +1090,7 @@ Numer UID: CHE-123.456.789 MWST
 Nuno Ribeiro, CEO & Founder  
 
 ## Exclusion da responsabladad
-Mondar AG è la plattafurma d'intermediaziun. Mondar na fa naginas nettegiadas sezza. La responsabladad per la nettegiada e donns materialas è tar la firma independenta.`
+Mondar è la plattafurma d'intermediaziun. Mondar na fa naginas nettegiadas sezza. La responsabladad per la nettegiada e donns materialas è tar la firma independenta.`
           },
           {
             locale: "es",
@@ -1099,7 +1099,7 @@ Mondar AG è la plattafurma d'intermediaziun. Mondar na fa naginas nettegiadas s
             content: `# Aviso Legal
 
 ## Proveedor del servicio
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contacto
@@ -1115,7 +1115,7 @@ Número de identificación empresarial (UID): CHE-123.456.789 MWST
 Nuno Ribeiro, Fundador y CEO  
 
 ## Exclusión de responsabilidad
-Mondar AG es el operador y corredor de la plataforma. Mondar no realiza servicios de limpieza físicos ni emplea limpiadores. Toda responsabilidad por la prestación del servicio de limpieza, daños materiales o deficiencias de calidad corresponde exclusivamente a la empresa proveedora colaboradora suiza asignada.`
+Mondar es el operador y corredor de la plataforma. Mondar no realiza servicios de limpieza físicos ni emplea limpiadores. Toda responsabilidad por la prestación del servicio de limpieza, daños materiales o deficiencias de calidad corresponde exclusivamente a la empresa proveedora colaboradora suiza asignada.`
           },
           {
             locale: "pt",
@@ -1124,7 +1124,7 @@ Mondar AG es el operador y corredor de la plataforma. Mondar no realiza servicio
             content: `# Impressum (Aviso Legal)
 
 ## Prestador de Serviços
-**Mondar AG**  
+**Mondar**  
 {{CONTACT_ADDRESS}}  
 
 ## Contacto

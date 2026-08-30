@@ -8,6 +8,7 @@ import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
 import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
+import { validatePromoCode } from "@/app/actions/marketing";
 import { Logo } from "@/components/Logo";
 
 interface CustomSelectProps {
@@ -100,6 +101,11 @@ export default function BookingPage() {
   const [contactPhone, setContactPhone] = useState("+41 (0) 44 123 4567");
   const [showPhone, setShowPhone] = useState(true);
 
+  // Promo campaign state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoData, setPromoData] = useState<{ valid: boolean; discountType?: string; discountValue?: number; campaignId?: string; campaignName?: string; error?: string } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
   useEffect(() => {
     async function loadConfig() {
       const resNum = await getSystemSetting("whatsapp_number");
@@ -141,6 +147,20 @@ export default function BookingPage() {
         if (linen) next.linenChange = linen === "true";
         return next;
       });
+
+      // Parse promo code from URL
+      const promo = params.get("promo");
+      if (promo) {
+        setPromoCode(promo.toUpperCase());
+        setPromoLoading(true);
+        validatePromoCode(promo, vertical !== "general" ? vertical : undefined).then((res) => {
+          setPromoData(res);
+          setPromoLoading(false);
+        }).catch(() => {
+          setPromoData({ valid: false, error: "Failed to validate promo code" });
+          setPromoLoading(false);
+        });
+      }
     }
   }, []);
 
@@ -486,15 +506,37 @@ export default function BookingPage() {
       : 1;
 
     const subtotal = singleSubtotal * prepayFactor;
-    const discountAmount = subtotal * frequencyDiscount;
-    const total = subtotal - discountAmount;
+    const frequencyDiscountAmount = subtotal * frequencyDiscount;
+
+    // Calculate promo discount (does NOT stack with frequency — higher wins)
+    let promoDiscountAmount = 0;
+    let promoApplied = false;
+    if (promoData?.valid && promoData.discountValue) {
+      if (promoData.discountType === "percentage") {
+        promoDiscountAmount = subtotal * (promoData.discountValue / 100);
+      } else {
+        promoDiscountAmount = promoData.discountValue;
+      }
+    }
+
+    // Use the higher discount
+    let effectiveDiscount = frequencyDiscountAmount;
+    if (promoDiscountAmount > frequencyDiscountAmount) {
+      effectiveDiscount = promoDiscountAmount;
+      promoApplied = true;
+    }
+
+    const total = Math.max(0, subtotal - effectiveDiscount);
     const deposit = total * 0.30;
 
     return {
       singleSubtotal: Math.round(singleSubtotal * 100) / 100,
       prepayFactor,
       subtotal: Math.round(subtotal * 100) / 100,
-      discount: Math.round(discountAmount * 100) / 100,
+      discount: Math.round(effectiveDiscount * 100) / 100,
+      frequencyDiscount: Math.round(frequencyDiscountAmount * 100) / 100,
+      promoDiscountAmount: Math.round(promoDiscountAmount * 100) / 100,
+      promoApplied,
       total: Math.round(total * 100) / 100,
       deposit: Math.round(deposit * 100) / 100,
       hasAfterHoursSurcharge,
@@ -603,7 +645,8 @@ Please help me schedule this service manually. Thank you!`;
       intake,
       scheduledAtStr: selectedDate,
       scheduledWindow: selectedSlot,
-      locationAddress: address
+      locationAddress: address,
+      promoCode: promoData?.valid ? promoCode : undefined
     });
 
     setLoading(false);
@@ -913,6 +956,34 @@ Please verify and confirm my dispatch request. Thank you!`;
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 bg-bg border border-border p-8 rounded-lg shadow-sm">
+              {/* Promo Banner */}
+              {promoCode && !promoLoading && promoData && (
+                <div className={`mb-6 p-4 rounded-md border text-body-sm ${
+                  promoData.valid
+                    ? "bg-accent-soft/20 border-accent/30 text-accent"
+                    : promoData.error === "expired"
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      : "bg-red-500/10 border-red-500/30 text-red-400"
+                }`}>
+                  {promoData.valid ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span>
+                        Promo <strong>{promoCode}</strong> applied — {promoData.discountType === "percentage" ? `${promoData.discountValue}%` : `CHF ${promoData.discountValue?.toFixed(2)}`} off your booking
+                      </span>
+                    </span>
+                  ) : promoData.error === "expired" ? (
+                    <span>{t("promoExpired")}</span>
+                  ) : (
+                    <span>{t("promoInvalid")}</span>
+                  )}
+                </div>
+              )}
+              {promoCode && promoLoading && (
+                <div className="mb-6 p-4 rounded-md border border-border bg-bg-subtle text-body-sm text-ink-muted">
+                  Validating promo code...
+                </div>
+              )}
               {/* STEP 1: INTAKE */}
               {step === 1 && (
             <div className="space-y-6">

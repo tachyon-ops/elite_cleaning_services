@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
-import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound, RefreshCw } from "lucide-react";
+import { Shield, BookOpen, Users, LogOut, LayoutDashboard, Sliders, KeyRound, RefreshCw, Megaphone, BarChart3 } from "lucide-react";
 import { getLoggedInAdmin } from "@/app/actions/admin";
 import { getTranslationsForLocale, translate } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -82,6 +82,23 @@ export default async function AdminLayout({
               >
                 <Sliders className="w-4 h-4" /> {t("admin.sidebar.verticals")}
               </Link>
+            )}
+            {isSuperAdmin && (
+              <>
+                <div className="my-2 border-t border-[#262626]" />
+                <Link
+                  href="/admin/marketing"
+                  className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+                >
+                  <Megaphone className="w-4 h-4" /> {t("admin.sidebar.marketing") || "Marketing"}
+                </Link>
+                <Link
+                  href="/admin/sales"
+                  className="flex items-center gap-3 px-4 py-3 rounded-md text-body-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] hover:bg-[#1f1f1f] transition-all"
+                >
+                  <BarChart3 className="w-4 h-4" /> {t("admin.sidebar.sales") || "Sales"}
+                </Link>
+              </>
             )}
             <Link
               href="/admin/settings"

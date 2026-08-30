@@ -301,7 +301,7 @@
       "catMoveout": "Limpieza de fin de alquiler"
     },
     "footer": {
-      "copyright": "Mondar AG. Reservados todos los derechos de los socios suizos."
+      "copyright": "Mondar. Reservados todos los derechos de los socios suizos."
     },
     "login": {
       "nav": "MONDAR PARTNER HUB",
@@ -319,7 +319,7 @@
       "btnLoggingIn": "INICIANDO SESIÓN...",
       "notRegistered": "¿No estás registrado?",
       "submitApplication": "Presentar solicitud",
-      "copyright": "Mondar AG. Acceso seguro de despacho.",
+      "copyright": "Mondar. Acceso seguro de despacho.",
       "forgotPassword": "¿Olvidó su contraseña?",
       "forgotPasswordTitle": "Restablecer contraseña",
       "forgotPasswordDesc": "Ingrese su correo electrónico de socio para solicitar un código de restablecimiento.",

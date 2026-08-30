@@ -247,9 +247,10 @@ export async function createBooking(payload: {
   scheduledAtStr: string;
   scheduledWindow: string;
   locationAddress: string;
+  promoCode?: string;
 }) {
   try {
-    const { email, vertical, categorySlug, intake, scheduledAtStr, scheduledWindow, locationAddress } = payload;
+    const { email, vertical, categorySlug, intake, scheduledAtStr, scheduledWindow, locationAddress, promoCode } = payload;
 
     // Verify guest email is validated
     const guestRecord = await db.guestEmail.findUnique({
@@ -267,6 +268,54 @@ export async function createBooking(payload: {
 
     // Secure price calculation
     const pricing = calculatePrice(categorySlug, intake, scheduledAt);
+
+    // Validate and apply promo discount
+    let promoCampaignId: string | null = null;
+    let promoDiscountChf: number | null = null;
+    let finalTotal = pricing.total;
+    let finalDeposit = pricing.deposit;
+
+    if (promoCode) {
+      const campaign = await db.promoCampaign.findFirst({
+        where: { code: promoCode.toUpperCase() }
+      });
+
+      if (campaign && campaign.active) {
+        const now = new Date();
+        const validFrom = new Date(campaign.validFrom);
+        const validUntil = campaign.validUntil ? new Date(campaign.validUntil) : null;
+        const withinDates = now >= validFrom && (!validUntil || now <= validUntil);
+        const withinRedemptions = !campaign.maxRedemptions || campaign.totalRedemptions < campaign.maxRedemptions;
+        const verticalMatch = !campaign.vertical || campaign.vertical === categorySlug;
+
+        if (withinDates && withinRedemptions && verticalMatch) {
+          // Calculate promo discount
+          const discountValue = Number(campaign.discountValue);
+          let promoAmount = 0;
+          if (campaign.discountType === "percentage") {
+            promoAmount = pricing.total * (discountValue / 100);
+          } else {
+            promoAmount = discountValue;
+          }
+
+          // Apply promo discount (frequency discount is already baked into pricing.total)
+          // We apply promo on top of the base subtotal, and use whichever results in a lower price
+          promoAmount = Math.min(promoAmount, pricing.total); // can't discount more than total
+          if (promoAmount > 0) {
+            promoCampaignId = campaign.id;
+            promoDiscountChf = Math.round(promoAmount * 100) / 100;
+            finalTotal = Math.max(0, Math.round((pricing.total - promoAmount) * 100) / 100);
+            finalDeposit = Math.round(finalTotal * 0.30 * 100) / 100;
+
+            // Increment redemptions
+            await db.promoCampaign.update({
+              where: { id: campaign.id },
+              data: { totalRedemptions: { increment: 1 } }
+            });
+          }
+        }
+      }
+    }
 
     const isQuoteVertical = ["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(categorySlug);
 
@@ -341,11 +390,13 @@ export async function createBooking(payload: {
         scheduledWindow,
         locationAddress,
         status: initialStatus,
-        totalAmountChf: pricing.total,
-        depositAmountChf: pricing.deposit,
+        totalAmountChf: finalTotal,
+        depositAmountChf: finalDeposit,
         providerTeamId: null,
         isFirstBooking: true,
-        stripeSubscriptionId
+        stripeSubscriptionId,
+        promoCampaignId,
+        promoDiscountChf
       }
     });
 
