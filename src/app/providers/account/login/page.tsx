@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
-import { loginProvider, loginProvider2FA, requestPasswordResetProvider, resetPasswordProvider } from "@/app/actions/provider";
+import { loginProvider, loginProvider2FA, requestPasswordResetProvider, resetPasswordProvider, isProviderAuthenticated } from "@/app/actions/provider";
 import { ShieldAlert, KeyRound, ArrowLeft, Eye, EyeOff, Mail, ArrowRight, Lock } from "lucide-react";
 
 export default function ProviderLoginPage() {
@@ -16,6 +16,16 @@ export default function ProviderLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await isProviderAuthenticated();
+      if (authenticated) {
+        router.push(localizeHref("/providers/account", locale));
+      }
+    };
+    checkAuth();
+  }, [locale, router]);
 
   // 2FA Verification Flow State
   const [requires2FA, setRequires2FA] = useState(false);

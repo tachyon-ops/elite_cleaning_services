@@ -281,6 +281,47 @@ export async function middleware(request: NextRequest) {
     return redirectResp;
   }
 
+  // --- AUTH GUARDS ---
+  const internalPath = locInfo.internalPathname;
+  const isAdminLoggedIn = request.cookies.get("admin_session")?.value === "true";
+  const isProviderLoggedIn = request.cookies.get("provider_session")?.value === "true";
+
+  // 1. Admin login/signup page: If already logged in, redirect to dashboard
+  if ((internalPath === "/admin/login" || internalPath === "/admin/signup") && isAdminLoggedIn) {
+    const targetUrl = new URL(getCanonicalPathname("/admin", locInfo.urlLocale), request.url);
+    targetUrl.search = request.nextUrl.search;
+    const redirectResp = NextResponse.redirect(targetUrl);
+    applySessionState(redirectResp);
+    return redirectResp;
+  }
+
+  // 2. Admin & Pamphlet protected routes: If not logged in, redirect to login
+  if ((internalPath.startsWith("/admin") || internalPath.startsWith("/pamphlet")) && internalPath !== "/admin/login" && internalPath !== "/admin/signup" && !isAdminLoggedIn) {
+    const targetUrl = new URL(getCanonicalPathname("/admin/login", locInfo.urlLocale), request.url);
+    targetUrl.search = request.nextUrl.search;
+    const redirectResp = NextResponse.redirect(targetUrl);
+    applySessionState(redirectResp);
+    return redirectResp;
+  }
+
+  // 3. Provider login page: If already logged in, redirect to provider account
+  if (internalPath === "/providers/account/login" && isProviderLoggedIn) {
+    const targetUrl = new URL(getCanonicalPathname("/providers/account", locInfo.urlLocale), request.url);
+    targetUrl.search = request.nextUrl.search;
+    const redirectResp = NextResponse.redirect(targetUrl);
+    applySessionState(redirectResp);
+    return redirectResp;
+  }
+
+  // 4. Provider protected routes: If not logged in, redirect to provider login
+  if (internalPath.startsWith("/providers/account") && internalPath !== "/providers/account/login" && !isProviderLoggedIn) {
+    const targetUrl = new URL(getCanonicalPathname("/providers/account/login", locInfo.urlLocale), request.url);
+    targetUrl.search = request.nextUrl.search;
+    const redirectResp = NextResponse.redirect(targetUrl);
+    applySessionState(redirectResp);
+    return redirectResp;
+  }
+
   // Rewrite to the internal route path (e.g. /providers/apply)
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", locInfo.internalPathname);
