@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getCampaign, updateCampaign } from "@/app/actions/marketing";
+import { isAdminAuthenticated } from "@/app/actions/admin";
 import QRCode from "qrcode";
 import { 
   ChevronLeft, Printer, Palette, Edit3, Code2, 
@@ -916,6 +917,12 @@ export default function PamphletPage() {
   useEffect(() => {
     async function loadCampaign() {
       try {
+        const auth = await isAdminAuthenticated();
+        if (!auth) {
+          router.push("/admin/login");
+          return;
+        }
+
         let camp: any = null;
         
         try {

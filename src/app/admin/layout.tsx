@@ -16,13 +16,16 @@ export default async function AdminLayout({
   const pathname = headersList.get("x-pathname") || "";
   const isAuthPage = pathname === "/admin/login" || pathname === "/admin/signup";
 
+  const cookieStore = await cookies();
+  const isAuthenticated = cookieStore.get("admin_session")?.value === "true";
+
   if (isAuthPage) {
+    if (isAuthenticated) {
+      redirect("/admin");
+    }
     return <>{children}</>;
   }
 
-  const cookieStore = await cookies();
-  const isAuthenticated = cookieStore.get("admin_session")?.value === "true";
-  
   if (!isAuthenticated) {
     redirect("/admin/login");
   }

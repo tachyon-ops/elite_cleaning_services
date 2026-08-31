@@ -41,3 +41,7 @@ Thumbs.db
 prisma_gen.log
 test_ls.txt
 test.txt
+
+# Playwright test outputs
+/playwright-report
+/test-results

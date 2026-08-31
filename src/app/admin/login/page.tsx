@@ -19,6 +19,7 @@ export default function AdminLoginPage() {
   const [maskedEmail, setMaskedEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [totpToken, setTotpToken] = useState("");
+  const [devOtp, setDevOtp] = useState<string | null>(null);
 
   // Password Reset Flow State
   const [resetStep, setResetStep] = useState<"login" | "forgot" | "otp" | "success">("login");
@@ -63,6 +64,9 @@ export default function AdminLoginPage() {
           setRequires2FA(true);
           setUserId(res.userId);
           setMaskedEmail(res.emailMasked || "");
+          if (res.devOtp) {
+            setDevOtp(res.devOtp);
+          }
         } else {
           router.push("/admin");
           router.refresh();
@@ -182,7 +186,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@elite-cleaning.ch"
+                  placeholder="admin@mondar.ch"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
                 />
               </div>
@@ -214,7 +218,18 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center text-body-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("admin@mondar.ch");
+                    setPassword("admin123");
+                  }}
+                  className="text-accent/80 hover:text-accent font-mono text-[11px] underline cursor-pointer"
+                >
+                  Fill Dev Credentials
+                </button>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -222,7 +237,7 @@ export default function AdminLoginPage() {
                     setResetEmail(email);
                     setResetStep("forgot");
                   }}
-                  className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors font-medium cursor-pointer"
+                  className="text-[#a6a6a6] hover:text-accent transition-colors font-medium cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -245,6 +260,20 @@ export default function AdminLoginPage() {
                 <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
                   A verification OTP code has been sent to your email <code className="text-accent">{maskedEmail}</code>.
                 </p>
+
+                {devOtp && (
+                  <div className="bg-accent/10 border border-accent/30 text-accent p-2.5 rounded-md text-xs font-mono flex items-center justify-between">
+                    <span>Dev OTP: <strong className="text-[#f2f2f2]">{devOtp}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setTotpToken(devOtp)}
+                      className="bg-accent text-ink-inverse px-2 py-0.5 rounded text-[11px] font-sans font-bold hover:bg-accent-hover"
+                    >
+                      Auto-Fill
+                    </button>
+                  </div>
+                )}
+
                 <input
                   type="text"
                   maxLength={6}
