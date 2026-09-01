@@ -505,7 +505,10 @@ export async function getBookingsList() {
     const formatted = bookings.map(b => ({
       ...b,
       totalAmountChf: Number(b.totalAmountChf),
-      depositAmountChf: Number(b.depositAmountChf)
+      depositAmountChf: Number(b.depositAmountChf),
+      providerPayoutAmountChf: b.providerPayoutAmountChf ? Number(b.providerPayoutAmountChf) : null,
+      commissionAmountChf: b.commissionAmountChf ? Number(b.commissionAmountChf) : null,
+      promoDiscountChf: b.promoDiscountChf ? Number(b.promoDiscountChf) : null
     }));
 
     return { success: true, bookings: formatted };
@@ -516,6 +519,15 @@ export async function getBookingsList() {
 
 // 6. Assign provider team
 export async function assignPartnerTeam(bookingId: string, teamId: string | null) {
+  return assignPartnerTeamWithBudget(bookingId, teamId);
+}
+
+// 6b. Assign provider team with supplier budget estimate
+export async function assignPartnerTeamWithBudget(
+  bookingId: string, 
+  teamId: string | null, 
+  supplierBudgetChf?: number
+) {
   try {
     if (!(await isAdminAuthenticated())) {
       throw new Error("Unauthorized");
@@ -526,27 +538,175 @@ export async function assignPartnerTeam(bookingId: string, teamId: string | null
       throw new Error("Booking not found");
     }
 
+    const dataToUpdate: any = {
+      providerTeamId: teamId,
+      status: teamId ? "assigned" : "confirmed"
+    };
+
+    if (supplierBudgetChf !== undefined && supplierBudgetChf > 0) {
+      dataToUpdate.providerPayoutAmountChf = supplierBudgetChf;
+      // Calculate 15% platform margin on top of supplier budget
+      dataToUpdate.commissionAmountChf = Math.round(supplierBudgetChf * 0.15 * 100) / 100;
+    }
+
     const updated = await db.booking.update({
       where: { id: bookingId },
-      data: {
-        providerTeamId: teamId,
-        status: teamId ? "assigned" : "confirmed"
-      }
+      data: dataToUpdate
     });
 
     // Log administrative audit trail for GDPR compliance
     await db.auditLog.create({
       data: {
-        action: "assign_provider_team",
+        action: "assign_provider_team_with_budget",
         targetTable: "Booking",
         targetId: bookingId,
-        before: JSON.stringify({ providerTeamId: bookingBefore.providerTeamId, status: bookingBefore.status }),
-        after: JSON.stringify({ providerTeamId: updated.providerTeamId, status: updated.status }),
+        before: JSON.stringify({ 
+          providerTeamId: bookingBefore.providerTeamId, 
+          status: bookingBefore.status,
+          providerPayoutAmountChf: bookingBefore.providerPayoutAmountChf 
+        }),
+        after: JSON.stringify({ 
+          providerTeamId: updated.providerTeamId, 
+          status: updated.status,
+          providerPayoutAmountChf: updated.providerPayoutAmountChf 
+        }),
         actorUserId: "admin_user"
       }
     });
 
-    return { success: true };
+    return { 
+      success: true, 
+      booking: {
+        ...updated,
+        totalAmountChf: Number(updated.totalAmountChf),
+        depositAmountChf: Number(updated.depositAmountChf),
+        providerPayoutAmountChf: updated.providerPayoutAmountChf ? Number(updated.providerPayoutAmountChf) : null,
+        commissionAmountChf: updated.commissionAmountChf ? Number(updated.commissionAmountChf) : null
+      }
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 6c. Finalize service cost post-service, compute +15% margin, and settle balance
+export async function finalizeServiceCostAndSettle(
+  bookingId: string,
+  supplierActualCostChf: number,
+  marginPercent: number = 15
+) {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    if (supplierActualCostChf <= 0) {
+      throw new Error("Supplier actual cost must be greater than 0");
+    }
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        payments: true,
+        providerTeam: {
+          include: {
+            provider: true
+          }
+        }
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // 1. Calculate Platform Margin (+15%) & Gross Client Total
+    const platformCommission = Math.round(supplierActualCostChf * (marginPercent / 100) * 100) / 100;
+    const grossClientTotal = Math.round((supplierActualCostChf + platformCommission) * 100) / 100;
+    const promoDiscount = booking.promoDiscountChf ? Number(booking.promoDiscountChf) : 0;
+    const finalClientTotal = Math.max(0, Math.round((grossClientTotal - promoDiscount) * 100) / 100);
+
+    // 2. Retainer Deposit Deducted & Remaining Balance
+    const depositPaid = Number(booking.depositAmountChf || 0);
+    const remainingBalance = Math.max(0, Math.round((finalClientTotal - depositPaid) * 100) / 100);
+
+    // 3. Record Balance Payment if remaining amount > 0
+    if (remainingBalance > 0) {
+      await db.payment.create({
+        data: {
+          bookingId: booking.id,
+          stripeChargeId: `ch_settle_${Date.now()}`,
+          amountChf: remainingBalance,
+          status: "succeeded"
+        }
+      });
+    }
+
+    // 4. Record Provider Payout Ledger
+    if (booking.providerTeam?.providerId) {
+      await db.payout.create({
+        data: {
+          providerId: booking.providerTeam.providerId,
+          bookingId: booking.id,
+          amountChf: supplierActualCostChf,
+          currency: "CHF",
+          status: "scheduled",
+          scheduledFor: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        }
+      });
+    }
+
+    // 5. Update Booking to Completed with exact financial amounts
+    const updated = await db.booking.update({
+      where: { id: bookingId },
+      data: {
+        status: "completed",
+        totalAmountChf: finalClientTotal,
+        providerPayoutAmountChf: supplierActualCostChf,
+        commissionAmountChf: platformCommission
+      }
+    });
+
+    // 6. Administrative Audit Trail
+    await db.auditLog.create({
+      data: {
+        action: "finalize_service_cost_and_settle",
+        targetTable: "Booking",
+        targetId: bookingId,
+        before: JSON.stringify({ 
+          status: booking.status,
+          totalAmountChf: booking.totalAmountChf,
+          providerPayoutAmountChf: booking.providerPayoutAmountChf
+        }),
+        after: JSON.stringify({ 
+          status: updated.status,
+          totalAmountChf: updated.totalAmountChf,
+          providerPayoutAmountChf: updated.providerPayoutAmountChf,
+          commissionAmountChf: platformCommission,
+          remainingBalanceCharged: remainingBalance
+        }),
+        actorUserId: "admin_user"
+      }
+    });
+
+    return {
+      success: true,
+      booking: {
+        ...updated,
+        totalAmountChf: Number(updated.totalAmountChf),
+        depositAmountChf: Number(updated.depositAmountChf),
+        providerPayoutAmountChf: Number(updated.providerPayoutAmountChf),
+        commissionAmountChf: Number(updated.commissionAmountChf)
+      },
+      breakdown: {
+        supplierActualCost: supplierActualCostChf,
+        platformCommission,
+        promoDiscount,
+        finalClientTotal,
+        depositPaid,
+        remainingBalance
+      }
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

@@ -11,8 +11,14 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Missing campaign ID" }, { status: 400 });
     }
 
-    const campaign = await db.promoCampaign.findUnique({
-      where: { id },
+    const upper = id.toUpperCase();
+    const campaign = await db.promoCampaign.findFirst({
+      where: {
+        OR: [
+          { id },
+          { code: upper },
+        ],
+      },
       include: {
         _count: {
           select: { scans: true, bookings: true },

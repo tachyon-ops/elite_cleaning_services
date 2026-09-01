@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat } from "lucide-react";
-import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories } from "@/app/actions/booking";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat, Info } from "lucide-react";
+import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories, setCustomerPassword } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
 import { validatePromoCode } from "@/app/actions/marketing";
 import { Logo } from "@/components/Logo";
@@ -233,18 +233,58 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [selectedWeekday, setSelectedWeekday] = useState<number | null>(null);
+  const [minLeadDays, setMinLeadDays] = useState<number>(5);
+  const [businessDaysOnly, setBusinessDaysOnly] = useState<boolean>(true);
+
+  useEffect(() => {
+    getSystemSetting("min_lead_time_days").then((res) => {
+      if (res.success && res.value !== null) {
+        const val = parseInt(res.value, 10);
+        if (!isNaN(val)) setMinLeadDays(val);
+      }
+    });
+    getSystemSetting("lead_time_business_days_only").then((res) => {
+      if (res.success && res.value !== null) {
+        setBusinessDaysOnly(res.value !== "false");
+      }
+    });
+  }, []);
+
+  const minSelectableDate = React.useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+
+    if (minLeadDays <= 0) {
+      d.setDate(d.getDate() + 1);
+      return d;
+    }
+
+    let daysAdded = 0;
+    while (daysAdded < minLeadDays) {
+      d.setDate(d.getDate() + 1);
+      const dayOfWeek = d.getDay(); // 0 is Sun, 6 is Sat
+      if (businessDaysOnly) {
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          daysAdded++;
+        }
+      } else {
+        daysAdded++;
+      }
+    }
+    return d;
+  }, [minLeadDays, businessDaysOnly]);
+
   const [viewDate, setViewDate] = useState(() => {
     const d = new Date();
     d.setDate(1);
     return d;
   });
 
-  const tomorrow = React.useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
+  useEffect(() => {
+    if (minSelectableDate) {
+      setViewDate(new Date(minSelectableDate.getFullYear(), minSelectableDate.getMonth(), 1));
+    }
+  }, [minSelectableDate]);
 
   const maxSelectableDate = React.useMemo(() => {
     const d = new Date();
@@ -270,9 +310,9 @@ export default function BookingPage() {
   };
 
   const isPrevMonthDisabled = React.useMemo(() => {
-    const currentMonthStart = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), 1);
+    const currentMonthStart = new Date(minSelectableDate.getFullYear(), minSelectableDate.getMonth(), 1);
     return viewDate.getTime() <= currentMonthStart.getTime();
-  }, [viewDate, tomorrow]);
+  }, [viewDate, minSelectableDate]);
 
   const isNextMonthDisabled = React.useMemo(() => {
     const maxMonthStart = new Date(maxSelectableDate.getFullYear(), maxSelectableDate.getMonth(), 1);
@@ -298,9 +338,9 @@ export default function BookingPage() {
 
   const isDateDisabled = (dayDate: Date) => {
     const dTime = dayDate.getTime();
-    const tTime = tomorrow.getTime();
+    const minTime = minSelectableDate.getTime();
     const mTime = maxSelectableDate.getTime();
-    if (dTime < tTime || dTime > mTime) {
+    if (dTime < minTime || dTime > mTime) {
       return true;
     }
     
@@ -395,6 +435,13 @@ export default function BookingPage() {
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
 
+  // Post-booking Password Creation State
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordSaved, setPasswordSaved] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
   const [activeSlugs, setActiveSlugs] = useState<string[]>([]);
   const [checkingActive, setCheckingActive] = useState(true);
 
@@ -423,16 +470,19 @@ export default function BookingPage() {
   useEffect(() => {
     if (selectedDate) {
       setLoading(true);
-      getAvailableSlots(vertical, selectedDate).then(res => {
+      getAvailableSlots(vertical, selectedDate, intake?.preferredTime).then(res => {
         setLoading(false);
         if (res.success && res.slots) {
           setAvailableSlots(res.slots);
+          if (intake?.preferredTime === "after-hours") {
+            setSelectedSlot("after-hours");
+          }
         } else {
           setError(res.error || t("failedFetchSlots"));
         }
       });
     }
-  }, [selectedDate, vertical]);
+  }, [selectedDate, vertical, intake?.preferredTime]);
 
   // Pricing calculations
   const calculatePricing = () => {
@@ -530,6 +580,9 @@ export default function BookingPage() {
     const deposit = total * 0.30;
 
     return {
+      basePrice,
+      sizeAdjustment: Math.round(sizeAdjustment * 100) / 100,
+      addons: Math.round(addons * 100) / 100,
       singleSubtotal: Math.round(singleSubtotal * 100) / 100,
       prepayFactor,
       subtotal: Math.round(subtotal * 100) / 100,
@@ -638,43 +691,43 @@ Please help me schedule this service manually. Thank you!`;
     setError("");
     setLoading(true);
 
-    const res = await createBooking({
-      email: contact.email,
-      vertical,
-      categorySlug: vertical,
-      intake,
-      scheduledAtStr: selectedDate,
-      scheduledWindow: selectedSlot,
-      locationAddress: address,
-      promoCode: promoData?.valid ? promoCode : undefined
-    });
+    try {
+      const res = await createBooking({
+        email: contact.email,
+        vertical,
+        categorySlug: vertical,
+        intake,
+        scheduledAtStr: selectedDate,
+        scheduledWindow: selectedSlot || (intake.preferredTime === "after-hours" ? "after-hours" : "morning"),
+        locationAddress: address,
+        promoCode: promoData?.valid ? promoCode : undefined
+      });
 
-    setLoading(false);
-    if (res.success && res.bookingId) {
-      if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && vertical !== "building-care" && vertical !== "restaurant") {
-        // Build WhatsApp message template
-        const formattedDate = selectedDate || "Not scheduled";
-        const formattedSlot = selectedSlot === "morning" ? "Morning Slot" : selectedSlot === "afternoon" ? "Afternoon Slot" : "Not specified";
-        const frequencyLabel = intake.frequency ? intake.frequency.toUpperCase() : "ONE-OFF";
-        
-        let detailsText = "";
-        if (vertical === "domestic") {
-          detailsText = `Bedrooms: ${intake.bedrooms || 0}\nBathrooms: ${intake.bathrooms || 0}\nLinen Service: ${intake.linenChange ? "Yes" : "No"}`;
-        } else if (vertical === "commercial") {
-          detailsText = `Office Type: ${intake.officeType || "N/A"}\nSurface Area: ${intake.surfaceArea || 0} m²\nRooms: ${intake.rooms || 0}\nFloors: ${intake.floors || 0}`;
-        } else if (vertical === "hospitality") {
-          detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
-        } else if (vertical === "moveout") {
-          detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
-        } else if (vertical === "building-care") {
-          detailsText = `Property Type: ${intake.buildingPropertyType || "N/A"}\nEntrances: ${intake.buildingEntrances || 0}\nFloors: ${intake.buildingFloors || 0}\nCommon Area: ${intake.buildingCommonArea || 0} m²\nLift: ${intake.buildingLift ? "Yes" : "No"}\nGarage: ${intake.buildingGarage ? "Yes" : "No"} (${intake.buildingGarageArea || 0} m²)\nWaste Room: ${intake.buildingWasteRoom ? "Yes" : "No"}\nWindow Clean: ${intake.buildingWindowCleaning ? "Yes" : "No"} (${intake.buildingWindowFreq || "N/A"})\nPortfolio: ${intake.buildingPortfolioSize || 0}`;
-        } else if (vertical === "restaurant") {
-          detailsText = `Venue Type: ${intake.restaurantVenueType || "N/A"}\nSurface Area: ${intake.restaurantSurfaceArea || 0} m²\nCovers: ${intake.restaurantCovers || 0}\nTiers: ${(intake.restaurantTier || []).join(", ")}\nKitchen Area: ${intake.restaurantKitchenArea || 0} m²\nGrease Load: ${intake.restaurantGreaseLoad || "N/A"}\nHoods: ${intake.restaurantHoodsCount || 0} (${intake.restaurantHoodLength || 0}m)\nDuct Accessible: ${intake.restaurantDuctAccessible ? "Yes" : "No"}\nLast Certified: ${intake.restaurantLastCertified || "N/A"}\nCert Target: ${(intake.restaurantCertRequiredFor || []).join(", ")}`;
-        } else if (vertical === "special") {
-          detailsText = `Special service request details.`;
-        }
+      if (res.success && res.bookingId) {
+        if (!autoCheckout && vertical !== "aviation" && vertical !== "yacht" && vertical !== "moveout" && vertical !== "building-care" && vertical !== "restaurant") {
+          // Build WhatsApp message template
+          const formattedDate = selectedDate || "Not scheduled";
+          const formattedSlot = formatSlotName(selectedSlot) || "Not specified";
+          const frequencyLabel = intake.frequency ? intake.frequency.toUpperCase() : "ONE-OFF";
+          
+          let detailsText = "";
+          if (vertical === "domestic") {
+            detailsText = `Bedrooms: ${intake.bedrooms || 0}\nBathrooms: ${intake.bathrooms || 0}\nLinen Service: ${intake.linenChange ? "Yes" : "No"}`;
+          } else if (vertical === "commercial") {
+            detailsText = `Office Type: ${intake.officeType || "N/A"}\nSurface Area: ${intake.surfaceArea || 0} m²\nRooms: ${intake.rooms || 0}\nFloors: ${intake.floors || 0}`;
+          } else if (vertical === "hospitality") {
+            detailsText = `Property Type: ${intake.propertyType || "N/A"}\nTurnover Freq: ${intake.turnoverFrequency || "N/A"}\nKey Handling: ${intake.keyHandling || "N/A"}`;
+          } else if (vertical === "moveout") {
+            detailsText = `Total Rooms: ${intake.moveoutRooms || 0}\nBed/Bath: ${intake.bedrooms || 0}/${intake.bathrooms || 0}\nSurface Area: ${intake.moveoutArea || 0} m²\nOptions: ${(intake.moveoutScope || []).join(", ")}`;
+          } else if (vertical === "building-care") {
+            detailsText = `Property Type: ${intake.buildingPropertyType || "N/A"}\nEntrances: ${intake.buildingEntrances || 0}\nFloors: ${intake.buildingFloors || 0}\nCommon Area: ${intake.buildingCommonArea || 0} m²\nLift: ${intake.buildingLift ? "Yes" : "No"}\nGarage: ${intake.buildingGarage ? "Yes" : "No"} (${intake.buildingGarageArea || 0} m²)\nWaste Room: ${intake.buildingWasteRoom ? "Yes" : "No"}\nWindow Clean: ${intake.buildingWindowCleaning ? "Yes" : "No"} (${intake.buildingWindowFreq || "N/A"})\nPortfolio: ${intake.buildingPortfolioSize || 0}`;
+          } else if (vertical === "restaurant") {
+            detailsText = `Venue Type: ${intake.restaurantVenueType || "N/A"}\nSurface Area: ${intake.restaurantSurfaceArea || 0} m²\nCovers: ${intake.restaurantCovers || 0}\nTiers: ${(intake.restaurantTier || []).join(", ")}\nKitchen Area: ${intake.restaurantKitchenArea || 0} m²\nGrease Load: ${intake.restaurantGreaseLoad || "N/A"}\nHoods: ${intake.restaurantHoodsCount || 0} (${intake.restaurantHoodLength || 0}m)\nDuct Accessible: ${intake.restaurantDuctAccessible ? "Yes" : "No"}\nLast Certified: ${intake.restaurantLastCertified || "N/A"}\nCert Target: ${(intake.restaurantCertRequiredFor || []).join(", ")}`;
+          } else if (vertical === "special") {
+            detailsText = `Special service request details.`;
+          }
 
-        const waMsg = `Mondar Booking Request
+          const waMsg = `Mondar Booking Request
 ---------------------------------------
 Booking ID: ${res.bookingId}
 Division: ${vertical.toUpperCase()}
@@ -694,14 +747,58 @@ Deposit: CHF ${pricing.deposit ? pricing.deposit.toFixed(2) : "0.00"}
 ---------------------------------------
 Please verify and confirm my dispatch request. Thank you!`;
 
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMsg)}`;
-        window.open(whatsappUrl, "_blank");
+          try {
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMsg)}`;
+            window.open(whatsappUrl, "_blank");
+          } catch (e) {
+            console.error("Popup blocked", e);
+          }
+        }
+        setBookingId(res.bookingId);
+        setStep(6);
+      } else {
+        setError(res.error || t("failedFinalizeBooking"));
       }
-      setBookingId(res.bookingId);
-      setStep(6);
-    } else {
-      setError(res.error || t("failedFinalizeBooking"));
+    } catch (err: any) {
+      console.error("submitBooking error", err);
+      setError(err?.message || t("failedFinalizeBooking"));
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSavePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!passwordInput || passwordInput.length < 8) {
+      setPasswordError(t("passwordLengthError"));
+      return;
+    }
+    setPasswordError("");
+    setPasswordSaving(true);
+    const res = await setCustomerPassword({
+      email: contact.email,
+      password: passwordInput
+    });
+    setPasswordSaving(false);
+    if (res.success) {
+      setPasswordSaved(true);
+    } else {
+      setPasswordError(res.error || "Failed to set password");
+    }
+  };
+
+  const formatSlotName = (slotId: string) => {
+    if (!slotId) return "";
+    if (slotId === "after-hours" || intake?.preferredTime === "after-hours") {
+      return intake?.customTimeWindow
+        ? `${t("afterHours")} (${intake.customTimeWindow})`
+        : t("afterHours");
+    }
+    const slotObj = availableSlots.find(s => s.id === slotId);
+    if (slotObj?.label) return slotObj.label;
+    if (slotId === "morning") return t("morningSlot");
+    if (slotId === "afternoon") return t("afternoonSlot");
+    return slotId;
   };
 
 
@@ -931,7 +1028,7 @@ Please verify and confirm my dispatch request. Thank you!`;
               </p>
               <div className="bg-bg-subtle p-4 border border-border rounded-md max-w-md mx-auto text-body-sm font-mono mt-4 text-accent">
                 {address}<br />
-                {t("scheduled")} {selectedDate} ({selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")})
+                {t("scheduled")} {selectedDate} ({formatSlotName(selectedSlot)})
               </div>
               <p className="text-body-sm text-ink-subtle pt-6 max-w-[55ch] mx-auto leading-relaxed">
                 {["aviation", "yacht", "moveout", "building-care", "restaurant"].includes(vertical) ? (
@@ -946,8 +1043,77 @@ Please verify and confirm my dispatch request. Thank you!`;
                   })()
                 )}
               </p>
+
+              {/* Account Activation Section */}
+              <div className="bg-bg-subtle border border-border p-6 rounded-lg max-w-md mx-auto text-left mt-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center shrink-0 mt-0.5">
+                    <Key className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-body-md font-semibold text-ink">{t("accountCreatedTitle")}</h3>
+                    <p className="text-body-xs text-ink-muted leading-relaxed mt-1">
+                      {t("accountCreatedDesc").replace("{email}", contact.email)}
+                    </p>
+                  </div>
+                </div>
+
+                {passwordSaved ? (
+                  <div className="bg-accent-soft p-5 rounded-md border border-accent/25 flex flex-col items-center gap-3 text-accent text-center animate-fade-in">
+                    <div className="flex items-center gap-2">
+                      <Check className="w-5 h-5 shrink-0" />
+                      <span className="text-body-sm font-semibold">{t("passwordSavedSuccess")}</span>
+                    </div>
+                    <p className="text-body-xs text-ink-muted leading-relaxed">
+                      Your booking and client profile are securely confirmed and active.
+                    </p>
+                    <a
+                      href={localizeHref("/", locale)}
+                      className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-6 py-2.5 rounded-md transition-colors text-button text-center inline-block mt-2 cursor-pointer shadow-xs"
+                    >
+                      {t("returnHome")}
+                    </a>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSavePassword} className="space-y-3 pt-2">
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={passwordInput}
+                        onChange={(e) => {
+                          setPasswordInput(e.target.value);
+                          if (passwordError) setPasswordError("");
+                        }}
+                        placeholder={t("setPasswordPlaceholder")}
+                        className="w-full border border-border bg-bg p-3 pr-16 rounded-md text-body-sm focus:border-accent outline-none font-sans text-ink placeholder:text-ink-subtle"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink text-caption font-semibold uppercase tracking-wider cursor-pointer select-none"
+                      >
+                        {showPassword ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                    {passwordError && (
+                      <p className="text-body-xs text-red-400">{passwordError}</p>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={passwordSaving || !passwordInput}
+                      className="w-full bg-accent hover:bg-accent-hover text-ink-inverse font-semibold py-2.5 px-4 rounded-md transition-colors text-button font-body disabled:opacity-50 cursor-pointer"
+                    >
+                      {passwordSaving ? t("savingPassword") : t("setPasswordBtn")}
+                    </button>
+                  </form>
+                )}
+              </div>
+
               <div className="pt-8">
-                <a href={localizeHref("/", locale)} className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-8 py-3 rounded-md transition-colors text-button text-center block sm:inline-block">
+                <a
+                  href={localizeHref("/", locale)}
+                  className="bg-accent hover:bg-accent-hover text-ink-inverse font-semibold px-8 py-3.5 rounded-md transition-colors text-button text-center block sm:inline-block cursor-pointer shadow-sm"
+                >
                   {t("returnHome")}
                 </a>
               </div>
@@ -1891,9 +2057,27 @@ Please verify and confirm my dispatch request. Thank you!`;
                 )}
 
                 <div>
-                  <label className="text-caption text-ink font-semibold uppercase tracking-wider block mb-3">
-                    {t("serviceDate")}
-                  </label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-caption text-ink font-semibold uppercase tracking-wider">
+                      {t("serviceDate")}
+                    </label>
+                    {minLeadDays > 0 && (
+                      <span className="text-[11px] text-accent font-semibold flex items-center gap-1 font-mono">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{minLeadDays} {businessDaysOnly ? "business" : ""} days notice</span>
+                      </span>
+                    )}
+                  </div>
+                  
+                  {minLeadDays > 0 && (
+                    <div className="flex items-center gap-2 p-2.5 mb-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-700 dark:text-amber-300 text-body-xs font-medium max-w-md mx-auto">
+                      <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+                      <span>
+                        Tailored matching notice: Earliest available booking is <strong>{minSelectableDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}</strong>.
+                      </span>
+                    </div>
+                  )}
+
                   <div className="space-y-4 max-w-md mx-auto">
                     {/* Month Pagination Header */}
                     <div className="flex items-center justify-between border border-border/60 bg-bg p-2 rounded-lg shadow-sm">
@@ -1973,6 +2157,34 @@ Please verify and confirm my dispatch request. Thank you!`;
                       <div className="flex items-center gap-3 py-4">
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
                         <span className="text-body-sm text-ink-subtle">{t("checkingDispatches")}</span>
+                      </div>
+                    ) : intake.preferredTime === "after-hours" ? (
+                      <div className="space-y-4 max-w-md mx-auto">
+                        <div className="p-4 border border-accent bg-accent-soft/40 ring-1 ring-accent rounded-lg flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Clock className="w-5 h-5 text-accent" />
+                            <div>
+                              <span className="text-body-sm font-semibold text-ink">{t("afterHours")}</span>
+                              <p className="text-body-xs text-ink-muted">{t("afterHoursSurcharge")} (+CHF 50.00)</p>
+                            </div>
+                          </div>
+                          <div className="h-5 w-5 rounded-full border border-accent bg-accent text-ink-inverse flex items-center justify-center">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 pt-1">
+                          <label className="text-caption text-ink font-semibold uppercase tracking-wider block">
+                            {t("specifyAfterHoursTiming")}
+                          </label>
+                          <input
+                            type="text"
+                            value={intake.customTimeWindow || ""}
+                            onChange={(e) => handleIntakeChange("customTimeWindow", e.target.value)}
+                            placeholder={t("specifyAfterHoursPlaceholder")}
+                            className="w-full border border-border bg-bg p-3 rounded-md text-body-sm focus:border-accent outline-none text-ink placeholder:text-ink-subtle"
+                          />
+                        </div>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2112,9 +2324,14 @@ Please verify and confirm my dispatch request. Thank you!`;
                     {selectedSlot && (
                       <div className="flex justify-between py-2 border-b border-border/40">
                         <span className="font-semibold text-ink-muted">{t("selectedSlot")}</span>
-                        <span className="text-ink font-medium capitalize">{selectedSlot === "morning" ? t("morningSlot") : t("afternoonSlot")}</span>
+                        <span className="text-ink font-medium">{formatSlotName(selectedSlot)}</span>
                       </div>
                     )}
+                  </div>
+
+                  <div className="p-3 bg-bg-subtle border border-border/60 rounded-md flex items-start gap-2.5 text-body-xs text-ink-muted leading-relaxed mt-4">
+                    <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                    <span>{t("providerCostNote")}</span>
                   </div>
                 </div>
               )}
@@ -2355,6 +2572,11 @@ Please verify and confirm my dispatch request. Thank you!`;
                         </div>
                       </div>
                     </div>
+
+                    <div className="p-3 bg-bg-subtle border border-border/60 rounded-md flex items-start gap-2.5 text-body-xs text-ink-muted leading-relaxed">
+                      <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                      <span>{t("providerCostNote")}</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2407,7 +2629,7 @@ Please verify and confirm my dispatch request. Thank you!`;
               ) : (
                 <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
                   <h3 className="text-body-sm font-semibold text-ink uppercase tracking-wide border-b border-border/60 pb-2">
-                    {t("quoteSummaryTitle")}
+                    {t("indicativeEstimate") || t("quoteSummaryTitle")}
                   </h3>
                   <div className="space-y-3 pt-2">
                     {pricing.prepayFactor > 1 && (
@@ -2417,12 +2639,12 @@ Please verify and confirm my dispatch request. Thank you!`;
                     )}
                     <div className="flex justify-between text-body-sm text-ink-muted">
                       <span>{t("baseFee")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
-                      <span>CHF {((vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) * pricing.prepayFactor).toFixed(2)}</span>
+                      <span>CHF {(pricing.basePrice * pricing.prepayFactor).toFixed(2)}</span>
                     </div>
-                    {pricing.singleSubtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0) > 0 && (
+                    {pricing.sizeAdjustment > 0 && (
                       <div className="flex justify-between text-body-sm text-ink-muted">
                         <span>{t("sizeAdjustment")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
-                        <span>+CHF {((pricing.singleSubtotal - (vertical === "commercial" ? 150 : vertical === "hospitality" ? 120 : 80) - (intake.linenChange ? 35 : 0)) * pricing.prepayFactor).toFixed(2)}</span>
+                        <span>+CHF {(pricing.sizeAdjustment * pricing.prepayFactor).toFixed(2)}</span>
                       </div>
                     )}
                     {intake.linenChange && (
@@ -2443,12 +2665,20 @@ Please verify and confirm my dispatch request. Thank you!`;
                         <span>+CHF {((vertical === "commercial" ? 80 : 30) * pricing.prepayFactor).toFixed(2)}</span>
                       </div>
                     )}
-                    {pricing.discount > 0 && (
+                    {pricing.promoApplied && pricing.promoDiscountAmount > 0 ? (
+                      <div className="flex justify-between text-body-sm text-green-600 font-medium bg-green-500/10 px-2 py-1 rounded">
+                        <span className="flex items-center gap-1 font-semibold">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Promo {promoCode || promoData?.code} ({promoData?.discountType === "percentage" ? `${promoData.discountValue}% OFF` : `CHF ${promoData?.discountValue} OFF`})</span>
+                        </span>
+                        <span className="font-bold">-CHF {pricing.promoDiscountAmount.toFixed(2)}</span>
+                      </div>
+                    ) : pricing.frequencyDiscount > 0 ? (
                       <div className="flex justify-between text-body-sm text-green-600 font-medium">
                         <span>{t("frequencyDiscount")}</span>
-                        <span>-CHF {pricing.discount.toFixed(2)}</span>
+                        <span>-CHF {pricing.frequencyDiscount.toFixed(2)}</span>
                       </div>
-                    )}
+                    ) : null}
 
                     <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
                       <span>{t("totalAmount")}</span>
@@ -2459,6 +2689,11 @@ Please verify and confirm my dispatch request. Thank you!`;
                       <span>{t("stripeDeposit")}</span>
                       <span>CHF {pricing.deposit.toFixed(2)}</span>
                     </div>
+
+                    <p className="text-[11px] text-ink-subtle leading-normal pt-3 border-t border-border/40 italic flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 text-accent/80 shrink-0" />
+                      <span>{t("providerCostDisclaimer")}</span>
+                    </p>
                   </div>
                 </div>
               )}

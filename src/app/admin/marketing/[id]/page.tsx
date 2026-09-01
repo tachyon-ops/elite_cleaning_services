@@ -128,7 +128,10 @@ export default function CampaignDetailPage() {
         });
 
         // Generate QR code
-        const url = `https://mondar.ch/r/${camp.code}`;
+        const origin = typeof window !== "undefined" && window.location.origin
+          ? window.location.origin
+          : "https://mondar.ch";
+        const url = `${origin}/r/${camp.code}`;
         const dataUrl = await QRCode.toDataURL(url, {
           width: 300,
           margin: 2,

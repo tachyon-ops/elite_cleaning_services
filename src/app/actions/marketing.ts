@@ -118,10 +118,16 @@ export async function getCampaigns() {
   }
 }
 
-export async function getCampaign(id: string) {
+export async function getCampaign(idOrCode: string) {
   try {
-    const campaign = await db.promoCampaign.findUnique({
-      where: { id },
+    const upper = idOrCode.toUpperCase();
+    const campaign = await db.promoCampaign.findFirst({
+      where: {
+        OR: [
+          { id: idOrCode },
+          { code: upper },
+        ],
+      },
       include: {
         _count: {
           select: { scans: true, bookings: true },
@@ -133,9 +139,11 @@ export async function getCampaign(id: string) {
       return { success: false, error: "Campaign not found" };
     }
 
+    const campaignId = campaign.id;
+
     // Recent 20 scans
     const recentScans = await db.promoScan.findMany({
-      where: { campaignId: id },
+      where: { campaignId },
       orderBy: { scannedAt: "desc" },
       take: 20,
       select: { scannedAt: true, userAgent: true, ipAddress: true },

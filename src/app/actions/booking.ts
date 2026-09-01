@@ -2,20 +2,32 @@
 
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email-utils";
+import { hashPassword } from "@/lib/auth-utils";
 
 // 1. Get availability slots
-export async function getAvailableSlots(categorySlug: string, dateStr: string) {
+export async function getAvailableSlots(categorySlug: string, dateStr: string, preferredTime?: string) {
   try {
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) {
       throw new Error("Invalid date format");
     }
 
-    // Default slots
-    const standardSlots = [
+    // Default slots based on preferredTime selection
+    let standardSlots = [
       { id: "morning", label: "Morning (08:00 - 12:00)" },
       { id: "afternoon", label: "Afternoon (13:00 - 17:00)" }
     ];
+
+    if (preferredTime === "after-hours") {
+      standardSlots = [
+        { id: "after-hours", label: "After-Hours" }
+      ];
+    } else if (preferredTime === "weekends") {
+      standardSlots = [
+        { id: "morning", label: "Weekend Morning (09:00 - 13:00)" },
+        { id: "afternoon", label: "Weekend Afternoon (13:00 - 17:00)" }
+      ];
+    }
 
     // Find any provider teams supporting this category
     const teams = await db.providerTeam.findMany({
@@ -266,6 +278,30 @@ export async function createBooking(payload: {
       throw new Error("Invalid schedule date");
     }
 
+    // Enforce lead time advance notice
+    const leadSetting = await db.systemSetting.findUnique({ where: { key: "min_lead_time_days" } });
+    const bizSetting = await db.systemSetting.findUnique({ where: { key: "lead_time_business_days_only" } });
+    const minDays = leadSetting && leadSetting.value !== null ? parseInt(leadSetting.value, 10) : 5;
+    const bizOnly = !bizSetting || bizSetting.value !== "false";
+
+    if (minDays > 0) {
+      const minDate = new Date();
+      minDate.setHours(0, 0, 0, 0);
+      let daysAdded = 0;
+      while (daysAdded < minDays) {
+        minDate.setDate(minDate.getDate() + 1);
+        const dayOfWeek = minDate.getDay();
+        if (bizOnly) {
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) daysAdded++;
+        } else {
+          daysAdded++;
+        }
+      }
+      if (scheduledAt.getTime() < minDate.getTime()) {
+        throw new Error(`Bookings require a minimum of ${minDays} ${bizOnly ? "business " : ""}days advance notice for tailored matching.`);
+      }
+    }
+
     // Secure price calculation
     const pricing = calculatePrice(categorySlug, intake, scheduledAt);
 
@@ -350,29 +386,35 @@ export async function createBooking(payload: {
           ? "draft" 
           : (hasMatchingProvider ? "offer_dispatched" : "confirmed"));
 
-    // Resolve customer and recurring settings
-    let customerId: string | null = null;
+    // Resolve customer account (silent auto-provisioning for all bookings)
     const frequency = intake?.frequency;
     const isRecurring = ["weekly", "bi-weekly", "monthly"].includes(frequency);
 
+    const normalizedEmail = email.trim().toLowerCase();
     let user = await db.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     });
 
-    if (isRecurring) {
-      if (!user) {
-        user = await db.user.create({
-          data: {
-            email,
-            name: intake.name || email.split("@")[0],
-            role: "registered_customer"
-          }
-        });
-      }
-      customerId = user.id;
-    } else if (user) {
-      customerId = user.id;
+    if (!user) {
+      user = await db.user.create({
+        data: {
+          email: normalizedEmail,
+          name: intake?.name || normalizedEmail.split("@")[0],
+          phone: intake?.phone || null,
+          role: "registered_customer"
+        }
+      });
+    } else if (intake?.name && (!user.name || user.name === normalizedEmail.split("@")[0])) {
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          name: intake.name,
+          phone: intake.phone || user.phone
+        }
+      });
     }
+
+    const customerId = user.id;
 
     const stripeSubscriptionId = isRecurring
       ? `sub_sim_${Math.random().toString(36).substring(2, 11)}`
@@ -382,7 +424,7 @@ export async function createBooking(payload: {
     const booking = await db.booking.create({
       data: {
         customerId,
-        guestEmail: customerId ? null : email,
+        guestEmail: email,
         vertical,
         categorySlug,
         intake: JSON.stringify(intake),
@@ -442,11 +484,82 @@ export async function createBooking(payload: {
         data: {
           bookingId: booking.id,
           stripeChargeId: `ch_mock_${Math.random().toString(36).substr(2, 9)}`,
-          amountChf: pricing.deposit,
+          amountChf: finalDeposit,
           status: "succeeded",
           refundedAmountChf: 0
         }
       });
+    }
+
+    // Send Booking Confirmation Email
+    try {
+      const formattedDate = scheduledAt ? scheduledAt.toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : scheduledAtStr;
+      const verticalTitle = vertical.charAt(0).toUpperCase() + vertical.slice(1);
+      
+      await sendEmail({
+        to: email,
+        subject: `Mondar - Booking Confirmation (${booking.id.slice(0, 8).toUpperCase()})`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+              <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Booking Confirmed</h2>
+            </div>
+            
+            <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+              Congratulations! Your cleaning request has been securely placed with Mondar. A vetted, insured Swiss cleaning specialist is assigned to your service.
+            </p>
+
+            <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Booking ID:</td>
+                  <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Service Category:</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600;">${verticalTitle} Cleaning</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Scheduled Date:</td>
+                  <td style="padding: 6px 0; text-align: right;">${formattedDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Time Window:</td>
+                  <td style="padding: 6px 0; text-align: right; text-transform: capitalize;">${scheduledWindow}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Service Location:</td>
+                  <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
+                </tr>
+                ${promoCode && promoDiscountChf ? `
+                <tr>
+                  <td style="padding: 6px 0; color: #22c55e;">Promo (${promoCode}):</td>
+                  <td style="padding: 6px 0; text-align: right; color: #22c55e;">-CHF ${promoDiscountChf.toFixed(2)}</td>
+                </tr>
+                ` : ""}
+                <tr style="border-top: 1px solid #262626;">
+                  <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Total Amount:</td>
+                  <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${finalTotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; color: #b59410; font-weight: 600;">Deposit (30%):</td>
+                  <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #b59410;">CHF ${finalDeposit.toFixed(2)}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="text-align: center; padding-top: 8px;">
+              <p style="font-size: 12px; color: #737373; line-height: 1.5;">
+                Need to adjust your schedule or have special access instructions? Contact operations at <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.
+              </p>
+            </div>
+          </div>
+        `
+      });
+      console.log(`[BOOKING SERVICE] Confirmation email successfully dispatched to ${email} for booking ${booking.id}`);
+    } catch (emailErr) {
+      console.error("[BOOKING SERVICE] Failed to dispatch confirmation email:", emailErr);
     }
 
     return { success: true, bookingId: booking.id };
@@ -627,6 +740,103 @@ export async function getBookingQuoteDetails(bookingId: string) {
     };
 
     return { success: true, booking: formatted };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 8. Set Customer Password (instant account activation post-booking)
+export async function setCustomerPassword(payload: { email: string; password: string }) {
+  try {
+    const { email, password } = payload;
+    if (!email || !email.includes("@")) {
+      throw new Error("Invalid email address");
+    }
+
+    if (!password || password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    let user = await db.user.findUnique({
+      where: { email: normalizedEmail }
+    });
+
+    if (!user) {
+      user = await db.user.create({
+        data: {
+          email: normalizedEmail,
+          name: normalizedEmail.split("@")[0],
+          role: "registered_customer",
+          passwordHash: hashPassword(password)
+        }
+      });
+    } else {
+      user = await db.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash: hashPassword(password)
+        }
+      });
+    }
+
+    // Record audit log
+    await db.auditLog.create({
+      data: {
+        action: "set_customer_password",
+        targetTable: "User",
+        targetId: user.id,
+        actorUserId: user.id
+      }
+    });
+
+    // Send Account Active Email
+    try {
+      await sendEmail({
+        to: normalizedEmail,
+        subject: "Mondar - Your Account is Fully Active",
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+              <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Your Account is Ready</h2>
+            </div>
+            
+            <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+              Your Mondar client account credentials have been successfully created and your profile is fully active.
+            </p>
+
+            <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Account Email:</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #f2f2f2;">${normalizedEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Status:</td>
+                  <td style="padding: 6px 0; text-align: right; color: #22c55e; font-weight: bold;">Fully Active</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Services:</td>
+                  <td style="padding: 6px 0; text-align: right;">Dedicated Swiss Cleaning Dispatch</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="text-align: center; padding-top: 8px;">
+              <p style="font-size: 12px; color: #737373; line-height: 1.5;">
+                For any questions or adjustments, reach out to your concierge team anytime at <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.
+              </p>
+            </div>
+          </div>
+        `
+      });
+      console.log(`[CUSTOMER SERVICE] Account activation email successfully sent to ${normalizedEmail}`);
+    } catch (emailErr) {
+      console.error("[CUSTOMER SERVICE] Failed to dispatch account activation email:", emailErr);
+    }
+
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

@@ -41,6 +41,8 @@ export default function AdminSettingsPage() {
   const [contactAddress, setContactAddress] = useState("");
   const [showPhone, setShowPhone] = useState(true);
   const [showOffice, setShowOffice] = useState(true);
+  const [minLeadDays, setMinLeadDays] = useState(5);
+  const [businessDaysOnly, setBusinessDaysOnly] = useState(true);
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const [whatsappSuccess, setWhatsappSuccess] = useState("");
   const [whatsappError, setWhatsappError] = useState("");
@@ -68,7 +70,7 @@ export default function AdminSettingsPage() {
       setProfileName(user.name || "");
       setProfileEmail(user.email || "");
       
-      // Load WhatsApp settings
+      // Load WhatsApp & Lead Time settings
       const resNum = await getSystemSetting("whatsapp_number");
       const resLab = await getSystemSetting("whatsapp_label");
       const resAuto = await getSystemSetting("auto_checkout");
@@ -77,6 +79,8 @@ export default function AdminSettingsPage() {
       const resAddress = await getSystemSetting("contact_address");
       const resShowPhone = await getSystemSetting("show_phone_number");
       const resShowOffice = await getSystemSetting("show_office_address");
+      const resLead = await getSystemSetting("min_lead_time_days");
+      const resBiz = await getSystemSetting("lead_time_business_days_only");
       if (resNum.success && resNum.value) {
         setWhatsappNumber(resNum.value);
       }
@@ -100,6 +104,13 @@ export default function AdminSettingsPage() {
       }
       if (resShowOffice.success) {
         setShowOffice(resShowOffice.value !== "false");
+      }
+      if (resLead.success && resLead.value !== null) {
+        const parsed = parseInt(resLead.value, 10);
+        if (!isNaN(parsed)) setMinLeadDays(parsed);
+      }
+      if (resBiz.success && resBiz.value !== null) {
+        setBusinessDaysOnly(resBiz.value !== "false");
       }
     } else {
       setError("Failed to load administrative session. Please log in.");
@@ -193,9 +204,11 @@ export default function AdminSettingsPage() {
     const resAddress = await updateSystemSetting("contact_address", contactAddress);
     const resShowPhone = await updateSystemSetting("show_phone_number", showPhone ? "true" : "false");
     const resShowOffice = await updateSystemSetting("show_office_address", showOffice ? "true" : "false");
+    const resLead = await updateSystemSetting("min_lead_time_days", String(minLeadDays));
+    const resBiz = await updateSystemSetting("lead_time_business_days_only", businessDaysOnly ? "true" : "false");
     
     setSavingWhatsapp(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success && resLead.success && resBiz.success) {
       setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -208,6 +221,8 @@ export default function AdminSettingsPage() {
         resAddress.error || 
         resShowPhone.error || 
         resShowOffice.error || 
+        resLead.error || 
+        resBiz.error || 
         "Failed to update settings."
       );
     }
@@ -446,6 +461,48 @@ export default function AdminSettingsPage() {
                   <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
                     {t("admin.settings.showOfficeDesc")}
                   </p>
+                </div>
+
+                {/* Booking Lead Time & Notice Window */}
+                <div className="pt-3 border-t border-[#262626] space-y-3">
+                  <span className="text-[10px] text-accent uppercase font-bold tracking-widest block font-mono">
+                    Booking Lead Time & Notice Window
+                  </span>
+                  
+                  <div>
+                    <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase block mb-1">
+                      Minimum Advance Notice (Days)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={minLeadDays}
+                      onChange={(e) => setMinLeadDays(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                      className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
+                    />
+                    <p className="text-[11px] text-[#a6a6a6] leading-relaxed pt-1">
+                      Prevents last-minute bookings. The next {minLeadDays} {businessDaysOnly ? "business" : ""} days will be blocked on the client booking calendar for tailored matching.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-[#262626]/40">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="businessDaysOnlyCheckbox"
+                        checked={businessDaysOnly}
+                        onChange={(e) => setBusinessDaysOnly(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+                      />
+                      <label htmlFor="businessDaysOnlyCheckbox" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                        Count Business Days Only (Skip Weekends)
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+                      When enabled, Saturday and Sunday are excluded from the lead time countdown (e.g. 5 business days notice).
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

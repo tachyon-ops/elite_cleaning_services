@@ -105,12 +105,18 @@ export default function ProviderApplyPage() {
                 <p>{t("providers.apply.provPassword")} <span className="text-[#f2f2f2]">partner123</span></p>
                 <p className="text-body-xs text-[#737373] mt-2 italic">{t("providers.apply.provNotice")}</p>
               </div>
-              <div className="pt-6">
+              <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href={localizeHref("/providers", locale)}
                   className="bg-accent hover:bg-accent-hover text-ink-inverse text-button px-6 py-3 rounded font-semibold transition-colors"
                 >
                   {t("providers.apply.btnReturn")}
+                </Link>
+                <Link
+                  href={localizeHref("/", locale)}
+                  className="border border-[#262626] bg-[#141414] hover:bg-[#1f1f1f] text-[#f2f2f2] text-button px-6 py-3 rounded font-semibold transition-colors"
+                >
+                  {t("returnHome", "Visit Mondar Home")}
                 </Link>
               </div>
             </div>

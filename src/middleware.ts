@@ -295,8 +295,8 @@ export async function middleware(request: NextRequest) {
     return redirectResp;
   }
 
-  // 2. Admin & Pamphlet protected routes: If not logged in, redirect to login
-  if ((internalPath.startsWith("/admin") || internalPath.startsWith("/pamphlet")) && internalPath !== "/admin/login" && internalPath !== "/admin/signup" && !isAdminLoggedIn) {
+  // 2. Admin protected routes: If not logged in, redirect to login
+  if (internalPath.startsWith("/admin") && internalPath !== "/admin/login" && internalPath !== "/admin/signup" && !isAdminLoggedIn) {
     const targetUrl = new URL(getCanonicalPathname("/admin/login", locInfo.urlLocale), request.url);
     targetUrl.search = request.nextUrl.search;
     const redirectResp = NextResponse.redirect(targetUrl);

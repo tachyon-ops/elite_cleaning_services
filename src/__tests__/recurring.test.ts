@@ -22,6 +22,13 @@ describe("Recurring Bookings & Stripe Subscriptions (TDD)", () => {
       }
     });
 
+    // Ensure domestic category exists
+    await db.serviceCategory.upsert({
+      where: { slug: "domestic" },
+      update: {},
+      create: { slug: "domestic", name: "Domestic Cleaning", vertical: "domestic", pricingModel: "instant", active: true }
+    });
+
     // Ensure the guest email record is verified in the database
     await db.guestEmail.upsert({
       where: { email: recurringEmail },
@@ -53,7 +60,7 @@ describe("Recurring Bookings & Stripe Subscriptions (TDD)", () => {
         bathrooms: 2,
         frequency: "weekly" // recurring
       },
-      scheduledAtStr: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+      scheduledAtStr: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days from now
       scheduledWindow: "afternoon",
       locationAddress: "Bahnhofstrasse 1, Zürich"
     });

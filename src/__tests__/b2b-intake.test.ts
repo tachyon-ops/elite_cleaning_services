@@ -8,6 +8,18 @@ describe("B2B Verticals Intake and Quote Routing (TDD)", () => {
   let restaurantBookingId: string;
 
   beforeAll(async () => {
+    // Ensure service categories exist for foreign key relations
+    await db.serviceCategory.upsert({
+      where: { slug: "building-care" },
+      update: {},
+      create: { slug: "building-care", name: "Building Care", vertical: "building-care", pricingModel: "quote_on_request", active: true }
+    });
+    await db.serviceCategory.upsert({
+      where: { slug: "restaurant" },
+      update: {},
+      create: { slug: "restaurant", name: "Restaurant & Kitchen", vertical: "restaurant", pricingModel: "quote_on_request", active: true }
+    });
+
     // Ensure the guest email record is verified in the database
     await db.guestEmail.upsert({
       where: { email: b2bEmail },
@@ -47,7 +59,7 @@ describe("B2B Verticals Intake and Quote Routing (TDD)", () => {
         buildingPortfolioSize: 2,
         frequency: "weekly"
       },
-      scheduledAtStr: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAtStr: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       scheduledWindow: "morning",
       locationAddress: "Löwenstrasse 12, 8001 Zürich"
     });
@@ -97,7 +109,7 @@ describe("B2B Verticals Intake and Quote Routing (TDD)", () => {
         restaurantOperatingHours: "after-hours",
         frequency: "one-off"
       },
-      scheduledAtStr: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAtStr: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       scheduledWindow: "afternoon",
       locationAddress: "Bahnhofplatz 15, 8001 Zürich"
     });

@@ -42,7 +42,7 @@ test.describe("Mondar - Booking Intake Wizard", () => {
     await page.click("button:has-text('Secure with OTP Verification')");
 
     // 4. Contact & OTP Verification Step
-    await expect(page.locator("h2:has-text('Guest verification')")).toBeVisible();
+    await expect(page.locator("h2:has-text('Contact & Verification')")).toBeVisible();
     
     // Fill out Contact Info
     await page.locator("input[placeholder='John Doe']").fill("Domestic Tester");
