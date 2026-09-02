@@ -549,7 +549,16 @@ export async function resetOperationalMetrics() {
     await db.quote.deleteMany({});
     await db.review.deleteMany({});
     await db.booking.deleteMany({});
-    await db.availabilityBlock.deleteMany({ where: { autoBlocked: true } });
+    await db.availabilityBlock.deleteMany({});
+
+    // Reset Applications Queue & Providers List
+    await db.providerReview.deleteMany({});
+    await db.providerListing.deleteMany({});
+    await db.providerDocument.deleteMany({});
+    await db.providerApplication.deleteMany({});
+    await db.providerTeam.deleteMany({});
+    await db.provider.deleteMany({});
+    await db.user.deleteMany({ where: { role: "provider" } });
 
     return { success: true };
   } catch (error: any) {
