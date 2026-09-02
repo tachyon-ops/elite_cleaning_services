@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
     activeBookings: 0,
     completedBookings: 0,
     revenueMTD: 0,
-    avgRating: 5.0
+    avgRating: 0
   };
 
   // Fetch company & contact configuration directly from system settings
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
             <CreditCard className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <span className="text-display-sm font-bold text-[#f2f2f2] block">CHF {stats.revenueMTD}</span>
+            <span className="text-display-sm font-bold text-[#f2f2f2] block">CHF {stats.revenueMTD.toFixed(2)}</span>
             <span className="text-body-xs text-[#a6a6a6]">
               {t("admin.dashboard.fromCompletedDeposits")}
             </span>
@@ -112,7 +112,9 @@ export default async function AdminDashboardPage() {
             <Star className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <span className="text-display-sm font-bold text-[#f2f2f2] block">{stats.avgRating} / 5</span>
+            <span className="text-display-sm font-bold text-[#f2f2f2] block">
+              {stats.avgRating > 0 ? `${stats.avgRating.toFixed(1)} / 5` : "0 / 5"}
+            </span>
             <span className="text-body-xs text-[#a6a6a6]">
               {t("admin.dashboard.satisfactionIndex")}
             </span>

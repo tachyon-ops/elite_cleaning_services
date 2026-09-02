@@ -517,7 +517,7 @@ export async function getDashboardStats() {
     const reviews = await db.review.findMany();
     const avgRating = reviews.length > 0
       ? reviews.reduce((sum: number, r) => sum + r.rating, 0) / reviews.length
-      : 5.0;
+      : 0;
 
     return {
       success: true,
@@ -529,6 +529,29 @@ export async function getDashboardStats() {
         avgRating: Math.round(avgRating * 10) / 10
       }
     };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 4.1 Reset all bookings, payments, quotes, reviews, and related operational data
+export async function resetOperationalMetrics() {
+  try {
+    if (!(await isAdminAuthenticated())) {
+      throw new Error("Unauthorized");
+    }
+
+    await db.dispute.deleteMany({});
+    await db.commissionLedger.deleteMany({});
+    await db.payout.deleteMany({});
+    await db.providerOffer.deleteMany({});
+    await db.payment.deleteMany({});
+    await db.quote.deleteMany({});
+    await db.review.deleteMany({});
+    await db.booking.deleteMany({});
+    await db.availabilityBlock.deleteMany({ where: { autoBlocked: true } });
+
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
