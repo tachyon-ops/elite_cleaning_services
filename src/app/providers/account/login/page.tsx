@@ -202,7 +202,7 @@ export default function ProviderLoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="partner@alpineclean.ch"
+                    placeholder="e.g. my@email.com"
                     className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
                   />
                 </div>
@@ -299,7 +299,7 @@ export default function ProviderLoginPage() {
                   required
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="partner@alpineclean.ch"
+                  placeholder="e.g. my@email.com"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none w-full"
                 />
               </div>

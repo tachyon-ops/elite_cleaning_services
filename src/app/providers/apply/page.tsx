@@ -142,7 +142,7 @@ export default function ProviderApplyPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Swiss Clean AG"
+                    placeholder="Cleaning company name"
                     value={formData.companyName}
                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                     className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
@@ -169,7 +169,7 @@ export default function ProviderApplyPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Jean Müller"
+                    placeholder="Contact name"
                     value={formData.applicantName}
                     onChange={(e) => setFormData({ ...formData, applicantName: e.target.value })}
                     className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
@@ -181,7 +181,7 @@ export default function ProviderApplyPage() {
                   <input
                     type="email"
                     required
-                    placeholder="ops@swissclean.ch"
+                    placeholder="e.g. my@email.com"
                     value={formData.applicantEmail}
                     onChange={(e) => setFormData({ ...formData, applicantEmail: e.target.value })}
                     className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"

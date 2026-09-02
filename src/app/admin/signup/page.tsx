@@ -222,7 +222,7 @@ export default function AdminSignupPage() {
                     setTotpVerified(false);
                     setOtpStatus("");
                   }}
-                  placeholder="e.g. admin@elite-cleaning.ch"
+                  placeholder="e.g. my@email.com"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-sm focus:border-accent outline-none"
                 />
               </div>

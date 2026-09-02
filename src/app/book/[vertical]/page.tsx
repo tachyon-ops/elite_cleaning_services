@@ -2680,7 +2680,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                       type="email"
                       value={contact.email}
                       onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                      placeholder="john.doe@example.ch"
+                      placeholder="e.g. my@email.com"
                       className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
                     />
                   </div>
@@ -3019,20 +3019,35 @@ Please verify and confirm my dispatch request. Thank you!`;
                       </div>
                     )}
 
-                    <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
-                      <span>{t("totalAmount")}</span>
-                      <span>CHF {pricing.total.toFixed(2)}</span>
+                    <div className="border-t border-border pt-4 flex justify-between items-start text-body-lg text-ink font-bold font-display">
+                      <div className="flex flex-col">
+                        <span>{t("estimatedBaseTotal") || t("totalAmount")}</span>
+                        <span className="text-[11px] font-normal text-ink-muted font-sans italic tracking-normal">
+                          {t("hourlySettlementNote") || "(Final cost fixed by provider based on hours taken)"}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-right">CHF {pricing.total.toFixed(2)}</span>
                     </div>
 
-                    <div className="border-t border-border border-dashed pt-4 flex justify-between text-body-md text-accent font-semibold">
-                      <span>{t("stripeDeposit")}</span>
-                      <span>CHF {pricing.deposit.toFixed(2)}</span>
+                    <div className="border-t border-border border-dashed pt-4 flex justify-between items-start text-body-md text-accent font-semibold">
+                      <div className="flex flex-col">
+                        <span>{t("stripeDeposit")}</span>
+                        <span className="text-[10px] font-normal text-ink-muted font-sans tracking-normal">
+                          {t("depositSecuresReservation") || "(Deducted from final invoice)"}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-right">CHF {pricing.deposit.toFixed(2)}</span>
                     </div>
 
-                    <p className="text-[11px] text-ink-subtle leading-normal pt-3 border-t border-border/40 italic flex items-center gap-1.5">
-                      <Info className="w-3.5 h-3.5 text-accent/80 shrink-0" />
-                      <span>{t("providerCostDisclaimer")}</span>
-                    </p>
+                    <div className="pt-3 border-t border-border/50 text-[11px] text-ink-muted leading-relaxed bg-bg-subtle/80 p-3 rounded-md border border-border/70 space-y-1">
+                      <div className="flex items-center gap-1.5 font-semibold text-accent">
+                        <Info className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t("estimateDisclaimerTitle") || "Important: Base Estimate Only"}</span>
+                      </div>
+                      <p className="text-ink-subtle">
+                        {t("providerCostDisclaimer")}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}

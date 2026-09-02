@@ -404,7 +404,7 @@ export default function AdminSettingsPage() {
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="e.g. ops@elite-cleaning.ch"
+                  placeholder="e.g. my@email.com"
                   className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
                 />
               </div>
@@ -743,7 +743,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="e.g. Nuno Ribeiro"
+                  placeholder="e.g. Alex Morgan"
                   className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
                 />
               </div>
@@ -756,7 +756,7 @@ export default function AdminSettingsPage() {
                   type="email"
                   value={profileEmail}
                   onChange={(e) => setProfileEmail(e.target.value)}
-                  placeholder="e.g. nuno@mondar.ch"
+                  placeholder="e.g. my@email.com"
                   className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
                 />
               </div>

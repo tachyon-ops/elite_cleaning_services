@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
 import { ShieldCheck, X } from "lucide-react";
@@ -24,7 +25,13 @@ function setCookie(name: string, value: string, days: number) {
 
 export function CookieBanner() {
   const { locale, t } = useLanguage();
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
+
+  // Never display cookie banner in backoffice admin pages
+  if (pathname?.startsWith("/admin") || pathname?.includes("/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     // Check if consent has already been given

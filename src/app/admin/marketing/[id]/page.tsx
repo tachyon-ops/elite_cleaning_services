@@ -100,13 +100,22 @@ export default function CampaignDetailPage() {
         setStats(statsObj);
         setRecentScans(scans);
 
-        // Populate edit form
         let parsedVerticals: any[] = [];
         if (camp.pamphletVerticals) {
           try {
             parsedVerticals = JSON.parse(camp.pamphletVerticals);
           } catch {
             parsedVerticals = [];
+          }
+        }
+
+        if (!parsedVerticals || parsedVerticals.length === 0) {
+          const defaultList = PRESET_SERVICES.slice(0, 6);
+          if (camp.vertical) {
+            const match = PRESET_SERVICES.find(s => s.id === camp.vertical);
+            parsedVerticals = match ? [match, ...defaultList.filter(s => s.id !== match.id).slice(0, 5)] : defaultList;
+          } else {
+            parsedVerticals = defaultList;
           }
         }
 
@@ -574,7 +583,7 @@ export default function CampaignDetailPage() {
 
       {/* ── EDIT CAMPAIGN MODAL ── */}
       {isEditing && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-[#141414] border border-[#262626] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl">
             
             <div className="flex items-center justify-between border-b border-[#262626] pb-4">
@@ -648,29 +657,50 @@ export default function CampaignDetailPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#a6a6a6] uppercase">Vertical Filter</label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold text-[#a6a6a6] uppercase">Promo Code Restriction</label>
+                    <span className="text-[10px] text-[#d4af37] font-medium">Checkout Rule</span>
+                  </div>
                   <select
                     value={editForm.vertical}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, vertical: e.target.value }))}
+                    onChange={(e) => {
+                      const newVertical = e.target.value;
+                      setEditForm(prev => {
+                        let nextPamp = [...prev.pamphletVerticals];
+                        if (newVertical) {
+                          const match = allServices.find(s => s.id === newVertical);
+                          if (match && !nextPamp.some((x: any) => (typeof x === "string" ? x === newVertical : x.id === newVertical))) {
+                            nextPamp = [match, ...nextPamp];
+                          }
+                        }
+                        return { ...prev, vertical: newVertical, pamphletVerticals: nextPamp };
+                      });
+                    }}
                     className="w-full bg-[#0d0d0d] border border-[#262626] rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#d4af37]"
                   >
-                    <option value="">All Verticals</option>
-                    <option value="domestic">Domestic</option>
-                    <option value="commercial">Commercial</option>
-                    <option value="hospitality">Hospitality</option>
-                    <option value="aviation">Aviation</option>
-                    <option value="yacht">Yacht</option>
-                    <option value="moveout">Move-out</option>
-                    <option value="restaurant">Restaurant</option>
+                    <option value="">All Verticals (Usable site-wide across all services)</option>
+                    <option value="domestic">Domestic Cleaning Only</option>
+                    <option value="commercial">Commercial Offices Only</option>
+                    <option value="hospitality">Hospitality & Turnovers Only</option>
+                    <option value="aviation">Aviation Detailing Only</option>
+                    <option value="yacht">Yacht & Marine Only</option>
+                    <option value="moveout">Move-out Cleaning Only</option>
+                    <option value="restaurant">Restaurant & Kitchen Only</option>
                   </select>
+                  <p className="text-[11px] text-[#777]">Which service booking can redeem this discount code.</p>
                 </div>
               </div>
 
               {/* Pamphlet Customization */}
               <div className="bg-[#0d0d0d] border border-[#262626] rounded-xl p-5 space-y-4">
-                <h3 className="text-sm font-semibold text-[#d4af37] uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" /> Pamphlet Copy & Verticals
-                </h3>
+                <div>
+                  <h3 className="text-sm font-semibold text-[#d4af37] uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" /> Printed Pamphlet Showcase (Flyer Layout)
+                  </h3>
+                  <p className="text-[11px] text-[#888] mt-0.5">
+                    Visual cards printed onto the physical A4 pamphlet. You can showcase multiple services regardless of checkout promo restrictions.
+                  </p>
+                </div>
 
                 <div className="space-y-3">
                   <div>
@@ -699,9 +729,9 @@ export default function CampaignDetailPage() {
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-semibold text-[#a6a6a6] uppercase">
-                        Services on Pamphlet ({editForm.pamphletVerticals.length} selected)
+                        Services Featured on Flyer ({editForm.pamphletVerticals.length} selected)
                       </label>
-                      <span className="text-[11px] text-[#666]">Click to toggle on/off</span>
+                      <span className="text-[11px] text-[#666]">Click to toggle on/off (recommended: 3–6)</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto p-1">

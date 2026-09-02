@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
-import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated, requestPasswordResetAdmin, resetPasswordAdmin } from "@/app/actions/admin";
+import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated, requestPasswordResetAdmin, resetPasswordAdmin, devQuickLoginAdmin } from "@/app/actions/admin";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -186,7 +186,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nuno.ribeiro@mondar.ch"
+                  placeholder="e.g. my@email.com"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
                 />
               </div>
@@ -218,20 +218,7 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center text-body-xs">
-                {process.env.NODE_ENV !== "production" ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("nuno.ribeiro@mondar.ch");
-                      setPassword("DXBAdGMae$f3JND$wG");
-                    }}
-                    className="text-accent/80 hover:text-accent font-mono text-[11px] underline cursor-pointer"
-                  >
-                    Fill Dev Credentials
-                  </button>
-                ) : <span />}
-
+              <div className="flex justify-end items-center text-body-xs">
                 <button
                   type="button"
                   onClick={() => {
@@ -252,6 +239,27 @@ export default function AdminLoginPage() {
               >
                 {loading ? "Sending OTP..." : "SEND OTP CODE"} <ArrowRight className="w-4 h-4" />
               </button>
+
+              {process.env.NODE_ENV !== "production" && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setError("");
+                    setLoading(true);
+                    const res = await devQuickLoginAdmin("/admin/marketing");
+                    setLoading(false);
+                    if (res?.success) {
+                      router.push(res.redirect || "/admin/marketing");
+                      router.refresh();
+                    } else {
+                      setError(res?.error || "Dev login failed");
+                    }
+                  }}
+                  className="w-full bg-accent/15 hover:bg-accent/25 border border-accent/40 text-accent font-medium text-caption py-2.5 rounded transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+                >
+                  ⚡ Dev 1-Click Login to Campaigns
+                </button>
+              )}
             </form>
           ) : (
             <form onSubmit={handleVerify2FA} className="space-y-6">
@@ -319,7 +327,7 @@ export default function AdminLoginPage() {
                 required
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                placeholder="admin@elite-cleaning.ch"
+                placeholder="e.g. my@email.com"
                 className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
               />
             </div>

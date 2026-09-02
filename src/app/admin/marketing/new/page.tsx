@@ -244,23 +244,39 @@ export default function NewCampaignPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#a6a6a6]">Vertical Filter</label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-medium text-[#a6a6a6]">Promo Code Restriction</label>
+                  <span className="text-xs text-[#d4af37] font-medium">Checkout Rule</span>
+                </div>
                 <select 
                   name="vertical" 
                   value={formData.vertical}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const newVertical = e.target.value;
+                    setFormData(prev => {
+                      let nextPamp = [...prev.pamphletVerticals];
+                      if (newVertical) {
+                        const match = allServices.find(s => s.id === newVertical);
+                        if (match && !nextPamp.some((x: any) => (typeof x === "string" ? x === newVertical : x.id === newVertical))) {
+                          nextPamp = [match, ...nextPamp];
+                        }
+                      }
+                      return { ...prev, vertical: newVertical, pamphletVerticals: nextPamp };
+                    });
+                  }}
                   className="w-full bg-[#0d0d0d] border border-[#262626] rounded-md px-4 py-2 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-white"
                 >
-                  <option value="">All Verticals</option>
-                  <option value="domestic">Domestic</option>
-                  <option value="commercial">Commercial</option>
-                  <option value="hospitality">Hospitality</option>
-                  <option value="aviation">Aviation</option>
-                  <option value="yacht">Yacht</option>
-                  <option value="moveout">Move-out</option>
-                  <option value="building-care">Building Care</option>
-                  <option value="restaurant">Restaurant</option>
+                  <option value="">All Verticals (Usable site-wide across all services)</option>
+                  <option value="domestic">Domestic Cleaning Only</option>
+                  <option value="commercial">Commercial Offices Only</option>
+                  <option value="hospitality">Hospitality & Turnovers Only</option>
+                  <option value="aviation">Aviation Detailing Only</option>
+                  <option value="yacht">Yacht & Marine Only</option>
+                  <option value="moveout">Move-out Cleaning Only</option>
+                  <option value="building-care">Building Care Only</option>
+                  <option value="restaurant">Restaurant & Kitchen Only</option>
                 </select>
+                <p className="text-xs text-[#777]">Controls which service booking can redeem this discount code.</p>
               </div>
             </div>
           </div>
@@ -373,8 +389,8 @@ export default function NewCampaignPage() {
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="block text-sm font-medium text-[#a6a6a6]">Services on Pamphlet</label>
-                    <p className="text-xs text-[#666]">Select existing services or add custom ones for bespoke flyers</p>
+                    <label className="block text-sm font-medium text-[#a6a6a6]">Services Featured on Printed Flyer (Visual Cards)</label>
+                    <p className="text-xs text-[#666]">Choose 3 to 6 services to display as featured cards on the printed A4 pamphlet</p>
                   </div>
                   <span className="text-xs text-[#d4af37] font-semibold bg-[#d4af37]/10 px-2.5 py-1 rounded-full border border-[#d4af37]/30">
                     {formData.pamphletVerticals.length} selected

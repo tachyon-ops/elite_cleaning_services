@@ -147,7 +147,7 @@ export function ContactConfigForm({
             type="email"
             value={contactEmail}
             onChange={(e) => setContactEmail(e.target.value)}
-            placeholder="e.g. ops@elite-cleaning.ch"
+            placeholder="e.g. my@email.com"
             className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-sm focus:border-accent outline-none font-semibold"
           />
         </div>

@@ -244,6 +244,53 @@ export async function loginAdmin2FA(userId: string, token: string) {
   }
 }
 
+// 1.3.1 Dev-only direct login action for local development / testing
+export async function devQuickLoginAdmin(redirectTo: string = "/admin/marketing") {
+  if (process.env.NODE_ENV === "production") {
+    return { success: false, error: "Dev login is disabled in production" };
+  }
+  try {
+    const adminUser = await db.user.findFirst({
+      where: { role: "super_admin" }
+    });
+    if (!adminUser) {
+      return { success: false, error: "No administrator found in database" };
+    }
+    const cookieStore = await cookies();
+    cookieStore.set("NEXT_LOCALE", adminUser.locale || "en", {
+      path: "/",
+      httpOnly: false,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365
+    });
+    cookieStore.set("admin_session", "true", {
+      path: "/",
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24
+    });
+    cookieStore.set("admin_user_id", adminUser.id, {
+      path: "/",
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24
+    });
+    cookieStore.set("admin_user_role", adminUser.role, {
+      path: "/",
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24
+    });
+    return { success: true, redirect: redirectTo };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 // 1.4 Helper to get dynamic 2FA link for registration
 export async function getRegistration2FASecret(email: string) {
   try {
