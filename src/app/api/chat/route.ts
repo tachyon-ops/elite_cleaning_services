@@ -366,7 +366,25 @@ export async function POST(req: Request) {
     const messages = body.messages || [];
     lastMessage = messages[messages.length - 1]?.content || "";
 
-    // If rate limit exceeded OR API key missing, run fallback offline mode
+    // 1. Direct deterministic check for cleaning quote inquiries
+    const deterministicQuote = calculateDeterministicSwissQuote(lastMessage);
+    if (deterministicQuote) {
+      responseHeaders["X-Chat-Mode"] = "ai";
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          const words = deterministicQuote.split(" ");
+          for (const word of words) {
+            controller.enqueue(encoder.encode(word + " "));
+            await new Promise((resolve) => setTimeout(resolve, 15));
+          }
+          controller.close();
+        }
+      });
+      return new Response(stream, { headers: responseHeaders });
+    }
+
+    // 2. If rate limit exceeded OR API key missing, run fallback offline mode
     if (!allowed || !apiKey) {
       responseHeaders["X-Chat-Mode"] = "offline";
       const offlineReply = getOfflineReply(lastMessage);
