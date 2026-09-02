@@ -81,7 +81,7 @@ Rules & Output Tone:
 - For office cleaning: [Offerte für Büro anfordern](/de/buchen/gewerbe?area=100&frequency=weekly)
 - For Airbnb / turnovers: [Turnover buchen](/de/buchen/airbnb?beds=2&baths=1)
 - For Aviation: [Aviation Detailing anfragen](/de/buchen/luftfahrt?fboLocation=Zurich)
-- For Yacht: [Yacht Care anfragen](/de/buchen/yacht?vesselLength=30)
+- Supplier & Invoicing Policy: All quoted figures are standard network benchmark rates (Richtpreis). The final price is confirmed upon partner team matching and can be adjusted/corrected by the assigned supplier after job completion based on actual on-site work and exact property conditions.
 - NEVER stop mid-sentence. Always finish the entire quote and breakdown in one single coherent message.
 - Always be courteous, precise, and concise. Respond in the exact language the user used (respond in German/Hochdeutsch if addressed in German or Swiss German, English if addressed in English, Portuguese if addressed in Portuguese).
 - Comply with EU AI Act Article 50: clearly represent yourself as an AI assistant.`;
@@ -220,9 +220,10 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
     return `Hello! Here is your verified quote for a **${rooms} Room Move-Out Deep Clean**:\n\n` +
            enBreakdown.join("\n") + "\n" +
-           `• **Total Verified Rate**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `• **Total Benchmark Rate**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
            `🛡️ **100% Swiss Handover Guarantee Included**:\n` +
            `Our subcontractor team attends your official apartment handover. Any remarks from the landlord are re-cleaned on site for free.\n\n` +
+           `💡 **Pricing Transparency**: *This is a calculated standard benchmark rate. The final price is confirmed upon partner team matching and adjusted/corrected after job completion by the supplier based on actual on-site work.*\n\n` +
            `[Book with this Quote](/en/book/end-cleaning?${queryParams})`;
   }
 
@@ -237,6 +238,7 @@ export function calculateDeterministicSwissQuote(message: string): string | null
            `• **Valor Total**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
            `🛡️ **100% Garantia de Entrega Suíça (Abnahmegarantie)**:\n` +
            `A nossa equipa acompanha a entrega do imóvel ao senhorio. Qualquer retificação é feita na hora gratuitamente.\n\n` +
+           `💡 **Transparência de Preços**: *Esta é uma estimativa base de referência. O valor final é confirmado na atribuição da equipa parceira e ajustado/corrigido pelo prestador após a conclusão do serviço com base no trabalho real executado.*\n\n` +
            `[Reservar com este orçamento](/pt/reservar/limpeza-mudanca?${queryParams})`;
   }
 
@@ -248,9 +250,10 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
     return `Bonjour! Voici votre devis vérifié pour le **Nettoyage de fin de bail (${rooms} pièces)**:\n\n` +
            frBreakdown.join("\n") + "\n" +
-           `• **Prix total vérifié**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `• **Prix total indicatif**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
            `🛡️ **100% Garantie de remise suisse incluse**:\n` +
            `Notre équipe est présente lors de l'état des lieux de sortie. Toute remarque de la gérance est rectifiée gratuitement sur place.\n\n` +
+           `💡 **Transparence tarifaire**: *Il s'agit d'un tarif indicatif standard. Le montant final est confirmé lors de l'attribution de l'équipe partenaire et est ajusté/corrigé par le prestataire après l'exécution des travaux selon le travail réel effectué.*\n\n` +
            `[Réserver avec ce devis](/fr/reserver/nettoyage-remise?${queryParams})`;
   }
 
@@ -262,9 +265,10 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
     return `Buongiorno! Ecco il preventivo verificato per la **Pulizia di fine locazione (${rooms} locali)**:\n\n` +
            itBreakdown.join("\n") + "\n" +
-           `• **Prezzo totale verificato**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `• **Prezzo totale indicativo**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
            `🛡️ **100% Garanzia di consegna svizzera inclusa**:\n` +
            `Il nostro team partecipa alla consegna ufficiale dell'appartamento. Eventuali osservazioni vengono risolte sul posto gratuitamente.\n\n` +
+           `💡 **Trasparenza dei prezzi**: *Questo è un prezzo indicativo standard. L'importo finale viene confermato all'assegnazione dell'impresa partner e viene corretto/finalizzato dal fornitore a lavoro ultimato in base all'intervento effettivo.*\n\n` +
            `[Prenota con questo preventivo](/it/prenotare/pulizia-trasloco?${queryParams})`;
   }
 
@@ -276,9 +280,10 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
     return `¡Hola! Aquí tiene su presupuesto verificado para la **Limpieza de fin de alquiler (${rooms} habitaciones)**:\n\n` +
            esBreakdown.join("\n") + "\n" +
-           `• **Precio total verificado**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `• **Precio total orientativo**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
            `🛡️ **100% Garantía de entrega suiza incluida**:\n` +
            `Nuestro equipo asiste a la entrega oficial de la vivienda. Cualquier detalle del arrendador se subsana al instante sin coste.\n\n` +
+           `💡 **Transparencia de precios**: *Este es un presupuesto orientativo estándar. El precio definitivo se confirma en la asignación del equipo colaborador y es corregido/ajustado por el proveedor tras la finalización del servicio según el trabajo real realizado.*\n\n` +
            `[Reservar con este presupuesto](/es/reservar/limpieza-mudanza?${queryParams})`;
   }
 
@@ -287,11 +292,12 @@ export function calculateDeterministicSwissQuote(message: string): string | null
   if (hasBlinds) deBreakdown.push("• **Zusatz Lamellenstoren / Fenster**: CHF 120.00");
   if (isUrgent) deBreakdown.push("• **Express / Wochenende-Zuschlag**: CHF 200.00");
 
-  return `Grüezi! Gerne berechne ich Ihnen die verbindliche Offerte für die **Endreinigung (${rooms} Zimmer)**:\n\n` +
+  return `Grüezi! Gerne berechne ich Ihnen die verbindliche Richtofferte für die **Endreinigung (${rooms} Zimmer)**:\n\n` +
          deBreakdown.join("\n") + "\n" +
          `• **Berechneter Richtpreis**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
          `🛡️ **100% Schweizer Abnahmegarantie inklusive**:\n` +
          `Unsere Equipe ist bei der Wohnungsübergabe anwesend. Allfällige Beanstandungen der Verwaltung werden sofort kostenlos nachgereinigt.\n\n` +
+         `💡 **Preistransparenz**: *Dies ist ein berechneter Standard-Richtpreis. Der finale Endpreis wird bei der Zuweisung des zertifizierten Partnerbetriebs bestätigt und kann nach Abschluss der Arbeiten anhand des tatsächlichen Aufwands durch den Dienstleister korrigiert/finalisiert werden.*\n\n` +
          `[Jetzt Endreinigung verbindlich buchen](/de/buchen/endreinigung?${queryParams})`;
 }
 
