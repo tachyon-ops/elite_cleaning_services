@@ -12,110 +12,314 @@ interface IPRecord {
 // Persistent in-memory rate limiter store
 const rateLimitMap = new Map<string, IPRecord>();
 
-const SYSTEM_PROMPT = `You are the Mondar Assistant, a premium, luxury Swiss dispatch concierge.
-Your brand is "Mondar" (recently rebranded from "Elite Cleaning Services").
-Always maintain a highly professional, helpful, and luxury tone suitable for premium Swiss cleaning dispatches.
-
-Here are the details of our services and pricing:
-- Home & Villa Cleaning (Domestic): From CHF 80 (Base rate)
-- Offices & Commercial (Commercial): From CHF 150 (Per m² base)
-- Airbnb & Hospitality (Hospitality): From CHF 120 (Flat rate per turnover)
-- Aviation & Yacht Detailing: Bespoke quote-on-request (compiled within 4 hours). We service private jets, turboprops, and helicopters at Swiss hangars/FBOs (including Zurich Airport FBO), and vessels/yachts on Lake Zurich and other Swiss lakes.
-- Move-Out & End Clean (Moveout): Deep cleaning with a handover guarantee for apartment and house returns to landlords (Quote on Request).
-- Building Care (Building-care): Common-area cleaning, entrances, and staircase care for premium residential buildings (B2B recurring, Quote on Request).
-- Restaurant & Kitchen (Restaurant): Certified kitchen extraction compliance (Tier A) and nightly after-hours maintenance (Tier B) for restaurants (B2B, Quote on Request).
-
-If the user wants to book or get a quote, guide them to use our dynamic booking intake wizard directly from the home page.
-Keep your responses concise, clear, and elegant. Speak the same language as the user (English, German, French, etc.).`;
-
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number; limit: number } {
   const now = Date.now();
-  let record = rateLimitMap.get(ip);
+  const MINUTE_MS = 60 * 1000;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const MINUTE_LIMIT = 15;
+  const DAILY_LIMIT = 100;
 
+  let record = rateLimitMap.get(ip);
   if (!record) {
     record = {
       minuteCount: 0,
-      minuteReset: now + 60000,
+      minuteReset: now + MINUTE_MS,
       dailyCount: 0,
-      dailyReset: now + 24 * 60 * 60 * 1000,
+      dailyReset: now + DAY_MS,
     };
+    rateLimitMap.set(ip, record);
   }
 
-  // Reset minute window
   if (now > record.minuteReset) {
     record.minuteCount = 0;
-    record.minuteReset = now + 60000;
+    record.minuteReset = now + MINUTE_MS;
   }
-
-  // Reset daily window
   if (now > record.dailyReset) {
     record.dailyCount = 0;
-    record.dailyReset = now + 24 * 60 * 60 * 1000;
+    record.dailyReset = now + DAY_MS;
   }
 
-  const limit = 50;
-  const remaining = Math.max(0, limit - record.dailyCount);
-
-  // Enforce 5 requests per minute and 50 per day
-  if (record.minuteCount >= 5 || record.dailyCount >= limit) {
-    rateLimitMap.set(ip, record);
-    return { allowed: false, remaining, limit };
+  const allowed = record.minuteCount < MINUTE_LIMIT && record.dailyCount < DAILY_LIMIT;
+  if (allowed) {
+    record.minuteCount++;
+    record.dailyCount++;
   }
 
-  return { allowed: true, remaining, limit };
+  const remaining = Math.max(0, DAILY_LIMIT - record.dailyCount);
+  return { allowed, remaining, limit: DAILY_LIMIT };
 }
 
-function incrementRateLimit(ip: string) {
-  const record = rateLimitMap.get(ip);
-  if (record) {
-    record.minuteCount += 1;
-    record.dailyCount += 1;
-    rateLimitMap.set(ip, record);
+const SYSTEM_PROMPT = `You are the Mondar AI Concierge, powered by Nuncio (the Swiss Conversational Commerce & Lead Capture Engine).
+Your brand is "Mondar Specialty Cleaning" (https://mondar.ch).
+You provide ultra-reliable, grounded, zero-hallucination assistance for Swiss cleaning services in German, Swiss German, English, French, and Portuguese.
+
+Strict Swiss Pricing Catalog (CHF):
+1. Move-Out & End-of-Tenancy Deep Cleaning (Endreinigung mit 100% Schweizer Abnahmegarantie):
+   - 1.5 - 2.5 Zimmer (bis 60m²): CHF 650.00 (5 Std. Einsatz) [SKU: CLEAN-MOVE-2.5R]
+   - 3.5 Zimmer (bis 90m²): CHF 890.00 (7 Std. Einsatz) [SKU: CLEAN-MOVE-3.5R]
+   - 4.5 Zimmer (bis 120m²): CHF 1'180.00 (9 Std. Einsatz) [SKU: CLEAN-MOVE-4.5R]
+   - 5.5+ Zimmer (ab 120m²): CHF 1'450.00 (12 Std. Einsatz) [SKU: CLEAN-MOVE-5.5R]
+   - Add-on Balkon / Terrasse: +CHF 80.00
+   - Add-on Lamellenstoren / Blinds: +CHF 120.00
+   - Add-on Express 24h / Weekend: +CHF 200.00
+   - ALL move-out cleans include 100% Handover Guarantee (Abnahmegarantie) with subcontractor presence at landlord handover.
+
+2. Regular Home & Villa Cleaning (Domestic): From CHF 80.00 base dispatch.
+3. Offices & Commercial: From CHF 150.00 base (custom square-meter proposal).
+4. Airbnb & Hospitality Turnover: From CHF 120.00 per turnover.
+5. Aviation & Yacht Detailing: Bespoke quote compiled within 4 hours (hangars at Zurich Airport FBO, Lake Zurich marinas).
+6. Restaurant & Commercial Kitchens: Certified kitchen extraction compliance (Tier A) & nightly deep maintenance (Tier B).
+
+Rules & Output Tone:
+- When a user asks for a price for their apartment/house (e.g. 5.5 Zimmer in Zürich with balcony), immediately state the EXACT price breakdown in CHF, the estimated duration, the 100% Abnahmegarantie warranty, and the direct link button with pre-filled query parameters:
+  - German: [Jetzt Endreinigung verbindlich buchen](/de/buchen/endreinigung?rooms=5.5&area=130&beds=4&baths=2&scope=handover_guarantee,balcony_terrace)
+  - English: [Book with this Quote](/en/book/end-cleaning?rooms=5.5&area=130&beds=4&baths=2&scope=handover_guarantee,balcony_terrace)
+  - French: [Réserver avec ce devis](/fr/reserver/nettoyage-remise?rooms=5.5&area=130&beds=4&baths=2&scope=handover_guarantee,balcony_terrace)
+  - Italian: [Prenota con questo preventivo](/it/prenotare/pulizia-trasloco?rooms=5.5&area=130&beds=4&baths=2&scope=handover_guarantee,balcony_terrace)
+  - Portuguese: [Reservar com este orçamento](/pt/reservar/limpeza-mudanca?rooms=5.5&area=130&beds=4&baths=2&scope=handover_guarantee,balcony_terrace)
+- For regular house cleaning: [Jetzt Privatreinigung buchen](/de/buchen/haus?frequency=bi-weekly&beds=2&baths=1)
+- For office cleaning: [Offerte für Büro anfordern](/de/buchen/gewerbe?area=100&frequency=weekly)
+- For Airbnb / turnovers: [Turnover buchen](/de/buchen/airbnb?beds=2&baths=1)
+- For Aviation: [Aviation Detailing anfragen](/de/buchen/luftfahrt?fboLocation=Zurich)
+- For Yacht: [Yacht Care anfragen](/de/buchen/yacht?vesselLength=30)
+- NEVER stop mid-sentence. Always finish the entire quote and breakdown in one single coherent message.
+- Always be courteous, precise, and concise. Respond in the exact language the user used (respond in German/Hochdeutsch if addressed in German or Swiss German, English if addressed in English, Portuguese if addressed in Portuguese).
+- Comply with EU AI Act Article 50: clearly represent yourself as an AI assistant.`;
+
+export function getTargetDateFromMessage(message: string): string | null {
+  const lower = (message || "").toLowerCase();
+  const now = new Date();
+  
+  if (/samstag|saturday|sábado|sabato|samedi/i.test(lower)) {
+    const d = new Date(now);
+    const day = d.getDay(); // 0 is Sun, 6 is Sat
+    const diff = (6 - day + 7) % 7;
+    d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const dateNum = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${dateNum}`;
   }
+
+  if (/sonntag|sunday|domingo|domenica|dimanche/i.test(lower)) {
+    const d = new Date(now);
+    const day = d.getDay(); // 0 is Sun
+    const diff = (7 - day) % 7;
+    d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const dateNum = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${dateNum}`;
+  }
+
+  if (/morgen|tomorrow|amanhã|demain|domani|mañana/i.test(lower)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const dateNum = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${dateNum}`;
+  }
+
+  return null;
 }
 
-function getOfflineReply(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes("price") || lower.includes("cost") || lower.includes("chf") || lower.includes("tarif")) {
-    return "At Mondar, our pricing depends on the service vertical:\n\n" +
-           "- **Home & Villa Cleaning**: From CHF 80 (Base rate)\n" +
-           "- **Offices & Commercial**: From CHF 150 (Per m² base)\n" +
-           "- **Airbnb & Hospitality**: From CHF 120 (Flat rate per turnover)\n" +
-           "- **Aviation & Yacht**: Bespoke quote-on-request (compiled within 4 hours)\n" +
-           "- **Move-Out & End Clean**: Custom quote with handover guarantee\n" +
-           "- **Building Care**: Custom quote for premium common-area care\n" +
-           "- **Restaurant & Kitchen**: Custom quote for certified extraction compliance (Tier A) or nightly maintenance (Tier B)\n\n" +
-           "Would you like me to help you start a booking for any of these divisions?";
+export function calculateDeterministicSwissQuote(message: string): string | null {
+  const lower = (message || "").toLowerCase();
+  const hasMoveOut = /end|move|umzug|abgabe|reinigung|clean|tenancy|wohnig|wohnung|haus|villa|einfamilienhaus|zimmer|limpeza|mudan|locat|bail|devis|trasloco|orçamento/i.test(lower);
+  
+  if (!hasMoveOut) return null;
+
+  let rooms = 0;
+  if (/(?:^|[^\d.])5[.,]5(?![.,\d])/i.test(lower) || /(?:^|[^\d.])(?:fünf|5)(?![.,\d])(?:\.0)?.*?(?:zimmer|rooms|divis|pièces|locali|habitacion)/i.test(lower) || /haus|villa|einfamilienhaus/i.test(lower)) {
+    rooms = 5.5;
+  } else if (/(?:^|[^\d.])4[.,]5(?![.,\d])/i.test(lower) || /(?:^|[^\d.])(?:vier|4)(?![.,\d])(?:\.0)?.*?(?:zimmer|rooms|divis|pièces|locali|habitacion)/i.test(lower)) {
+    rooms = 4.5;
+  } else if (/(?:^|[^\d.])3[.,]5(?![.,\d])/i.test(lower) || /(?:^|[^\d.])(?:drei|3)(?![.,\d])(?:\.0)?.*?(?:zimmer|rooms|divis|pièces|locali|habitacion)/i.test(lower)) {
+    rooms = 3.5;
+  } else if (/(?:^|[^\d.])(?:1[.,]5|2[.,]5)(?![.,\d])/i.test(lower) || /(?:^|[^\d.])(?:studio|zwei|2|1)(?![.,\d])(?:\.0)?.*?(?:zimmer|rooms|divis|pièces|locali|habitacion)/i.test(lower)) {
+    rooms = 2.5;
   }
-  if (lower.includes("book") || lower.includes("reserv") || lower.includes("intake") || lower.includes("quote")) {
-    return "To book a service, you can use our dynamic booking intake wizard directly from the home page. " +
-           "Select your desired cleaning division (such as Aviation, Yacht, Commercial, Domestic, Move-Out, Building Care, or Restaurant), fill out the brief intake coordinates, choose a scheduling window, and secure your booking.\n\n" +
-           "Standard cleanings can be confirmed instantly, while specialty/B2B divisions receive a locked-in quote via email within 4 hours.";
+
+  if (rooms === 0) return null;
+
+  const hasBalcony = /balkon|terrasse|balcony|terrace|varanda|terraza/i.test(lower);
+  const hasBlinds = /storen|lamellen|blinds|persianas|volets|tapparelle/i.test(lower);
+  const isUrgent = /dringend|urgent|morgen|tomorrow|samstag|saturday|weekend|wochenende|24h|amanhã|urgente|fim de semana/i.test(lower);
+
+  let basePrice = 650;
+  let duration = 5;
+  let sku = "CLEAN-MOVE-2.5R";
+  let areaEst = 50;
+  let bedsEst = 1;
+  let bathsEst = 1;
+
+  if (rooms === 5.5) {
+    basePrice = 1450;
+    duration = 12;
+    sku = "CLEAN-MOVE-5.5R";
+    areaEst = 130;
+    bedsEst = 4;
+    bathsEst = 2;
+  } else if (rooms === 4.5) {
+    basePrice = 1180;
+    duration = 9;
+    sku = "CLEAN-MOVE-4.5R";
+    areaEst = 100;
+    bedsEst = 3;
+    bathsEst = 2;
+  } else if (rooms === 3.5) {
+    basePrice = 890;
+    duration = 7;
+    sku = "CLEAN-MOVE-3.5R";
+    areaEst = 80;
+    bedsEst = 2;
+    bathsEst = 1;
+  } else if (rooms === 2.5) {
+    basePrice = 650;
+    duration = 5;
+    sku = "CLEAN-MOVE-2.5R";
+    areaEst = 50;
+    bedsEst = 1;
+    bathsEst = 1;
+  }
+
+  let total = basePrice;
+  const scopes = ["handover_guarantee"];
+  if (hasBalcony) {
+    total += 80;
+    scopes.push("balcony_terrace");
+  }
+  if (hasBlinds) {
+    total += 120;
+    scopes.push("windows_shutters");
+  }
+  if (isUrgent) {
+    total += 200;
+    scopes.push("express_weekend");
+  }
+
+  // Detect language
+  const isEn = /hello|need|clean|apartment|house|quote|urgent/i.test(lower) && !/ich|wir|bitte|brauche|wohnung|limpeza|mudança/i.test(lower);
+  const isPt = /preciso|limpeza|mudança|apartamento|orçamento|olá|ola/i.test(lower);
+  const isFr = /bonjour|nettoyage|devis|appartement|bail/i.test(lower);
+  const isIt = /buongiorno|pulizia|preventivo|trasloco/i.test(lower);
+  const isEs = /hola|limpieza|mudanza|presupuesto/i.test(lower);
+
+  const scopeQuery = scopes.join(",");
+  const noteQuery = isUrgent ? encodeURIComponent("Express 24h / Weekend") : "";
+  const detectedDate = getTargetDateFromMessage(message);
+  const dateQuery = detectedDate ? `&date=${detectedDate}` : "";
+  const queryParams = `rooms=${rooms}&area=${areaEst}&beds=${bedsEst}&baths=${bathsEst}&scope=${scopeQuery}${noteQuery ? `&notes=${noteQuery}` : ""}${dateQuery}`;
+
+  if (isEn) {
+    const enBreakdown: string[] = [`• **Base Deep Clean (${rooms}+ Rooms)**: CHF ${basePrice.toFixed(2)} (approx. ${duration} hrs)`];
+    if (hasBalcony) enBreakdown.push("• **Add-on Balcony / Terrace**: CHF 80.00");
+    if (hasBlinds) enBreakdown.push("• **Add-on Window Blinds / Shutters**: CHF 120.00");
+    if (isUrgent) enBreakdown.push("• **Express / Weekend Surcharge**: CHF 200.00");
+
+    return `Hello! Here is your verified quote for a **${rooms} Room Move-Out Deep Clean**:\n\n` +
+           enBreakdown.join("\n") + "\n" +
+           `• **Total Verified Rate**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `🛡️ **100% Swiss Handover Guarantee Included**:\n` +
+           `Our subcontractor team attends your official apartment handover. Any remarks from the landlord are re-cleaned on site for free.\n\n` +
+           `[Book with this Quote](/en/book/end-cleaning?${queryParams})`;
+  }
+
+  if (isPt) {
+    const ptBreakdown: string[] = [`• **Limpeza Base (${rooms}+ Divisões)**: CHF ${basePrice.toFixed(2)} (aprox. ${duration} horas)`];
+    if (hasBalcony) ptBreakdown.push("• **Adicional Varanda / Terraço**: CHF 80.00");
+    if (hasBlinds) ptBreakdown.push("• **Adicional Persianas / Janelas**: CHF 120.00");
+    if (isUrgent) ptBreakdown.push("• **Taxa Expresso / Fim de Semana**: CHF 200.00");
+
+    return `Olá! Aqui está o seu orçamento verificado para a **Limpeza de Mudança (${rooms} Divisões)**:\n\n` +
+           ptBreakdown.join("\n") + "\n" +
+           `• **Valor Total**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `🛡️ **100% Garantia de Entrega Suíça (Abnahmegarantie)**:\n` +
+           `A nossa equipa acompanha a entrega do imóvel ao senhorio. Qualquer retificação é feita na hora gratuitamente.\n\n` +
+           `[Reservar com este orçamento](/pt/reservar/limpeza-mudanca?${queryParams})`;
+  }
+
+  if (isFr) {
+    const frBreakdown: string[] = [`• **Nettoyage de base (${rooms}+ pièces)**: CHF ${basePrice.toFixed(2)} (env. ${duration} h)`];
+    if (hasBalcony) frBreakdown.push("• **Option Balcon / Terrasse**: CHF 80.00");
+    if (hasBlinds) frBreakdown.push("• **Option Stores / Fenêtres**: CHF 120.00");
+    if (isUrgent) frBreakdown.push("• **Supplément Express / Week-end**: CHF 200.00");
+
+    return `Bonjour! Voici votre devis vérifié pour le **Nettoyage de fin de bail (${rooms} pièces)**:\n\n` +
+           frBreakdown.join("\n") + "\n" +
+           `• **Prix total vérifié**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `🛡️ **100% Garantie de remise suisse incluse**:\n` +
+           `Notre équipe est présente lors de l'état des lieux de sortie. Toute remarque de la gérance est rectifiée gratuitement sur place.\n\n` +
+           `[Réserver avec ce devis](/fr/reserver/nettoyage-remise?${queryParams})`;
+  }
+
+  if (isIt) {
+    const itBreakdown: string[] = [`• **Pulizia base (${rooms}+ locali)**: CHF ${basePrice.toFixed(2)} (ca. ${duration} ore)`];
+    if (hasBalcony) itBreakdown.push("• **Opzione Balcone / Terrazza**: CHF 80.00");
+    if (hasBlinds) itBreakdown.push("• **Opzione Tapparelle / Finestre**: CHF 120.00");
+    if (isUrgent) itBreakdown.push("• **Supplemento Express / Fine settimana**: CHF 200.00");
+
+    return `Buongiorno! Ecco il preventivo verificato per la **Pulizia di fine locazione (${rooms} locali)**:\n\n` +
+           itBreakdown.join("\n") + "\n" +
+           `• **Prezzo totale verificato**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `🛡️ **100% Garanzia di consegna svizzera inclusa**:\n` +
+           `Il nostro team partecipa alla consegna ufficiale dell'appartamento. Eventuali osservazioni vengono risolte sul posto gratuitamente.\n\n` +
+           `[Prenota con questo preventivo](/it/prenotare/pulizia-trasloco?${queryParams})`;
+  }
+
+  if (isEs) {
+    const esBreakdown: string[] = [`• **Limpieza base (${rooms}+ habitaciones)**: CHF ${basePrice.toFixed(2)} (aprox. ${duration} hrs)`];
+    if (hasBalcony) esBreakdown.push("• **Opción Balcón / Terraza**: CHF 80.00");
+    if (hasBlinds) esBreakdown.push("• **Opción Persianas / Ventanas**: CHF 120.00");
+    if (isUrgent) esBreakdown.push("• **Suplemento Express / Fin de semana**: CHF 200.00");
+
+    return `¡Hola! Aquí tiene su presupuesto verificado para la **Limpieza de fin de alquiler (${rooms} habitaciones)**:\n\n` +
+           esBreakdown.join("\n") + "\n" +
+           `• **Precio total verificado**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+           `🛡️ **100% Garantía de entrega suiza incluida**:\n` +
+           `Nuestro equipo asiste a la entrega oficial de la vivienda. Cualquier detalle del arrendador se subsana al instante sin coste.\n\n` +
+           `[Reservar con este presupuesto](/es/reservar/limpieza-mudanza?${queryParams})`;
+  }
+
+  const deBreakdown: string[] = [`• **Grundreinigung (${rooms}+ Zimmer)**: CHF ${basePrice.toFixed(2)} (ca. ${duration} Std. Einsatz)`];
+  if (hasBalcony) deBreakdown.push("• **Zusatz Balkon / Terrasse**: CHF 80.00");
+  if (hasBlinds) deBreakdown.push("• **Zusatz Lamellenstoren / Fenster**: CHF 120.00");
+  if (isUrgent) deBreakdown.push("• **Express / Wochenende-Zuschlag**: CHF 200.00");
+
+  return `Grüezi! Gerne berechne ich Ihnen die verbindliche Offerte für die **Endreinigung (${rooms} Zimmer)**:\n\n` +
+         deBreakdown.join("\n") + "\n" +
+         `• **Berechneter Richtpreis**: **CHF ${total.toFixed(2)}** (${sku})\n\n` +
+         `🛡️ **100% Schweizer Abnahmegarantie inklusive**:\n` +
+         `Unsere Equipe ist bei der Wohnungsübergabe anwesend. Allfällige Beanstandungen der Verwaltung werden sofort kostenlos nachgereinigt.\n\n` +
+         `[Jetzt Endreinigung verbindlich buchen](/de/buchen/endreinigung?${queryParams})`;
+}
+
+export function getOfflineReply(message: string): string {
+  const quote = calculateDeterministicSwissQuote(message);
+  if (quote) return quote;
+
+  const lower = (message || "").toLowerCase();
+  if (lower.includes("price") || lower.includes("preis") || lower.includes("cost") || lower.includes("kosten") || lower.includes("preço")) {
+    return "Mondar Preisübersicht (Schweiz):\n\n" +
+           "• **Umzugsreinigung (Endreinigung mit 100% Abnahmegarantie)**: ab CHF 650.00 → [Umzugsreinigung buchen](/de/buchen/endreinigung)\n" +
+           "• **Privat- & Unterhaltsreinigung**: ab CHF 80.00 → [Privatreinigung buchen](/de/buchen/haus)\n" +
+           "• **Büro & Gewerbe**: ab CHF 150.00 → [Büroreinigung buchen](/de/buchen/gewerbe)\n" +
+           "• **Airbnb & Hospitality**: ab CHF 120.00 pro Turnover → [Airbnb buchen](/de/buchen/airbnb)\n" +
+           "• **Aviation & Yacht Detailing**: Individuelle Offerte innert 4 Stunden → [Aviation](/de/buchen/luftfahrt) / [Yacht](/de/buchen/yacht)\n\n" +
+           "Für welches Objekt oder wie viele Zimmer möchten Sie eine Offerte berechnen?";
   }
   if (lower.includes("aviation") || lower.includes("jet") || lower.includes("helicopter") || lower.includes("hangar")) {
-    return "Mondar operates a dedicated Aviation Detailing division. We service private jets, turboprops, and helicopter interiors in Swiss hangars and FBOs (including Zurich Airport FBO).\n\n" +
-           "Services include deep cabin detailing, leather treatment, cockpit cleaning, exterior wash, and galley restocking. Simply select the Aviation vertical in our booking intake to request a quote.";
+    return "Mondar Aviation Detailing betreut Privatjets, Turboprops und Helikopter an Schweizer FBOs (inkl. Zürich Flughafen FBO).\n\n" +
+           "Dienstleistungen: Tiefenreinigung Kabine, Lederpflege, Cockpit, Aussenreinigung. Wählen Sie [Aviation Cleaning](/de/buchen/luftfahrt) für eine Offerte.";
   }
-  if (lower.includes("yacht") || lower.includes("boat") || lower.includes("marine") || lower.includes("ship")) {
-    return "Our Yacht & Marine Care division provides premium exterior washdowns, teak cleaning/treatments, interior detailing, and end-of-season winterization. We have active service coverage and marina access across Lake Zurich and surrounding Swiss lakes.\n\n" +
-           "You can specify your vessel length, type, and slip coordinates directly in our booking form.";
+  if (lower.includes("yacht") || lower.includes("boat") || lower.includes("boot")) {
+    return "Unsere Yacht & Marine Care Division bietet Aussenwäsche, Teakholzpflege, Innenreinigung und Einwinterung auf dem Zürichsee und weiteren Schweizer Gewässern.\n\n" +
+           "Offerte anfordern: [Yacht Care](/de/buchen/yacht)";
   }
-  if (lower.includes("building") || lower.includes("staircase") || lower.includes("common-area") || lower.includes("common area")) {
-    return "Our Building Care division provides premium common-area cleaning, entrances, and staircase care for premium residential and mixed-use buildings. We establish fixed recurring weekday rounds to maintain prestige properties. Simply select the Building Care vertical on the home page to start your intake.";
-  }
-  if (lower.includes("restaurant") || lower.includes("kitchen") || lower.includes("extraction") || lower.includes("hood")) {
-    return "Mondar serves hospitality operators with certified Kitchen & Extraction compliance cleaning (Tier A, which includes fire prevention certification required by insurers) and after-hours nightly kitchen maintenance (Tier B). Request a quote by selecting the Restaurant & Kitchen vertical in the booking form.";
-  }
-  if (lower.includes("move-out") || lower.includes("moveout") || lower.includes("handover") || lower.includes("tenancy")) {
-    return "We offer professional Move-Out & End Cleanings. Every move-out clean comes with our Handover Guarantee, meaning our subcontractors will be present during the apartment handover to ensure your landlord accepts the return. Select the Move-Out vertical in the booking form to request a quote.";
-  }
-  if (lower.includes("who") || lower.includes("what is mondar") || lower.includes("company") || lower.includes("broker")) {
-    return "Mondar is a premium, Swiss-based booking platform and brokerage layer for specialty cleaning services. " +
-           "We act as a single point of contact, managing the digital storefront, scheduling, quality audits, liability insurance, and payments, while dispatching the physical service to our curated, fully vetted network of Swiss subcontractor partners.";
-  }
-  return "Hello! I am the Mondar Assistant, your direct concierge for premium Swiss cleaning dispatches. " +
-         "I can answer questions about our specialty cleaning divisions (Aviation, Yacht, Commercial, Domestic, Move-Out, Building Care, and Restaurant), help clarify our pricing structures, or guide you through our booking process.\n\n" +
-         "How can I assist you with your cleaning requirements today?";
+  return "Grüezi! Ich bin der Mondar AI Concierge (powered by Nuncio).\n\n" +
+         "Ich berechne Ihnen sofort verbindliche Preise für Umzugsreinigungen mit 100% Abnahmegarantie, Unterhaltsreinigungen, Gewerbe oder Aviation/Yacht Detailing.\n\n" +
+         "Wie viele Zimmer oder welche Dienstleistung benötigen Sie?";
 }
 
 export async function GET(req: Request) {
@@ -150,17 +354,19 @@ export async function POST(req: Request) {
 
   const responseHeaders: Record<string, string> = {
     "Content-Type": "text/plain; charset=utf-8",
-    "Transfer-Encoding": "chunked",
     "X-RateLimit-Limit": String(limit),
     "X-RateLimit-Remaining": String(remaining),
     "Access-Control-Expose-Headers": "X-RateLimit-Limit, X-RateLimit-Remaining, X-Chat-Mode",
   };
 
-  try {
-    const { messages } = await req.json();
-    const lastMessage = messages[messages.length - 1]?.content || "";
+  let lastMessage = "";
 
-    // 1. If rate limit exceeded OR API key missing, run fallback offline mode
+  try {
+    const body = await req.json();
+    const messages = body.messages || [];
+    lastMessage = messages[messages.length - 1]?.content || "";
+
+    // If rate limit exceeded OR API key missing, run fallback offline mode
     if (!allowed || !apiKey) {
       responseHeaders["X-Chat-Mode"] = "offline";
       const offlineReply = getOfflineReply(lastMessage);
@@ -171,7 +377,7 @@ export async function POST(req: Request) {
           const words = offlineReply.split(" ");
           for (const word of words) {
             controller.enqueue(encoder.encode(word + " "));
-            await new Promise((resolve) => setTimeout(resolve, 35));
+            await new Promise((resolve) => setTimeout(resolve, 20));
           }
           controller.close();
         }
@@ -180,14 +386,11 @@ export async function POST(req: Request) {
       return new Response(stream, { headers: responseHeaders });
     }
 
-    // 2. Otherwise, run online Gemini 1.5 Flash stream
+    // Run online Gemini 2.5 Flash stream
     responseHeaders["X-Chat-Mode"] = "ai";
-    incrementRateLimit(ip);
-    
-    // Decrement the remaining count for the headers sent in this response
-    responseHeaders["X-RateLimit-Remaining"] = String(Math.max(0, remaining - 1));
+    responseHeaders["X-RateLimit-Remaining"] = String(Math.max(0, remaining));
 
-    const geminiContents = messages.slice(-6).map((m: any) => ({
+    const geminiContents = messages.slice(-10).map((m: any) => ({
       role: m.role === "user" ? "user" : "model",
       parts: [{ text: m.content }]
     }));
@@ -202,25 +405,42 @@ export async function POST(req: Request) {
       cleanedContents.push({ role: "user", parts: [{ text: lastMessage }] });
     }
 
-    const geminiResponse = await fetch(
+    const payload = JSON.stringify({
+      contents: cleanedContents,
+      systemInstruction: {
+        parts: [{ text: SYSTEM_PROMPT }]
+      },
+      generationConfig: {
+        maxOutputTokens: 1200
+      }
+    });
+
+    let geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: cleanedContents,
-          systemInstruction: {
-            parts: [{ text: SYSTEM_PROMPT }]
-          },
-          generationConfig: {
-            maxOutputTokens: 350
-          }
-        })
+        body: payload
       }
     );
 
+    // If transient 503/429, retry once after a short delay
+    if (geminiResponse.status === 503 || geminiResponse.status === 429) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload
+        }
+      );
+    }
+
     if (!geminiResponse.ok) {
-      throw new Error(`Gemini API failed: ${geminiResponse.statusText}`);
+      const errText = await geminiResponse.text().catch(() => "");
+      console.error(`Gemini API error (${geminiResponse.status}):`, errText);
+      throw new Error(`Gemini API failed with status ${geminiResponse.status}: ${geminiResponse.statusText}`);
     }
 
     const reader = geminiResponse.body?.getReader();
@@ -248,12 +468,16 @@ export async function POST(req: Request) {
                 if (dataStr === "[DONE]") continue;
                 try {
                   const parsed = JSON.parse(dataStr);
-                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                  if (text) {
-                    controller.enqueue(new TextEncoder().encode(text));
+                  const parts = parsed.candidates?.[0]?.content?.parts;
+                  if (Array.isArray(parts)) {
+                    for (const p of parts) {
+                      if (p.text) {
+                        controller.enqueue(new TextEncoder().encode(p.text));
+                      }
+                    }
                   }
                 } catch (e) {
-                  // ignore parse errors for partial chunks
+                  // ignore partial chunk parse errors
                 }
               }
             }
@@ -268,16 +492,16 @@ export async function POST(req: Request) {
 
     return new Response(stream, { headers: responseHeaders });
   } catch (err: any) {
-    // If anything fails during the Gemini request, fall back to offline mode
+    console.error("Chat route caught error, falling back to offline reply:", err);
     responseHeaders["X-Chat-Mode"] = "offline";
-    const offlineReply = getOfflineReply("");
+    const offlineReply = getOfflineReply(lastMessage);
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         const words = offlineReply.split(" ");
         for (const word of words) {
           controller.enqueue(encoder.encode(word + " "));
-          await new Promise((resolve) => setTimeout(resolve, 35));
+          await new Promise((resolve) => setTimeout(resolve, 20));
         }
         controller.close();
       }
@@ -285,3 +509,4 @@ export async function POST(req: Request) {
     return new Response(stream, { headers: responseHeaders });
   }
 }
+

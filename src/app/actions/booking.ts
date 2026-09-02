@@ -12,7 +12,8 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string, p
       throw new Error("Invalid date format");
     }
 
-    // Default slots based on preferredTime selection
+    // Default slots based on preferredTime selection or weekend date
+    const isWeekendDay = date.getDay() === 0 || date.getDay() === 6;
     let standardSlots = [
       { id: "morning", label: "Morning (08:00 - 12:00)" },
       { id: "afternoon", label: "Afternoon (13:00 - 17:00)" }
@@ -22,7 +23,7 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string, p
       standardSlots = [
         { id: "after-hours", label: "After-Hours" }
       ];
-    } else if (preferredTime === "weekends") {
+    } else if (preferredTime === "weekends" || isWeekendDay) {
       standardSlots = [
         { id: "morning", label: "Weekend Morning (09:00 - 13:00)" },
         { id: "afternoon", label: "Weekend Afternoon (13:00 - 17:00)" }

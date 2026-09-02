@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Sparkles, Bot } from "lucide-react";
+import Link from "next/link";
+import { MessageSquare, X, Send, Sparkles, Bot, RotateCcw } from "lucide-react";
 
 interface Message {
   id: string;
@@ -9,15 +10,83 @@ interface Message {
   content: string;
 }
 
-export function AIChatBubble() {
+const DEFAULT_WELCOME_MESSAGE: Message = {
+  id: "welcome",
+  role: "assistant",
+  content: "Grüezi! I am the Mondar AI Concierge (powered by Nuncio).\n\nI can calculate instant verified quotes for move-out cleans with 100% Handover Guarantee, regular housekeeping, commercial offices, or bespoke aviation/yacht detailing.\n\nHow can I help you today?",
+};
+
+const CHAT_STORAGE_KEY = "nuncio_chat_history";
+const CHAT_OPEN_KEY = "nuncio_chat_open";
+
+function formatSubInline(text: string, keyPrefix: string): React.ReactNode[] {
+  // Parse inline code: `code`
+  const codeParts = text.split(/(`[^`]+`)/g);
+  return codeParts.map((codePart, cIdx) => {
+    const codeMatch = codePart.match(/^`([^`]+)`$/);
+    if (codeMatch) {
+      return (
+        <code key={`${keyPrefix}-c-${cIdx}`} className="px-1.5 py-0.5 bg-[#262626] text-accent rounded text-[11px] font-mono">
+          {codeMatch[1]}
+        </code>
+      );
+    }
+    return <React.Fragment key={`${keyPrefix}-t-${cIdx}`}>{codePart}</React.Fragment>;
+  });
+}
+
+function formatInlineText(text: string, keyPrefix: string = ""): React.ReactNode[] {
+  // Parse bold: **text**
+  const boldParts = text.split(/(\*\*[^*]+\*\*)/g);
+  
+  return boldParts.map((boldPart, bIdx) => {
+    const boldMatch = boldPart.match(/^\*\*([^*]+)\*\*$/);
+    if (boldMatch) {
+      return (
+        <strong key={`${keyPrefix}-b-${bIdx}`} className="font-semibold text-white">
+          {formatSubInline(boldMatch[1], `${keyPrefix}-b-${bIdx}`)}
+        </strong>
+      );
+    }
+    return <React.Fragment key={`${keyPrefix}-r-${bIdx}`}>{formatSubInline(boldPart, `${keyPrefix}-r-${bIdx}`)}</React.Fragment>;
+  });
+}
+
+// Helper to render markdown links and formatting inside chat messages
+function renderFormattedContent(text: string) {
+  if (!text) return null;
+
+  // Split by markdown link pattern [Label](href)
+  const linkParts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+
+  return linkParts.map((part, index) => {
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      const [, label, href] = linkMatch;
+      return (
+        <span key={`link-${index}`} className="block my-2">
+          <Link
+            href={href}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-accent text-ink-inverse rounded font-semibold text-xs hover:bg-accent-hover transition-colors shadow-xs cursor-pointer"
+          >
+            <span>{label}</span>
+            <span className="text-[11px]">→</span>
+          </Link>
+        </span>
+      );
+    }
+
+    return (
+      <span key={`text-${index}`}>
+        {formatInlineText(part, `p-${index}`)}
+      </span>
+    );
+  });
+}
+
+export function AIChatBubble({ hideBranding = false }: { hideBranding?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "Hello! I am the Mondar Assistant, your premium Swiss dispatch concierge. How can I assist you with your specialty cleaning needs today?",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([DEFAULT_WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   
@@ -27,6 +96,45 @@ export function AIChatBubble() {
   const [chatMode, setChatMode] = useState<"ai" | "offline" | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Restore chat history and open state from localStorage
+  useEffect(() => {
+    try {
+      const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+      const savedOpen = sessionStorage.getItem(CHAT_OPEN_KEY);
+      if (savedOpen === "true") {
+        setIsOpen(true);
+      }
+    } catch (e) {
+      console.error("Failed to restore chat history from localStorage", e);
+    }
+  }, []);
+
+  // Persist chat messages to localStorage
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      }
+    } catch (e) {
+      console.error("Failed to save chat history to localStorage", e);
+    }
+  }, [messages]);
+
+  // Persist open/close state to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CHAT_OPEN_KEY, String(isOpen));
+    } catch (e) {
+      // Ignore
+    }
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,15 +161,24 @@ export function AIChatBubble() {
     }
   }, [isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isTyping) return;
+  const handleResetChat = () => {
+    const freshMessages = [DEFAULT_WELCOME_MESSAGE];
+    setMessages(freshMessages);
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(freshMessages));
+    } catch (e) {
+      // Ignore
+    }
+  };
+
+  const sendQuery = async (queryText: string) => {
+    if (!queryText.trim() || isTyping) return;
 
     const userMessageId = Math.random().toString();
     const userMsg: Message = {
       id: userMessageId,
       role: "user",
-      content: input.trim(),
+      content: queryText.trim(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -100,23 +217,18 @@ export function AIChatBubble() {
       if (chatModeHeader) setChatMode(chatModeHeader as "ai" | "offline");
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        throw new Error("Chat request failed");
       }
 
       const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error("No reader available");
-      }
-
-      let done = false;
+      const decoder = new TextDecoder("utf-8");
       let accumulatedText = "";
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
           const chunk = decoder.decode(value, { stream: true });
           accumulatedText += chunk;
           
@@ -143,6 +255,18 @@ export function AIChatBubble() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void sendQuery(input);
+  };
+
+  const quickPills = [
+    "3.5 Zimmer Umzugsreinigung",
+    "4.5 Zimmer mit Balkon",
+    "Büro & Gewerbe Offerte",
+    "Aviation & Yacht Service"
+  ];
+
   return (
     <>
       {/* Floating Bubble Button */}
@@ -150,7 +274,7 @@ export function AIChatBubble() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="bg-accent hover:bg-accent-hover text-ink-inverse h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] hover:scale-105 cursor-pointer relative group"
-          title="Mondar Assistant"
+          title="Mondar AI Concierge • Powered by Nuncio"
         >
           {isOpen ? (
             <X className="w-5 h-5" />
@@ -170,28 +294,58 @@ export function AIChatBubble() {
 
       {/* Chat Window Popup */}
       {isOpen && (
-        <div className="fixed bottom-[148px] right-6 z-50 w-[350px] sm:w-[380px] h-[500px] bg-bg/95 backdrop-blur-md border border-border/80 rounded-lg shadow-2xl flex flex-col overflow-hidden animate-popover-in">
+        <div className="fixed bottom-[148px] right-6 z-50 w-[360px] sm:w-[420px] h-[560px] max-h-[calc(100vh-180px)] bg-[#0d0d0d] border border-[#262626] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-popover-in text-[#f2f2f2]">
           {/* Header */}
-          <div className="bg-ink text-ink-inverse p-4 flex items-center justify-between border-b border-border/30">
+          <div className="bg-[#141414] p-4 flex items-center justify-between border-b border-[#262626]">
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-ink-inverse shadow-sm">
                 <Bot className="w-4.5 h-4.5" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-body-sm font-semibold tracking-wide">Mondar Assistant</span>
-                <span className="text-[10px] text-ink-subtle uppercase tracking-wider">Swiss Dispatch Desk</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-body-sm font-semibold tracking-wide text-[#f2f2f2]">Mondar Concierge</span>
+                  <span className="text-[9px] bg-accent/20 text-accent font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">AI</span>
+                </div>
+                <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  {!hideBranding ? (
+                    <a
+                      href="https://nuncio.ch"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline text-emerald-400 font-medium cursor-pointer"
+                      title="Nuncio Conversational Commerce Engine"
+                    >
+                      Powered by Nuncio
+                    </a>
+                  ) : (
+                    <span className="text-[#a3a3a3]">Mondar Enterprise Concierge</span>
+                  )}
+                  <span className="text-[#525252]">•</span>
+                  <span className="text-[#737373]">EU AI Act Art. 50</span>
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-ink-subtle hover:text-ink-inverse transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleResetChat}
+                className="text-[#737373] hover:text-[#f2f2f2] transition-colors cursor-pointer p-1.5 rounded-md hover:bg-[#262626]"
+                title="Neuer Chat / Reset conversation"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-[#737373] hover:text-[#f2f2f2] transition-colors cursor-pointer p-1.5 rounded-md hover:bg-[#262626]"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0a0a]">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -203,51 +357,47 @@ export function AIChatBubble() {
                   className={`max-w-[85%] rounded-lg p-3 text-body-sm text-left leading-relaxed shadow-sm ${
                     msg.role === "user"
                       ? "bg-accent text-ink-inverse rounded-tr-none font-medium"
-                      : "bg-bg-subtle border border-border/40 text-ink rounded-tl-none whitespace-pre-line"
+                      : "bg-[#141414] border border-[#262626] text-[#e5e5e5] rounded-tl-none whitespace-pre-line"
                   }`}
                 >
-                  {msg.content}
+                  {renderFormattedContent(msg.content)}
                 </div>
               </div>
             ))}
             {isTyping && messages[messages.length - 1]?.content === "" && (
               <div className="flex justify-start">
-                <div className="bg-bg-subtle border border-border/40 text-ink rounded-lg rounded-tl-none p-3 shadow-sm flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-ink-subtle animate-bounce"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-ink-subtle animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-ink-subtle animate-bounce [animation-delay:0.4s]"></span>
+                <div className="bg-[#141414] border border-[#262626] text-[#737373] rounded-lg rounded-tl-none p-3 shadow-sm flex gap-1 items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#737373] animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#737373] animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#737373] animate-bounce [animation-delay:0.4s]"></span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Rate Limit Indicator / Mode Badge */}
-          {(remainingLimit !== null || chatMode) && (
-            <div className="px-4 py-1.5 bg-bg-subtle border-t border-border/30 flex justify-between items-center text-[10px] text-ink-subtle select-none">
-              <span>
-                {chatMode === "offline" ? (
-                  <span className="text-amber-600 dark:text-amber-500 font-medium">Concierge Mode (Offline)</span>
-                ) : (
-                  <span className="text-emerald-600 dark:text-emerald-500 font-medium">AI Agent Mode (Online)</span>
-                )}
-              </span>
-              {remainingLimit !== null && maxLimit !== null && (
-                <span>
-                  AI Queries: <strong className="font-semibold">{remainingLimit}</strong>/{maxLimit}
-                </span>
-              )}
-            </div>
-          )}
+          {/* Quick Action Pills */}
+          <div className="px-3 py-2 bg-[#0d0d0d] border-t border-[#262626] flex gap-1.5 overflow-x-auto no-scrollbar">
+            {quickPills.map((pill, idx) => (
+              <button
+                key={idx}
+                onClick={() => void sendQuery(pill)}
+                disabled={isTyping}
+                className="text-[11px] whitespace-nowrap bg-[#141414] hover:bg-[#1f1f1f] text-[#a6a6a6] hover:text-[#f2f2f2] border border-[#262626] rounded-full px-2.5 py-1 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {pill}
+              </button>
+            ))}
+          </div>
 
           {/* Input Form */}
-          <form onSubmit={handleSubmit} className="border-t border-border/40 p-3 bg-bg flex gap-2">
+          <form onSubmit={handleSubmit} className="border-t border-[#262626] p-3 bg-[#141414] flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about pricing, bookings, aviation..."
-              className="flex-1 bg-bg-subtle border border-border rounded-md px-3.5 py-2 text-body-sm focus:outline-none focus:border-accent text-ink transition-colors"
+              placeholder="Ask for instant quotes in German, English, Portuguese..."
+              className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-md px-3.5 py-2 text-body-sm focus:outline-none focus:border-accent text-[#f2f2f2] placeholder:text-[#525252] transition-colors"
               disabled={isTyping}
             />
             <button

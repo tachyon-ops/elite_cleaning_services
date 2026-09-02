@@ -44,6 +44,15 @@ describe("i18n-utils", () => {
       expect(translate("hero.title", mockDict)).toBe("Main Title");
     });
 
+    it("should interpolate parameters into translated strings", () => {
+      const paramDict = {
+        booking: {
+          notice: "Earliest booking is {date} for {days} days",
+        },
+      };
+      expect(translate("booking.notice", paramDict, { date: "Sa. 5. Sept.", days: 5 })).toBe("Earliest booking is Sa. 5. Sept. for 5 days");
+    });
+
     it("should fallback to English dictionary if key is missing in input dictionary", () => {
       expect(translate("nonexistent.key", mockDict)).toBe("nonexistent.key");
       expect(translate("nav.nonexistent", mockDict)).toBe("nav.nonexistent");
@@ -68,6 +77,14 @@ describe("i18n-utils", () => {
       expect(localizeHref("/book/moveout", "en")).toBe("/en/book/end-cleaning");
     });
 
+
+    it("should preserve query parameters and hash fragments when localizing paths", () => {
+      expect(localizeHref("/book/moveout?rooms=5.5&area=130&beds=4", "de")).toBe("/de/buchen/endreinigung?rooms=5.5&area=130&beds=4");
+      expect(localizeHref("/book/moveout?rooms=5.5&scope=handover_guarantee,balcony_terrace", "en")).toBe("/en/book/end-cleaning?rooms=5.5&scope=handover_guarantee,balcony_terrace");
+      expect(localizeHref("/book/moveout?rooms=5.5", "pt")).toBe("/pt/reservar/limpeza-mudanca?rooms=5.5");
+      expect(localizeHref("/book/moveout?rooms=5.5", "fr")).toBe("/fr/reserver/nettoyage-remise?rooms=5.5");
+      expect(localizeHref("/about#team", "de")).toBe("/de/ueber-uns#team");
+    });
 
     it("should ignore hashes, external links, and special links", () => {
       expect(localizeHref("#how-it-works", "pt")).toBe("#how-it-works");
@@ -98,6 +115,9 @@ describe("i18n-utils", () => {
       expect(resolveVerticalSlug("yate", "es")).toBe("yacht");
       expect(resolveVerticalSlug("endreinigung", "de")).toBe("moveout");
       expect(resolveVerticalSlug("end-cleaning", "en")).toBe("moveout");
+      expect(resolveVerticalSlug("gebaeude-service", "de")).toBe("building-care");
+      expect(resolveVerticalSlug("gastgewerbe", "de")).toBe("restaurant");
+      expect(resolveVerticalSlug("spezialreinigung", "de")).toBe("special");
     });
 
     it("should return the slug as-is if already internal or unrecognized", () => {

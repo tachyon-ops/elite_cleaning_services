@@ -25,23 +25,33 @@ export function getTranslationsForLocale(locale: string = "en") {
   return dictionaries[normalized] || dictionaries.en;
 }
 
+function interpolate(template: string, params?: Record<string, any>): string {
+  if (!params || typeof template !== "string") return template;
+  let result = template;
+  for (const [k, v] of Object.entries(params)) {
+    result = result.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+  }
+  return result;
+}
+
 /**
  * Helper to resolve dot-notated keys (e.g. "admin.sidebar.title")
  * from a translation dictionary.
  */
-export function translate(key: string, dictionary: any): string {
+export function translate(key: string, dictionary: any, params?: Record<string, any>): string {
   try {
     const parts = key.split(".");
     let current = dictionary;
     for (const part of parts) {
       if (current === undefined || current === null || current[part] === undefined) {
-        return translateFallback(key);
+        return interpolate(translateFallback(key), params);
       }
       current = current[part];
     }
-    return typeof current === "string" ? current : key;
+    const str = typeof current === "string" ? current : key;
+    return interpolate(str, params);
   } catch {
-    return translateFallback(key);
+    return interpolate(translateFallback(key), params);
   }
 }
 
@@ -65,23 +75,23 @@ function translateFallback(key: string): string {
 }
 
 export const VERTICAL_SLUGS: Record<string, Record<string, string>> = {
-  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht", endreinigung: "moveout" },
-  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", "end-cleaning": "moveout" },
-  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht", "nettoyage-remise": "moveout" },
-  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht", "pulizia-trasloco": "moveout" },
-  rm: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "moveout" },
-  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht", "limpieza-mudanza": "moveout" },
-  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht", "limpeza-mudanca": "moveout" }
+  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht", endreinigung: "moveout", "gebaeude-service": "building-care", gastgewerbe: "restaurant", spezialreinigung: "special" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", "end-cleaning": "moveout", "building-care": "building-care", restaurant: "restaurant", special: "special" },
+  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht", "nettoyage-remise": "moveout", "entretien-immeuble": "building-care", restaurant: "restaurant", special: "special" },
+  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht", "pulizia-trasloco": "moveout", "gestione-immobili": "building-care", ristorante: "restaurant", speciale: "special" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "moveout", "tgir-edifizis": "building-care", restorant: "restaurant", special: "special" },
+  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht", "limpieza-mudanza": "moveout", "mantenimiento-edificios": "building-care", restaurante: "restaurant", especial: "special" },
+  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht", "limpeza-mudanca": "moveout", "manutencao-edificios": "building-care", restaurante: "restaurant", especial: "special" }
 };
 
 export const INTERNAL_TO_VERTICAL: Record<string, Record<string, string>> = {
-  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht", moveout: "endreinigung" },
-  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "end-cleaning" },
-  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht", moveout: "nettoyage-remise" },
-  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht", moveout: "pulizia-trasloco" },
-  rm: { domestic: "domestic", commercial: "commercial", hospitality: "ospitalita", aviation: "aviada", yacht: "iaht", moveout: "moveout" },
-  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate", moveout: "limpieza-mudanza" },
-  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate", moveout: "limpeza-mudanca" }
+  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht", moveout: "endreinigung", "building-care": "gebaeude-service", restaurant: "gastgewerbe", special: "spezialreinigung" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "end-cleaning", "building-care": "building-care", restaurant: "restaurant", special: "special" },
+  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht", moveout: "nettoyage-remise", "building-care": "entretien-immeuble", restaurant: "restaurant", special: "special" },
+  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht", moveout: "pulizia-trasloco", "building-care": "gestione-immobili", restaurant: "ristorante", special: "speciale" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "ospitalita", aviation: "aviada", yacht: "iaht", moveout: "moveout", "building-care": "tgir-edifizis", restaurant: "restorant", special: "special" },
+  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate", moveout: "limpieza-mudanza", "building-care": "mantenimiento-edificios", restaurant: "restaurante", special: "especial" },
+  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate", moveout: "limpeza-mudanca", "building-care": "manutencao-edificios", restaurant: "restaurante", special: "especial" }
 };
 
 /**
@@ -114,6 +124,26 @@ export function localizeHref(href: string, locale: string): string {
   }
 
   const cleanLocale = (locale || "de").toLowerCase().slice(0, 2);
+
+  // Split query string and hash from pathname
+  let urlPath = href;
+  let searchAndHash = "";
+  const queryIndex = href.indexOf("?");
+  const hashIndex = href.indexOf("#");
+  
+  let splitIndex = -1;
+  if (queryIndex !== -1 && hashIndex !== -1) {
+    splitIndex = Math.min(queryIndex, hashIndex);
+  } else if (queryIndex !== -1) {
+    splitIndex = queryIndex;
+  } else if (hashIndex !== -1) {
+    splitIndex = hashIndex;
+  }
+
+  if (splitIndex !== -1) {
+    urlPath = href.slice(0, splitIndex);
+    searchAndHash = href.slice(splitIndex);
+  }
 
   const legalMappings: Record<string, Record<string, string>> = {
     "/legal/privacy": {
@@ -181,14 +211,14 @@ export function localizeHref(href: string, locale: string): string {
     }
   };
 
-  if (legalMappings[href]) {
-    const mapped = legalMappings[href][cleanLocale];
+  if (legalMappings[urlPath]) {
+    const mapped = legalMappings[urlPath][cleanLocale];
     if (mapped) {
-      return `/${cleanLocale}${mapped}`;
+      return `/${cleanLocale}${mapped}${searchAndHash}`;
     }
   }
 
-  const pathParts = href.split("/");
+  const pathParts = urlPath.split("/");
   const firstSegment = pathParts[1]; // e.g. "providers" or "book"
 
   const internalToSlug: Record<string, Record<string, string>> = {
@@ -201,14 +231,15 @@ export function localizeHref(href: string, locale: string): string {
     pt: { providers: "parceiros", book: "reservar" }
   };
 
-  let localizedHref = href;
+  let localizedHref = urlPath;
   if (firstSegment && internalToSlug[cleanLocale] && internalToSlug[cleanLocale][firstSegment]) {
     const localizedSlug = internalToSlug[cleanLocale][firstSegment];
     pathParts[1] = localizedSlug;
     
     // Check if it is a book path and has a vertical sub-slug
     if (firstSegment === "book" && pathParts[2]) {
-      const internalVert = pathParts[2];
+      const rawVert = pathParts[2];
+      const internalVert = resolveVerticalSlug(rawVert, cleanLocale);
       const localizedVert = (INTERNAL_TO_VERTICAL[cleanLocale] && INTERNAL_TO_VERTICAL[cleanLocale][internalVert]) || internalVert;
       pathParts[2] = localizedVert;
     }
@@ -216,7 +247,7 @@ export function localizeHref(href: string, locale: string): string {
     localizedHref = pathParts.join("/");
   }
 
-  return `/${cleanLocale}${localizedHref === "/" ? "" : localizedHref}`;
+  return `/${cleanLocale}${localizedHref === "/" ? "" : localizedHref}${searchAndHash}`;
 }
 
 

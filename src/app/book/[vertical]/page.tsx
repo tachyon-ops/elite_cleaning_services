@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref, resolveVerticalSlug } from "@/lib/i18n";
-import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat, Info } from "lucide-react";
+import { Plane, Ship, Building2, Home, Shield, Check, Calendar, ChevronRight, ChevronLeft, Lock, CreditCard, Mail, Phone, Clock, Sparkles, X, MessageSquare, Key, Building, ChefHat, Info, Zap } from "lucide-react";
 import { getAvailableSlots, sendOtp, verifyOtp, createBooking, getActiveCategories, setCustomerPassword } from "@/app/actions/booking";
 import { getSystemSetting } from "@/app/actions/admin";
 import { validatePromoCode } from "@/app/actions/marketing";
@@ -127,29 +127,102 @@ export default function BookingPage() {
     }
     loadConfig();
 
-    // Parse URL query parameters to pre-populate intake state
+    // Parse URL query parameters and local storage to pre-populate intake state
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const area = params.get("area");
-      const freq = params.get("frequency");
-      const time = params.get("time");
-      const beds = params.get("bedrooms");
-      const baths = params.get("bathrooms");
-      const linen = params.get("linen");
+      const searchParams = new URLSearchParams(window.location.search);
+      const area = searchParams.get("area") || searchParams.get("surfaceArea") || searchParams.get("moveoutArea");
+      const freq = searchParams.get("frequency") || searchParams.get("freq");
+      const time = searchParams.get("time") || searchParams.get("preferredTime");
+      const beds = searchParams.get("bedrooms") || searchParams.get("beds");
+      const baths = searchParams.get("bathrooms") || searchParams.get("baths");
+      const linen = searchParams.get("linen");
+      const rooms = searchParams.get("rooms") || searchParams.get("moveoutRooms");
+      const scopeParam = searchParams.get("scope") || searchParams.get("moveoutScope") || searchParams.get("addons");
+      const notes = searchParams.get("notes") || searchParams.get("specialRequirements") || searchParams.get("requirements");
+      const aircraft = searchParams.get("aircraftType");
+      const fbo = searchParams.get("fboLocation") || searchParams.get("airportFbo");
+      const tail = searchParams.get("tailNumber");
+      const vessel = searchParams.get("vesselType");
+      const vesselLen = searchParams.get("vesselLength");
+      const marina = searchParams.get("marinaLocation");
+      const office = searchParams.get("officeType");
+      const floors = searchParams.get("floors");
+      const property = searchParams.get("propertyType");
+      const keyHandling = searchParams.get("keyHandling");
+      const stepParam = searchParams.get("step");
+
+      let baseDraft: any = null;
+      try {
+        const savedDraft = localStorage.getItem("mondar_booking_intake_draft");
+        if (savedDraft) {
+          baseDraft = JSON.parse(savedDraft);
+        }
+      } catch (e) {
+        // Ignore
+      }
 
       setIntake((prev: any) => {
-        const next = { ...prev };
-        if (area) next.surfaceArea = Number(area);
+        const next = { ...prev, ...(baseDraft || {}) };
+        if (area) {
+          next.surfaceArea = Number(area);
+          next.moveoutArea = Number(area);
+          next.restaurantSurfaceArea = Number(area);
+        }
         if (freq) next.frequency = freq;
-        if (time) next.preferredTime = time;
+        if (time) {
+          next.preferredTime = time;
+        } else if (scopeParam && scopeParam.includes("express_weekend")) {
+          next.preferredTime = "weekends";
+        }
         if (beds) next.bedrooms = Number(beds);
         if (baths) next.bathrooms = Number(baths);
-        if (linen) next.linenChange = linen === "true";
+        if (linen !== null && linen !== undefined) next.linenChange = linen === "true";
+        if (rooms) {
+          next.rooms = Number(rooms);
+          next.moveoutRooms = Number(rooms);
+        }
+        if (scopeParam) {
+          const parsedScope = scopeParam.split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (parsedScope.length > 0) {
+            next.moveoutScope = parsedScope;
+            next.aviationScope = parsedScope;
+            next.yachtScope = parsedScope;
+          }
+        }
+        if (notes) next.specialRequirements = notes;
+        if (aircraft) next.aircraftType = aircraft;
+        if (fbo) next.fboLocation = fbo;
+        if (tail) next.tailNumber = tail;
+        if (vessel) next.vesselType = vessel;
+        if (vesselLen) next.vesselLength = Number(vesselLen);
+        if (marina) next.marinaLocation = marina;
+        if (office) next.officeType = office;
+        if (floors) next.floors = Number(floors);
+        if (property) next.propertyType = property;
+        if (keyHandling) next.keyHandling = keyHandling;
+
+        try {
+          localStorage.setItem("mondar_booking_intake_draft", JSON.stringify(next));
+        } catch (e) {}
+
         return next;
       });
 
+      const dateParam = searchParams.get("date") || searchParams.get("scheduledAt");
+      if (dateParam) {
+        setSelectedDate(dateParam);
+      }
+      const slotParam = searchParams.get("slot") || searchParams.get("timeSlot");
+      if (slotParam) {
+        setSelectedSlot(slotParam);
+      }
+
+      if (stepParam && (stepParam === "1" || stepParam === "2" || stepParam === "3")) {
+        setStep(Number(stepParam));
+      }
+
       // Parse promo code from URL
-      const promo = params.get("promo");
+      const promo = searchParams.get("promo");
       if (promo) {
         setPromoCode(promo.toUpperCase());
         setPromoLoading(true);
@@ -173,7 +246,7 @@ export default function BookingPage() {
     floors: 1,
     frequency: "one-off",
     prepayPeriod: "1",
-    preferredTime: "after-hours",
+    preferredTime: "business-hours",
     specialRequirements: "",
     
     // Hospitality fields
@@ -250,11 +323,17 @@ export default function BookingPage() {
     });
   }, []);
 
+  const isExpressOrWeekend = 
+    intake?.moveoutScope?.includes("express_weekend") ||
+    intake?.preferredTime === "weekends" ||
+    (intake?.specialRequirements && /express|urgent|24h|wochenende|weekend|samstag|sonntag|saturday|sunday/i.test(intake.specialRequirements));
+
   const minSelectableDate = React.useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
 
-    if (minLeadDays <= 0) {
+    // If Express / Weekend service is requested or minLeadDays is 0, allow next day (24h lead time)
+    if (isExpressOrWeekend || minLeadDays <= 0) {
       d.setDate(d.getDate() + 1);
       return d;
     }
@@ -272,7 +351,7 @@ export default function BookingPage() {
       }
     }
     return d;
-  }, [minLeadDays, businessDaysOnly]);
+  }, [minLeadDays, businessDaysOnly, isExpressOrWeekend]);
 
   const [viewDate, setViewDate] = useState(() => {
     const d = new Date();
@@ -344,19 +423,24 @@ export default function BookingPage() {
       return true;
     }
     
-    // Check commercial preferredTime restrictions first
-    if (vertical === "commercial") {
-      const dayOfWeek = dayDate.getDay(); // 0 is Sunday, 6 is Saturday
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      if (intake.preferredTime === "weekends") {
-        if (!isWeekend) return true;
-      } else if (intake.preferredTime === "business-hours" || intake.preferredTime === "after-hours") {
-        if (isWeekend) return true;
-      }
+    const dayOfWeek = dayDate.getDay(); // 0 is Sunday, 6 is Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    // 1. If user explicitly selected "weekends" timing, weekdays are disabled
+    if (intake?.preferredTime === "weekends") {
+      if (!isWeekend) return true;
+    }
+    // 2. If standard booking without Express / Weekend surcharge and businessDaysOnly is on, weekends are disabled
+    else if (!isExpressOrWeekend && businessDaysOnly) {
+      if (isWeekend) return true;
+    }
+    // 3. Commercial specific restrictions
+    else if (vertical === "commercial" && (intake?.preferredTime === "business-hours" || intake?.preferredTime === "after-hours")) {
+      if (isWeekend) return true;
     }
 
-    // Check preferredWeekday restrictions for recurring weekly/bi-weekly plans
-    const isWeeklyOrBiweekly = intake.frequency === "weekly" || intake.frequency === "bi-weekly";
+    // 4. Check preferredWeekday restrictions for recurring weekly/bi-weekly plans
+    const isWeeklyOrBiweekly = intake?.frequency === "weekly" || intake?.frequency === "bi-weekly";
     if (isWeeklyOrBiweekly && selectedWeekday !== null) {
       if (dayDate.getDay() !== selectedWeekday) {
         return true;
@@ -601,7 +685,13 @@ export default function BookingPage() {
 
   // Handlers
   const handleIntakeChange = (field: string, val: any) => {
-    setIntake((prev: any) => ({ ...prev, [field]: val }));
+    setIntake((prev: any) => {
+      const next = { ...prev, [field]: val };
+      try {
+        localStorage.setItem("mondar_booking_intake_draft", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
     if (field === "preferredTime" || field === "frequency") {
       setSelectedDate("");
       setSelectedSlot("");
@@ -1316,6 +1406,32 @@ Please verify and confirm my dispatch request. Thank you!`;
                       { value: "in-person", label: t("inPersonHandoff") }
                     ]}
                   />
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
+                    <div className="flex flex-wrap gap-4">
+                      {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const timeLabels: Record<string, string> = {
+                          "business-hours": t("businessHours"),
+                          "after-hours": t("afterHours"),
+                          "weekends": t("weekends")
+                        };
+                        const isSelected = (intake.preferredTime || "business-hours") === timeVal;
+                        return (
+                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                            <input
+                              type="radio"
+                              name="prefTime-hospitality"
+                              checked={isSelected}
+                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent"
+                            />
+                            {timeLabels[timeVal] || timeVal.replace("-", " ")}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : vertical === "aviation" ? (
                 <div className="space-y-4 pt-4">
@@ -1515,8 +1631,9 @@ Please verify and confirm my dispatch request. Thank you!`;
                         type="number"
                         min="1"
                         max="15"
+                        step="0.5"
                         value={intake.moveoutRooms || 3}
-                        onChange={(e) => handleIntakeChange("moveoutRooms", parseInt(e.target.value) || 3)}
+                        onChange={(e) => handleIntakeChange("moveoutRooms", parseFloat(e.target.value) || 3)}
                         className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none"
                       />
                     </div>
@@ -1541,7 +1658,8 @@ Please verify and confirm my dispatch request. Thank you!`;
                         { id: "windows_shutters", label: t("windowShuttersOption") },
                         { id: "oven_deep_clean", label: t("ovenDeepCleanOption") },
                         { id: "balcony_terrace", label: t("balconyTerraceOption") },
-                        { id: "carpet_steam", label: t("carpetSteamOption") }
+                        { id: "carpet_steam", label: t("carpetSteamOption") },
+                        { id: "express_weekend", label: t("expressWeekendOption") }
                       ].map((item) => {
                         const isChecked = intake.moveoutScope?.includes(item.id);
                         return (
@@ -1558,6 +1676,43 @@ Please verify and confirm my dispatch request. Thank you!`;
                               className="accent-accent h-4 w-4"
                             />
                             {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
+                    <div className="flex flex-wrap gap-4">
+                      {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const timeLabels: Record<string, string> = {
+                          "business-hours": t("businessHours"),
+                          "after-hours": t("afterHours"),
+                          "weekends": t("weekends")
+                        };
+                        const isSelected = (intake.preferredTime || "business-hours") === timeVal;
+                        return (
+                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                            <input
+                              type="radio"
+                              name="prefTime-moveout"
+                              checked={isSelected}
+                              onChange={() => {
+                                handleIntakeChange("preferredTime", timeVal);
+                                if (timeVal === "weekends") {
+                                  if (!intake.moveoutScope?.includes("express_weekend")) {
+                                    handleIntakeChange("moveoutScope", [...(intake.moveoutScope || []), "express_weekend"]);
+                                  }
+                                } else {
+                                  if (intake.moveoutScope?.includes("express_weekend")) {
+                                    handleIntakeChange("moveoutScope", (intake.moveoutScope || []).filter((id: string) => id !== "express_weekend"));
+                                  }
+                                }
+                              }}
+                              className="accent-accent"
+                            />
+                            {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
                         );
                       })}
@@ -1714,6 +1869,32 @@ Please verify and confirm my dispatch request. Thank you!`;
                         onChange={(e) => handleIntakeChange("buildingPortfolioSize", parseInt(e.target.value) || 0)}
                         className="border border-border bg-bg p-3 rounded-md text-body-md focus:border-accent outline-none font-body"
                       />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
+                    <div className="flex flex-wrap gap-4">
+                      {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const timeLabels: Record<string, string> = {
+                          "business-hours": t("businessHours"),
+                          "after-hours": t("afterHours"),
+                          "weekends": t("weekends")
+                        };
+                        const isSelected = (intake.preferredTime || "business-hours") === timeVal;
+                        return (
+                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                            <input
+                              type="radio"
+                              name="prefTime-building"
+                              checked={isSelected}
+                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent"
+                            />
+                            {timeLabels[timeVal] || timeVal.replace("-", " ")}
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1983,6 +2164,32 @@ Please verify and confirm my dispatch request. Thank you!`;
                   )}
 
                   <div className="flex flex-col gap-2">
+                    <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
+                    <div className="flex flex-wrap gap-4">
+                      {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const timeLabels: Record<string, string> = {
+                          "business-hours": t("businessHours"),
+                          "after-hours": t("afterHours"),
+                          "weekends": t("weekends")
+                        };
+                        const isSelected = (intake.preferredTime || "business-hours") === timeVal;
+                        return (
+                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                            <input
+                              type="radio"
+                              name="prefTime-domestic"
+                              checked={isSelected}
+                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent"
+                            />
+                            {timeLabels[timeVal] || timeVal.replace("-", " ")}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
                     <label className="text-caption text-ink font-semibold uppercase">{t("specialInstructions")}</label>
                     <textarea
                       value={intake.specialRequirements}
@@ -2061,19 +2268,31 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase tracking-wider">
                       {t("serviceDate")}
                     </label>
-                    {minLeadDays > 0 && (
+                    {isExpressOrWeekend ? (
+                      <span className="text-[11px] text-amber-500 font-semibold flex items-center gap-1 font-mono">
+                        <Zap className="w-3.5 h-3.5 fill-amber-500" />
+                        <span>{t("expressPriorityBadge")}</span>
+                      </span>
+                    ) : minLeadDays > 0 && (
                       <span className="text-[11px] text-accent font-semibold flex items-center gap-1 font-mono">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{minLeadDays} {businessDaysOnly ? "business" : ""} days notice</span>
+                        <span>{t(businessDaysOnly ? "leadTimeNoticeDays" : "leadTimeNoticeCalendarDays", { days: minLeadDays })}</span>
                       </span>
                     )}
                   </div>
                   
-                  {minLeadDays > 0 && (
+                  {isExpressOrWeekend ? (
+                    <div className="flex items-center gap-2 p-2.5 mb-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-700 dark:text-amber-300 text-body-xs font-medium max-w-md mx-auto">
+                      <Zap className="w-4 h-4 shrink-0 text-amber-600 fill-amber-600" />
+                      <span>
+                        {t("expressPriorityNotice", { date: minSelectableDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" }) })}
+                      </span>
+                    </div>
+                  ) : minLeadDays > 0 && (
                     <div className="flex items-center gap-2 p-2.5 mb-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-700 dark:text-amber-300 text-body-xs font-medium max-w-md mx-auto">
                       <Clock className="w-4 h-4 shrink-0 text-amber-600" />
                       <span>
-                        Tailored matching notice: Earliest available booking is <strong>{minSelectableDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}</strong>.
+                        {t("standardLeadTimeNotice", { date: minSelectableDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" }) })}
                       </span>
                     </div>
                   )}

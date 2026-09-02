@@ -8,7 +8,7 @@ import { resolveAlternateLocaleUrl } from "@/app/actions/page-translations";
 
 interface LanguageContextProps {
   locale: string;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, any>) => string;
   changeLanguage: (newLocale: string) => Promise<void>;
   isPending: boolean;
 }
@@ -28,7 +28,7 @@ export function LanguageProvider({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const t = (key: string) => translate(key, dictionary);
+  const t = (key: string, params?: Record<string, any>) => translate(key, dictionary, params);
 
   const changeLanguage = async (newLocale: string) => {
     if (newLocale === locale) return;

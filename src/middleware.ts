@@ -25,23 +25,23 @@ const SLUG_TO_INTERNAL: Record<string, Record<string, string>> = {
 };
 
 const VERTICAL_SLUGS: Record<string, Record<string, string>> = {
-  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht" },
-  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
-  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht" },
-  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht" },
-  rm: { domestic: "domestic", commercial: "commercial", ospitalita: "hospitality", aviada: "aviation", iaht: "yacht" },
-  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht" },
-  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht" }
+  de: { haus: "domestic", gewerbe: "commercial", airbnb: "hospitality", luftfahrt: "aviation", yacht: "yacht", endreinigung: "moveout", "gebaeude-service": "building-care", gastgewerbe: "restaurant", spezialreinigung: "special" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", "end-cleaning": "moveout", "building-care": "building-care", restaurant: "restaurant", special: "special" },
+  fr: { domestique: "domestic", commercial: "commercial", hebergement: "hospitality", aviation: "aviation", yacht: "yacht", "nettoyage-remise": "moveout", "entretien-immeuble": "building-care", restaurant: "restaurant", special: "special" },
+  it: { domestico: "domestic", commerciale: "commercial", accoglienza: "hospitality", aviazione: "aviation", yacht: "yacht", "pulizia-trasloco": "moveout", "gestione-immobili": "building-care", ristorante: "restaurant", speciale: "special" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "moveout", "tgir-edifizis": "building-care", restorant: "restaurant", special: "special" },
+  es: { domestico: "domestic", comercial: "commercial", alojamiento: "hospitality", aviacion: "aviation", yate: "yacht", "limpieza-mudanza": "moveout", "mantenimiento-edificios": "building-care", restaurante: "restaurant", especial: "special" },
+  pt: { domestica: "domestic", comercial: "commercial", alojamento: "hospitality", aviacao: "aviation", iate: "yacht", "limpeza-mudanca": "moveout", "manutencao-edificios": "building-care", restaurante: "restaurant", especial: "special" }
 };
 
 const INTERNAL_TO_VERTICAL: Record<string, Record<string, string>> = {
-  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht" },
-  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht" },
-  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht" },
-  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht" },
-  rm: { domestic: "domestic", commercial: "commercial", hospitality: "ospitalita", aviation: "aviada", yacht: "iaht" },
-  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate" },
-  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate" }
+  de: { domestic: "haus", commercial: "gewerbe", hospitality: "airbnb", aviation: "luftfahrt", yacht: "yacht", moveout: "endreinigung", "building-care": "gebaeude-service", restaurant: "gastgewerbe", special: "spezialreinigung" },
+  en: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "yacht", moveout: "end-cleaning", "building-care": "building-care", restaurant: "restaurant", special: "special" },
+  fr: { domestic: "domestique", commercial: "commercial", hospitality: "hebergement", aviation: "aviation", yacht: "yacht", moveout: "nettoyage-remise", "building-care": "entretien-immeuble", restaurant: "restaurant", special: "special" },
+  it: { domestic: "domestico", commercial: "commercial", hospitality: "accoglienza", aviation: "aviazione", yacht: "yacht", moveout: "pulizia-trasloco", "building-care": "gestione-immobili", restaurant: "ristorante", special: "speciale" },
+  rm: { domestic: "domestic", commercial: "commercial", hospitality: "hospitality", aviation: "aviation", yacht: "iaht", moveout: "moveout", "building-care": "tgir-edifizis", restaurant: "restorant", special: "special" },
+  es: { domestic: "domestico", commercial: "comercial", hospitality: "alojamiento", aviation: "aviacion", yacht: "yate", moveout: "limpieza-mudanza", "building-care": "mantenimiento-edificios", restaurant: "restaurante", special: "especial" },
+  pt: { domestic: "domestica", commercial: "comercial", hospitality: "alojamento", aviation: "aviacao", yacht: "iate", moveout: "limpeza-mudanca", "building-care": "manutencao-edificios", restaurant: "restaurante", special: "especial" }
 };
 
 const COOKIE_OPTIONS = {
