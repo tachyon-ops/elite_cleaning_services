@@ -12,18 +12,30 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string, p
       throw new Error("Invalid date format");
     }
 
-    // Default slots based on preferredTime selection or weekend date
+    // Supply chain protection settings check
+    const weekendSetting = await db.systemSetting.findUnique({ where: { key: "allow_weekend_bookings" } });
+    const afterHoursSetting = await db.systemSetting.findUnique({ where: { key: "allow_after_hours_bookings" } });
+    const allowWeekends = weekendSetting?.value === "true";
+    const allowAfterHours = afterHoursSetting?.value === "true";
+
     const isWeekendDay = date.getDay() === 0 || date.getDay() === 6;
+    if (isWeekendDay && !allowWeekends) {
+      return {
+        success: false,
+        error: "Weekend bookings are currently unavailable to safeguard supply chain capacity. Please select a weekday (Monday to Friday)."
+      };
+    }
+
     let standardSlots = [
       { id: "morning", label: "Morning (08:00 - 12:00)" },
       { id: "afternoon", label: "Afternoon (13:00 - 17:00)" }
     ];
 
-    if (preferredTime === "after-hours") {
+    if (preferredTime === "after-hours" && allowAfterHours) {
       standardSlots = [
         { id: "after-hours", label: "After-Hours" }
       ];
-    } else if (preferredTime === "weekends" || isWeekendDay) {
+    } else if ((preferredTime === "weekends" || isWeekendDay) && allowWeekends) {
       standardSlots = [
         { id: "morning", label: "Weekend Morning (09:00 - 13:00)" },
         { id: "afternoon", label: "Weekend Afternoon (13:00 - 17:00)" }
@@ -301,6 +313,23 @@ export async function createBooking(payload: {
       if (scheduledAt.getTime() < minDate.getTime()) {
         throw new Error(`Bookings require a minimum of ${minDays} ${bizOnly ? "business " : ""}days advance notice for tailored matching.`);
       }
+    }
+
+    // Supply chain protection settings check
+    const weekendSetting = await db.systemSetting.findUnique({ where: { key: "allow_weekend_bookings" } });
+    const afterHoursSetting = await db.systemSetting.findUnique({ where: { key: "allow_after_hours_bookings" } });
+    const allowWeekends = weekendSetting?.value === "true";
+    const allowAfterHours = afterHoursSetting?.value === "true";
+
+    // Supply chain protection: Block weekend bookings if not enabled
+    const dayOfWeek = scheduledAt.getDay();
+    if ((dayOfWeek === 0 || dayOfWeek === 6) && !allowWeekends) {
+      throw new Error("Weekend bookings are currently paused to maintain quality of service. Please select a weekday (Monday to Friday).");
+    }
+
+    // Supply chain protection: Block after-hours bookings if not enabled
+    if ((scheduledWindow === "after-hours" || intake?.preferredTime === "after-hours") && !allowAfterHours) {
+      throw new Error("After-hours service is currently unavailable. Please select standard business hours (Morning or Afternoon).");
     }
 
     // Secure price calculation

@@ -186,7 +186,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@mondar.ch"
+                  placeholder="nuno.ribeiro@mondar.ch"
                   className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-3 rounded-md text-body-md focus:border-accent outline-none w-full"
                 />
               </div>
@@ -219,16 +219,18 @@ export default function AdminLoginPage() {
               </div>
 
               <div className="flex justify-between items-center text-body-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail("admin@mondar.ch");
-                    setPassword("admin123");
-                  }}
-                  className="text-accent/80 hover:text-accent font-mono text-[11px] underline cursor-pointer"
-                >
-                  Fill Dev Credentials
-                </button>
+                {process.env.NODE_ENV !== "production" ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("nuno.ribeiro@mondar.ch");
+                      setPassword("DXBAdGMae$f3JND$wG");
+                    }}
+                    className="text-accent/80 hover:text-accent font-mono text-[11px] underline cursor-pointer"
+                  >
+                    Fill Dev Credentials
+                  </button>
+                ) : <span />}
 
                 <button
                   type="button"

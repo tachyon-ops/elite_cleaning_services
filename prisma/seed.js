@@ -197,12 +197,37 @@ async function main() {
 
   console.log('Provider applications seeded.');
 
-  // 5. Create default superadmin
+  // 5. Create default root superadmin and editor
+  await prisma.user.create({
+    data: {
+      email: 'nuno.ribeiro@mondar.ch',
+      name: 'Nuno Ribeiro',
+      passwordHash: 'DXBAdGMae$f3JND$wG',
+      role: 'super_admin',
+      twoFactorMethod: 'email',
+      twoFactorEnabled: true,
+      locale: 'en'
+    }
+  });
+
+  await prisma.user.create({
+    data: {
+      email: 'susana.santos@mondar.ch',
+      name: 'Susana Santos',
+      passwordHash: 'T5Th8U36D7rYBK6+32',
+      role: 'editor',
+      twoFactorMethod: 'email',
+      twoFactorEnabled: true,
+      locale: 'en'
+    }
+  });
+
+  // Legacy admin alias for local dev/e2e test compatibility
   await prisma.user.create({
     data: {
       email: 'admin@mondar.ch',
       name: 'Mondar Administrator',
-      passwordHash: 'admin123', // plain for dev convenience
+      passwordHash: 'admin123',
       role: 'super_admin',
       locale: 'en'
     }
@@ -220,7 +245,7 @@ async function main() {
     }
   });
 
-  console.log('Users created: admin@mondar.ch (admin123), partner@alpineclean.ch (partner123)');
+  console.log('Users created: nuno.ribeiro@mondar.ch (root), susana.santos@mondar.ch (editor), partner@alpineclean.ch');
 }
 
 main()

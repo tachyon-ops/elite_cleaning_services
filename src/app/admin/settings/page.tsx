@@ -32,17 +32,19 @@ export default function AdminSettingsPage() {
   const [totpError, setTotpError] = useState("");
   const [loading2FA, setLoading2FA] = useState(false);
 
-  // WhatsApp state variables
-  const [whatsappNumber, setWhatsappNumber] = useState("");
-  const [whatsappLabel, setWhatsappLabel] = useState("");
+  // WhatsApp & Contact state variables
+  const [whatsappNumber, setWhatsappNumber] = useState("41791234567");
+  const [whatsappLabel, setWhatsappLabel] = useState("+41 79 123 45 67");
   const [autoCheckout, setAutoCheckout] = useState(true);
-  const [contactPhone, setContactPhone] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactAddress, setContactAddress] = useState("");
+  const [contactPhone, setContactPhone] = useState("+41 (0) 44 123 4567");
+  const [contactEmail, setContactEmail] = useState("ops@elite-cleaning.ch");
+  const [contactAddress, setContactAddress] = useState("Bahnhofstrasse 12, 8001 Zürich, Switzerland");
   const [showPhone, setShowPhone] = useState(true);
   const [showOffice, setShowOffice] = useState(true);
   const [minLeadDays, setMinLeadDays] = useState(5);
   const [businessDaysOnly, setBusinessDaysOnly] = useState(true);
+  const [allowWeekends, setAllowWeekends] = useState(false);
+  const [allowAfterHours, setAllowAfterHours] = useState(false);
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const [whatsappSuccess, setWhatsappSuccess] = useState("");
   const [whatsappError, setWhatsappError] = useState("");
@@ -81,6 +83,8 @@ export default function AdminSettingsPage() {
       const resShowOffice = await getSystemSetting("show_office_address");
       const resLead = await getSystemSetting("min_lead_time_days");
       const resBiz = await getSystemSetting("lead_time_business_days_only");
+      const resWeekends = await getSystemSetting("allow_weekend_bookings");
+      const resAfterHours = await getSystemSetting("allow_after_hours_bookings");
       if (resNum.success && resNum.value) {
         setWhatsappNumber(resNum.value);
       }
@@ -111,6 +115,12 @@ export default function AdminSettingsPage() {
       }
       if (resBiz.success && resBiz.value !== null) {
         setBusinessDaysOnly(resBiz.value !== "false");
+      }
+      if (resWeekends.success && resWeekends.value !== null) {
+        setAllowWeekends(resWeekends.value === "true");
+      }
+      if (resAfterHours.success && resAfterHours.value !== null) {
+        setAllowAfterHours(resAfterHours.value === "true");
       }
     } else {
       setError("Failed to load administrative session. Please log in.");
@@ -206,9 +216,11 @@ export default function AdminSettingsPage() {
     const resShowOffice = await updateSystemSetting("show_office_address", showOffice ? "true" : "false");
     const resLead = await updateSystemSetting("min_lead_time_days", String(minLeadDays));
     const resBiz = await updateSystemSetting("lead_time_business_days_only", businessDaysOnly ? "true" : "false");
+    const resWeekends = await updateSystemSetting("allow_weekend_bookings", allowWeekends ? "true" : "false");
+    const resAfterHours = await updateSystemSetting("allow_after_hours_bookings", allowAfterHours ? "true" : "false");
     
     setSavingWhatsapp(false);
-    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success && resLead.success && resBiz.success) {
+    if (resNum.success && resLab.success && resAuto.success && resPhone.success && resEmail.success && resAddress.success && resShowPhone.success && resShowOffice.success && resLead.success && resBiz.success && resWeekends.success && resAfterHours.success) {
       setWhatsappSuccess(t("admin.settings.whatsappSuccess"));
       setWhatsappNumber(cleanNumber);
     } else {
@@ -223,6 +235,8 @@ export default function AdminSettingsPage() {
         resShowOffice.error || 
         resLead.error || 
         resBiz.error || 
+        resWeekends.error || 
+        resAfterHours.error || 
         "Failed to update settings."
       );
     }
@@ -501,6 +515,51 @@ export default function AdminSettingsPage() {
                     </div>
                     <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
                       When enabled, Saturday and Sunday are excluded from the lead time countdown (e.g. 5 business days notice).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Supply Chain & Dispatch Controls */}
+                <div className="pt-3 border-t border-[#262626] space-y-3">
+                  <span className="text-[10px] text-accent uppercase font-bold tracking-widest block font-mono">
+                    Supply Chain & Dispatch Controls
+                  </span>
+
+                  {/* Weekend Bookings Toggle */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="allowWeekendCheckbox"
+                        checked={allowWeekends}
+                        onChange={(e) => setAllowWeekends(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+                      />
+                      <label htmlFor="allowWeekendCheckbox" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                        Allow Weekend Bookings (Saturdays & Sundays)
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+                      When disabled, Saturday and Sunday dates are greyed out on client calendars and blocked on dispatch to prevent subcontractor capacity bottlenecks.
+                    </p>
+                  </div>
+
+                  {/* After-Hours Bookings Toggle */}
+                  <div className="space-y-1.5 pt-2 border-t border-[#262626]/40">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="allowAfterHoursCheckbox"
+                        checked={allowAfterHours}
+                        onChange={(e) => setAllowAfterHours(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 rounded border-[#262626] bg-[#0d0d0d] text-accent focus:ring-accent cursor-pointer accent-accent"
+                      />
+                      <label htmlFor="allowAfterHoursCheckbox" className="text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
+                        Allow After-Hours Bookings (Evening Slots)
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-[#a6a6a6] leading-relaxed pl-7">
+                      When disabled, evening/after-hours dispatches are paused across all booking funnels, restricting dispatches to standard business hours (08:00 - 17:00).
                     </p>
                   </div>
                 </div>

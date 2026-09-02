@@ -14,7 +14,7 @@ import { Logo } from "@/components/Logo";
 interface CustomSelectProps {
   label: string;
   value: string;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; disabled?: boolean }[];
   onChange: (val: string) => void;
 }
 
@@ -61,14 +61,18 @@ function CustomSelect({ label, value, options, onChange }: CustomSelectProps) {
               <button
                 key={opt.value}
                 type="button"
+                disabled={opt.disabled}
                 onClick={() => {
+                  if (opt.disabled) return;
                   onChange(opt.value);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2.5 text-body-sm transition-colors cursor-pointer flex justify-between items-center ${
-                  isSelected
-                    ? "bg-accent-soft/30 text-accent font-semibold"
-                    : "text-ink-muted hover:bg-bg-subtle hover:text-ink"
+                className={`w-full text-left px-4 py-2.5 text-body-sm transition-colors flex justify-between items-center ${
+                  opt.disabled
+                    ? "opacity-50 cursor-not-allowed text-ink-muted select-none"
+                    : isSelected
+                    ? "bg-accent-soft/30 text-accent font-semibold cursor-pointer"
+                    : "text-ink-muted hover:bg-bg-subtle hover:text-ink cursor-pointer"
                 }`}
               >
                 <span>{opt.label}</span>
@@ -105,6 +109,50 @@ export default function BookingPage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoData, setPromoData] = useState<{ valid: boolean; discountType?: string; discountValue?: number; campaignId?: string; campaignName?: string; error?: string } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoInputError, setPromoInputError] = useState("");
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+
+  const handleApplyPromo = async (codeToApply?: string) => {
+    const code = (codeToApply || promoInput).trim().toUpperCase();
+    if (!code) {
+      setPromoInputError(t("enterPromoCode") || "Please enter a promo code");
+      return;
+    }
+    setPromoInputError("");
+    setIsApplyingPromo(true);
+    try {
+      const res = await validatePromoCode(code, vertical !== "general" ? vertical : undefined);
+      if (res.valid) {
+        setPromoCode(code);
+        setPromoData(res);
+        setPromoInput("");
+        if (typeof window !== "undefined") {
+          const url = new URL(window.location.href);
+          url.searchParams.set("promo", code);
+          window.history.replaceState({}, "", url.toString());
+        }
+      } else {
+        setPromoInputError(res.error || t("promoInvalid") || "Invalid promo code");
+      }
+    } catch {
+      setPromoInputError("Failed to validate promo code");
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode("");
+    setPromoData(null);
+    setPromoInput("");
+    setPromoInputError("");
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("promo");
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
 
   useEffect(() => {
     async function loadConfig() {
@@ -170,9 +218,9 @@ export default function BookingPage() {
         }
         if (freq) next.frequency = freq;
         if (time) {
-          next.preferredTime = time;
+          next.preferredTime = (time === "after-hours" || time === "weekends") ? "business-hours" : time;
         } else if (scopeParam && scopeParam.includes("express_weekend")) {
-          next.preferredTime = "weekends";
+          next.preferredTime = "business-hours";
         }
         if (beds) next.bedrooms = Number(beds);
         if (baths) next.bathrooms = Number(baths);
@@ -308,6 +356,8 @@ export default function BookingPage() {
   const [selectedWeekday, setSelectedWeekday] = useState<number | null>(null);
   const [minLeadDays, setMinLeadDays] = useState<number>(5);
   const [businessDaysOnly, setBusinessDaysOnly] = useState<boolean>(true);
+  const [allowWeekends, setAllowWeekends] = useState<boolean>(false);
+  const [allowAfterHours, setAllowAfterHours] = useState<boolean>(false);
 
   useEffect(() => {
     getSystemSetting("min_lead_time_days").then((res) => {
@@ -321,7 +371,27 @@ export default function BookingPage() {
         setBusinessDaysOnly(res.value !== "false");
       }
     });
+    getSystemSetting("allow_weekend_bookings").then((res) => {
+      if (res.success && res.value !== null) {
+        setAllowWeekends(res.value === "true");
+      }
+    });
+    getSystemSetting("allow_after_hours_bookings").then((res) => {
+      if (res.success && res.value !== null) {
+        setAllowAfterHours(res.value === "true");
+      }
+    });
   }, []);
+
+  // Gracefully fallback preferredTime if setting is disabled
+  useEffect(() => {
+    if (!allowWeekends && intake.preferredTime === "weekends") {
+      setIntake((prev: any) => ({ ...prev, preferredTime: "business-hours" }));
+    }
+    if (!allowAfterHours && intake.preferredTime === "after-hours") {
+      setIntake((prev: any) => ({ ...prev, preferredTime: "business-hours" }));
+    }
+  }, [allowWeekends, allowAfterHours, intake.preferredTime]);
 
   const isExpressOrWeekend = 
     intake?.moveoutScope?.includes("express_weekend") ||
@@ -332,17 +402,12 @@ export default function BookingPage() {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
 
-    // If Express / Weekend service is requested or minLeadDays is 0, allow next day (24h lead time)
-    if (isExpressOrWeekend || minLeadDays <= 0) {
-      d.setDate(d.getDate() + 1);
-      return d;
-    }
-
     let daysAdded = 0;
-    while (daysAdded < minLeadDays) {
+    const targetLeadDays = Math.max(1, minLeadDays);
+    while (daysAdded < targetLeadDays) {
       d.setDate(d.getDate() + 1);
       const dayOfWeek = d.getDay(); // 0 is Sun, 6 is Sat
-      if (businessDaysOnly) {
+      if (!allowWeekends || businessDaysOnly) {
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
           daysAdded++;
         }
@@ -351,7 +416,7 @@ export default function BookingPage() {
       }
     }
     return d;
-  }, [minLeadDays, businessDaysOnly, isExpressOrWeekend]);
+  }, [minLeadDays, allowWeekends, businessDaysOnly]);
 
   const [viewDate, setViewDate] = useState(() => {
     const d = new Date();
@@ -426,17 +491,9 @@ export default function BookingPage() {
     const dayOfWeek = dayDate.getDay(); // 0 is Sunday, 6 is Saturday
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-    // 1. If user explicitly selected "weekends" timing, weekdays are disabled
-    if (intake?.preferredTime === "weekends") {
-      if (!isWeekend) return true;
-    }
-    // 2. If standard booking without Express / Weekend surcharge and businessDaysOnly is on, weekends are disabled
-    else if (!isExpressOrWeekend && businessDaysOnly) {
-      if (isWeekend) return true;
-    }
-    // 3. Commercial specific restrictions
-    else if (vertical === "commercial" && (intake?.preferredTime === "business-hours" || intake?.preferredTime === "after-hours")) {
-      if (isWeekend) return true;
+    // Supply chain protection: Block weekends if not enabled by admin
+    if (isWeekend && !allowWeekends) {
+      return true;
     }
 
     // 4. Check preferredWeekday restrictions for recurring weekly/bi-weekly plans
@@ -1214,7 +1271,7 @@ Please verify and confirm my dispatch request. Thank you!`;
             <div className="lg:col-span-2 bg-bg border border-border p-8 rounded-lg shadow-sm">
               {/* Promo Banner */}
               {promoCode && !promoLoading && promoData && (
-                <div className={`mb-6 p-4 rounded-md border text-body-sm ${
+                <div className={`mb-6 p-4 rounded-md border text-body-sm flex items-center justify-between gap-4 ${
                   promoData.valid
                     ? "bg-accent-soft/20 border-accent/30 text-accent"
                     : promoData.error === "expired"
@@ -1222,17 +1279,26 @@ Please verify and confirm my dispatch request. Thank you!`;
                       : "bg-red-500/10 border-red-500/30 text-red-400"
                 }`}>
                   {promoData.valid ? (
-                    <span className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 shrink-0" />
                       <span>
                         Promo <strong>{promoCode}</strong> applied — {promoData.discountType === "percentage" ? `${promoData.discountValue}%` : `CHF ${promoData.discountValue?.toFixed(2)}`} off your booking
                       </span>
-                    </span>
+                    </div>
                   ) : promoData.error === "expired" ? (
-                    <span>{t("promoExpired")}</span>
+                    <span>{t("promoExpired") || "This offer has expired"}</span>
                   ) : (
-                    <span>{t("promoInvalid")}</span>
+                    <span>{promoData.error || t("promoInvalid") || "Invalid promo code"}</span>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleRemovePromo}
+                    className="text-body-xs font-semibold px-2.5 py-1 rounded bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                    title="Remove promo code"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>{t("remove") || "Remove"}</span>
+                  </button>
                 </div>
               )}
               {promoCode && promoLoading && (
@@ -1305,19 +1371,21 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
                     <div className="flex gap-4">
                       {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const isBlocked = (timeVal === "after-hours" && !allowAfterHours) || (timeVal === "weekends" && !allowWeekends);
                         const timeLabels: Record<string, string> = {
                           "business-hours": t("businessHours"),
-                          "after-hours": t("afterHours"),
-                          "weekends": t("weekends")
+                          "after-hours": allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`,
+                          "weekends": allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`
                         };
                         return (
-                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                          <label key={timeVal} className={`flex items-center gap-2 text-body-sm capitalize ${isBlocked ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="radio"
                               name="prefTime"
+                              disabled={isBlocked}
                               checked={intake.preferredTime === timeVal}
-                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
-                              className="accent-accent"
+                              onChange={() => !isBlocked && handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent disabled:cursor-not-allowed"
                             />
                             {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
@@ -1411,20 +1479,22 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
                     <div className="flex flex-wrap gap-4">
                       {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const isBlocked = (timeVal === "after-hours" && !allowAfterHours) || (timeVal === "weekends" && !allowWeekends);
                         const timeLabels: Record<string, string> = {
                           "business-hours": t("businessHours"),
-                          "after-hours": t("afterHours"),
-                          "weekends": t("weekends")
+                          "after-hours": allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`,
+                          "weekends": allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`
                         };
                         const isSelected = (intake.preferredTime || "business-hours") === timeVal;
                         return (
-                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                          <label key={timeVal} className={`flex items-center gap-2 text-body-sm capitalize ${isBlocked ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="radio"
                               name="prefTime-hospitality"
+                              disabled={isBlocked}
                               checked={isSelected}
-                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
-                              className="accent-accent"
+                              onChange={() => !isBlocked && handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent disabled:cursor-not-allowed"
                             />
                             {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
@@ -1654,26 +1724,28 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase block font-body">{t("servScope")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
                       {[
-                        { id: "handover_guarantee", label: t("handoverGuaranteeOption") },
-                        { id: "windows_shutters", label: t("windowShuttersOption") },
-                        { id: "oven_deep_clean", label: t("ovenDeepCleanOption") },
-                        { id: "balcony_terrace", label: t("balconyTerraceOption") },
-                        { id: "carpet_steam", label: t("carpetSteamOption") },
-                        { id: "express_weekend", label: t("expressWeekendOption") }
-                      ].map((item) => {
+                        { id: "handover_guarantee", label: t("handoverGuaranteeOption"), disabled: false },
+                        { id: "windows_shutters", label: t("windowShuttersOption"), disabled: false },
+                        { id: "oven_deep_clean", label: t("ovenDeepCleanOption"), disabled: false },
+                        { id: "balcony_terrace", label: t("balconyTerraceOption"), disabled: false },
+                        { id: "carpet_steam", label: t("carpetSteamOption"), disabled: false },
+                        { id: "express_weekend", label: allowWeekends ? t("expressWeekendOption") : `${t("expressWeekendOption")} (Paused)`, disabled: !allowWeekends }
+                      ].map((item: any) => {
                         const isChecked = intake.moveoutScope?.includes(item.id);
                         return (
-                          <label key={item.id} className="flex items-center gap-2.5 cursor-pointer">
+                          <label key={item.id} className={`flex items-center gap-2.5 ${item.disabled ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="checkbox"
-                              checked={isChecked}
+                              disabled={item.disabled}
+                              checked={!item.disabled && isChecked}
                               onChange={(e) => {
+                                if (item.disabled) return;
                                 const nextScope = e.target.checked
                                   ? [...(intake.moveoutScope || []), item.id]
                                   : (intake.moveoutScope || []).filter((id: string) => id !== item.id);
                                 handleIntakeChange("moveoutScope", nextScope);
                               }}
-                              className="accent-accent h-4 w-4"
+                              className="accent-accent h-4 w-4 disabled:cursor-not-allowed"
                             />
                             {item.label}
                           </label>
@@ -1686,31 +1758,25 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
                     <div className="flex flex-wrap gap-4">
                       {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const isBlocked = (timeVal === "after-hours" && !allowAfterHours) || (timeVal === "weekends" && !allowWeekends);
                         const timeLabels: Record<string, string> = {
                           "business-hours": t("businessHours"),
-                          "after-hours": t("afterHours"),
-                          "weekends": t("weekends")
+                          "after-hours": allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`,
+                          "weekends": allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`
                         };
                         const isSelected = (intake.preferredTime || "business-hours") === timeVal;
                         return (
-                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                          <label key={timeVal} className={`flex items-center gap-2 text-body-sm capitalize ${isBlocked ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="radio"
                               name="prefTime-moveout"
+                              disabled={isBlocked}
                               checked={isSelected}
                               onChange={() => {
+                                if (isBlocked) return;
                                 handleIntakeChange("preferredTime", timeVal);
-                                if (timeVal === "weekends") {
-                                  if (!intake.moveoutScope?.includes("express_weekend")) {
-                                    handleIntakeChange("moveoutScope", [...(intake.moveoutScope || []), "express_weekend"]);
-                                  }
-                                } else {
-                                  if (intake.moveoutScope?.includes("express_weekend")) {
-                                    handleIntakeChange("moveoutScope", (intake.moveoutScope || []).filter((id: string) => id !== "express_weekend"));
-                                  }
-                                }
                               }}
-                              className="accent-accent"
+                              className="accent-accent disabled:cursor-not-allowed"
                             />
                             {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
@@ -1876,20 +1942,22 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
                     <div className="flex flex-wrap gap-4">
                       {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const isBlocked = (timeVal === "after-hours" && !allowAfterHours) || (timeVal === "weekends" && !allowWeekends);
                         const timeLabels: Record<string, string> = {
                           "business-hours": t("businessHours"),
-                          "after-hours": t("afterHours"),
-                          "weekends": t("weekends")
+                          "after-hours": allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`,
+                          "weekends": allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`
                         };
                         const isSelected = (intake.preferredTime || "business-hours") === timeVal;
                         return (
-                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                          <label key={timeVal} className={`flex items-center gap-2 text-body-sm capitalize ${isBlocked ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="radio"
                               name="prefTime-building"
+                              disabled={isBlocked}
                               checked={isSelected}
-                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
-                              className="accent-accent"
+                              onChange={() => !isBlocked && handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent disabled:cursor-not-allowed"
                             />
                             {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
@@ -1947,12 +2015,12 @@ Please verify and confirm my dispatch request. Thank you!`;
                     </div>
                     <CustomSelect
                       label={t("operatingHours")}
-                      value={intake.restaurantOperatingHours || "after-hours"}
+                      value={intake.restaurantOperatingHours || "business-hours"}
                       onChange={(val) => handleIntakeChange("restaurantOperatingHours", val)}
                       options={[
-                        { value: "after-hours", label: t("afterHours") },
                         { value: "business-hours", label: t("businessHours") },
-                        { value: "weekends", label: t("weekends") }
+                        { value: "after-hours", label: allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`, disabled: !allowAfterHours },
+                        { value: "weekends", label: allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`, disabled: !allowWeekends }
                       ]}
                     />
                   </div>
@@ -2167,20 +2235,22 @@ Please verify and confirm my dispatch request. Thank you!`;
                     <label className="text-caption text-ink font-semibold uppercase">{t("prefTime")}</label>
                     <div className="flex flex-wrap gap-4">
                       {["business-hours", "after-hours", "weekends"].map((timeVal) => {
+                        const isBlocked = (timeVal === "after-hours" && !allowAfterHours) || (timeVal === "weekends" && !allowWeekends);
                         const timeLabels: Record<string, string> = {
                           "business-hours": t("businessHours"),
-                          "after-hours": t("afterHours"),
-                          "weekends": t("weekends")
+                          "after-hours": allowAfterHours ? t("afterHours") : `${t("afterHours")} (Paused)`,
+                          "weekends": allowWeekends ? t("weekends") : `${t("weekends")} (Paused)`
                         };
                         const isSelected = (intake.preferredTime || "business-hours") === timeVal;
                         return (
-                          <label key={timeVal} className="flex items-center gap-2 text-body-sm cursor-pointer capitalize">
+                          <label key={timeVal} className={`flex items-center gap-2 text-body-sm capitalize ${isBlocked ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
                             <input
                               type="radio"
                               name="prefTime-domestic"
+                              disabled={isBlocked}
                               checked={isSelected}
-                              onChange={() => handleIntakeChange("preferredTime", timeVal)}
-                              className="accent-accent"
+                              onChange={() => !isBlocked && handleIntakeChange("preferredTime", timeVal)}
+                              className="accent-accent disabled:cursor-not-allowed"
                             />
                             {timeLabels[timeVal] || timeVal.replace("-", " ")}
                           </label>
@@ -2885,12 +2955,22 @@ Please verify and confirm my dispatch request. Thank you!`;
                       </div>
                     )}
                     {pricing.promoApplied && pricing.promoDiscountAmount > 0 ? (
-                      <div className="flex justify-between text-body-sm text-green-600 font-medium bg-green-500/10 px-2 py-1 rounded">
-                        <span className="flex items-center gap-1 font-semibold">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Promo {promoCode || promoData?.code} ({promoData?.discountType === "percentage" ? `${promoData.discountValue}% OFF` : `CHF ${promoData?.discountValue} OFF`})</span>
+                      <div className="flex justify-between items-center text-body-sm text-green-600 font-medium bg-green-500/10 px-2.5 py-1.5 rounded">
+                        <span className="flex items-center gap-1.5 font-semibold truncate pr-2">
+                          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">Promo {promoCode || promoData?.code} ({promoData?.discountType === "percentage" ? `${promoData.discountValue}% OFF` : `CHF ${promoData?.discountValue} OFF`})</span>
                         </span>
-                        <span className="font-bold">-CHF {pricing.promoDiscountAmount.toFixed(2)}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="font-bold">-CHF {pricing.promoDiscountAmount.toFixed(2)}</span>
+                          <button
+                            type="button"
+                            onClick={handleRemovePromo}
+                            title="Remove promo"
+                            className="text-ink-muted hover:text-red-500 transition-colors p-0.5 rounded cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ) : pricing.frequencyDiscount > 0 ? (
                       <div className="flex justify-between text-body-sm text-green-600 font-medium">
@@ -2898,6 +2978,46 @@ Please verify and confirm my dispatch request. Thank you!`;
                         <span>-CHF {pricing.frequencyDiscount.toFixed(2)}</span>
                       </div>
                     ) : null}
+
+                    {/* Promo Code Input when no promo is active */}
+                    {!promoData?.valid && (
+                      <div className="pt-2 border-t border-border/50 space-y-1.5">
+                        <label className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider block">
+                          {t("havePromoCode") || "Have a promo code?"}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={promoInput}
+                            onChange={(e) => {
+                              setPromoInput(e.target.value);
+                              if (promoInputError) setPromoInputError("");
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleApplyPromo();
+                              }
+                            }}
+                            placeholder="e.g. OPENING15"
+                            className="flex-1 min-w-0 border border-border bg-bg text-ink px-2.5 py-1.5 rounded text-body-xs uppercase font-mono placeholder:normal-case placeholder:font-sans focus:border-accent outline-none font-semibold"
+                          />
+                          <button
+                            type="button"
+                            disabled={!promoInput.trim() || isApplyingPromo}
+                            onClick={() => handleApplyPromo()}
+                            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-ink-inverse text-body-xs font-bold px-3 py-1.5 rounded transition-colors cursor-pointer shrink-0 uppercase tracking-wider"
+                          >
+                            {isApplyingPromo ? "..." : (t("apply") || "Apply")}
+                          </button>
+                        </div>
+                        {promoInputError && (
+                          <p className="text-[11px] text-red-500 font-medium leading-tight">
+                            {promoInputError}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="border-t border-border pt-4 flex justify-between text-body-lg text-ink font-bold font-display">
                       <span>{t("totalAmount")}</span>

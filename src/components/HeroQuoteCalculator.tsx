@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
+import { getSystemSetting } from "@/app/actions/admin";
 import { Shield, Sparkles, Building2, Home, Plane, Ship } from "lucide-react";
 
 // Localized strings map for calculator items (supporting all 7 locales)
@@ -340,7 +341,31 @@ export default function HeroQuoteCalculator() {
   const [bathrooms, setBathrooms] = useState(1);
   const [linenChange, setLinenChange] = useState(false);
   const [frequency, setFrequency] = useState("weekly");
-  const [preferredTime, setPreferredTime] = useState("after-hours");
+  const [preferredTime, setPreferredTime] = useState("business-hours");
+  const [allowWeekends, setAllowWeekends] = useState(false);
+  const [allowAfterHours, setAllowAfterHours] = useState(false);
+
+  useEffect(() => {
+    getSystemSetting("allow_weekend_bookings").then((res) => {
+      if (res.success && res.value !== null) {
+        setAllowWeekends(res.value === "true");
+      }
+    });
+    getSystemSetting("allow_after_hours_bookings").then((res) => {
+      if (res.success && res.value !== null) {
+        setAllowAfterHours(res.value === "true");
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!allowWeekends && preferredTime === "weekends") {
+      setPreferredTime("business-hours");
+    }
+    if (!allowAfterHours && preferredTime === "after-hours") {
+      setPreferredTime("business-hours");
+    }
+  }, [allowWeekends, allowAfterHours, preferredTime]);
 
   const [particles, setParticles] = useState<{ id: number; left: string; xDir: number }[]>([]);
 
@@ -679,10 +704,14 @@ export default function HeroQuoteCalculator() {
               >
                 <option value="business-hours">{mainT("booking.businessHours")}</option>
                 {vertical === "commercial" && (
-                  <option value="after-hours">{mainT("booking.afterHours")}</option>
+                  <option value="after-hours" disabled={!allowAfterHours}>
+                    {mainT("booking.afterHours")}{!allowAfterHours ? " (Paused)" : ""}
+                  </option>
                 )}
                 {vertical !== "hospitality" && (
-                  <option value="weekends">{mainT("booking.weekends")}</option>
+                  <option value="weekends" disabled={!allowWeekends}>
+                    {mainT("booking.weekends")}{!allowWeekends ? " (Paused)" : ""}
+                  </option>
                 )}
               </select>
             </div>

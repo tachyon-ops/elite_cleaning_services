@@ -100,11 +100,15 @@ export async function loginAdmin(email: string, password?: string) {
   try {
     const cleanEmail = (email || "").trim().toLowerCase();
     let adminUser = await db.user.findFirst({
-      where: { email: cleanEmail, role: "super_admin" }
+      where: { 
+        email: cleanEmail, 
+        role: { in: ["super_admin", "editor"] } 
+      }
     });
 
-    // Fallback: If user enters an admin alias (e.g. admin@elite-cleaning.ch or admin@mondar.ch)
-    if (!adminUser && (cleanEmail.includes("admin") || cleanEmail.includes("elite-cleaning") || cleanEmail.includes("mondar"))) {
+    // Fallback: In development only, if user enters a generic dev admin alias
+    const isProduction = process.env.NODE_ENV === "production";
+    if (!isProduction && !adminUser && (cleanEmail.startsWith("admin@") || cleanEmail === "admin")) {
       adminUser = await db.user.findFirst({
         where: { role: "super_admin" }
       });
@@ -135,8 +139,6 @@ export async function loginAdmin(email: string, password?: string) {
     console.log(`[EMAIL OTP] Sent to: ${adminUser.email}`);
     console.log(`[EMAIL OTP] Code: ${otp}`);
     console.log(`==================================================\n`);
-
-    const isProduction = process.env.NODE_ENV === "production";
 
     // Send SMTP email
     const emailResult = await sendEmail({
@@ -179,7 +181,7 @@ export async function loginAdmin2FA(userId: string, token: string) {
       where: { id: userId }
     });
 
-    if (!adminUser || adminUser.role !== "super_admin") {
+    if (!adminUser || !["super_admin", "editor"].includes(adminUser.role)) {
       throw new Error("Invalid user or security configuration");
     }
 
@@ -341,7 +343,7 @@ export async function getLoggedInAdmin() {
     }
 
     // Fallback for active session with missing cookie
-    return await db.user.findFirst({ where: { role: "super_admin" } });
+    return await db.user.findFirst({ where: { role: { in: ["super_admin", "editor"] } } });
   } catch {
     return null;
   }
@@ -1186,7 +1188,10 @@ export async function updateSystemSetting(key: string, value: string) {
 export async function requestPasswordResetAdmin(email: string) {
   try {
     const adminUser = await db.user.findFirst({
-      where: { email: email.trim().toLowerCase(), role: "super_admin" }
+      where: { 
+        email: email.trim().toLowerCase(), 
+        role: { in: ["super_admin", "editor"] } 
+      }
     });
 
     if (!adminUser) {
@@ -1238,7 +1243,10 @@ export async function requestPasswordResetAdmin(email: string) {
 export async function resetPasswordAdmin(email: string, code: string, passwordNew: string) {
   try {
     const adminUser = await db.user.findFirst({
-      where: { email: email.trim().toLowerCase(), role: "super_admin" }
+      where: { 
+        email: email.trim().toLowerCase(), 
+        role: { in: ["super_admin", "editor"] } 
+      }
     });
 
     if (!adminUser) {

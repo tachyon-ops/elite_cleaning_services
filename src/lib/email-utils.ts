@@ -8,6 +8,10 @@ interface SendEmailPayload {
 }
 
 export async function sendEmail({ to, subject, html, text }: SendEmailPayload) {
+  if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+    return { success: true, messageId: "test-mock-id" };
+  }
+
   const clean = (val: string | undefined) => (val || "").trim().replace(/^["']|["']$/g, "");
 
   const host = clean(process.env.SMTP_HOST);
