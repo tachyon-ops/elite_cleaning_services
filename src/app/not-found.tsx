@@ -5,6 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { InteractiveDusting } from "@/components/InteractiveDusting";
 
+export const dynamic = "force-dynamic";
+
 export default async function NotFound() {
   const reqHeaders = await headers();
   const localeHeader = reqHeaders.get("x-locale");

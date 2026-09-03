@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: [
+    "@prisma/client",
+    "nodemailer",
+    "@supabase/supabase-js",
+    "@supabase/ssr",
+    "qrcode",
+  ],
 };
 
 export default nextConfig;
