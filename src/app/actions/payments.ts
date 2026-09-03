@@ -385,3 +385,170 @@ export async function cancelBookingWithRefund(bookingId: string, cancelledBy: "c
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * 3-PART PAYMENT SPLIT:
+ *   1st third: Charged at quote acceptance (CHF 50 pre-auth captured + remainder)
+ *   2nd third: Charged on the day of cleaning (this function)
+ *   3rd third: Charged after supplier confirms service done (confirmServiceCompletion)
+ */
+
+/**
+ * Charges the 2nd third (1/3 of total) on the day of the cleaning service.
+ * Can be triggered manually by ops or via a cron job on the scheduled date.
+ */
+export async function chargeDayOfService(bookingId: string) {
+  try {
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    const validStatuses = ["confirmed", "offer_dispatched", "offer_accepted", "assigned"];
+    if (!validStatuses.includes(booking.status)) {
+      throw new Error(`Booking status "${booking.status}" does not allow day-of-service charge`);
+    }
+
+    const totalAmount = Number(booking.totalAmountChf);
+    const secondThird = Math.round((totalAmount / 3) * 100) / 100;
+
+    await db.$transaction(async (tx) => {
+      // 1. Charge the 2nd third
+      await tx.payment.create({
+        data: {
+          bookingId: booking.id,
+          stripeChargeId: `ch_mock_day_of_service_${Math.random().toString(36).substring(2, 11)}`,
+          amountChf: secondThird,
+          status: "succeeded",
+          refundedAmountChf: 0
+        }
+      });
+
+      // 2. Update booking status to in_progress
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "in_progress",
+          balanceAuthStatus: "authorized" // 2nd third charged, 3rd pending
+        }
+      });
+
+      // 3. Audit log
+      await tx.auditLog.create({
+        data: {
+          action: "charge_day_of_service",
+          targetTable: "Booking",
+          targetId: bookingId,
+          before: JSON.stringify({ status: booking.status }),
+          after: JSON.stringify({ status: "in_progress", secondThirdCharged: secondThird }),
+          actorUserId: "admin_user"
+        }
+      });
+    });
+
+    console.log(`[PAYMENTS] Day-of-service charge for booking ${bookingId}: 2nd third CHF ${secondThird.toFixed(2)}.`);
+
+    return { success: true, amountCharged: secondThird };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Confirms service completion and charges the final 1/3 balance.
+ * Called by ops after the supplier confirms the service was performed.
+ */
+export async function confirmServiceCompletion(bookingId: string) {
+  try {
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        quote: true,
+        commissionLedgers: true,
+        payouts: true
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // Must be in_progress (day-of-service charge already done)
+    if (booking.status !== "in_progress") {
+      throw new Error(`Booking must be in "in_progress" status. Current: "${booking.status}"`);
+    }
+
+    const totalAmount = Number(booking.totalAmountChf);
+    // Final 1/3 = total minus the two thirds already charged
+    const firstThird = Number(booking.depositAmountChf); // charged at acceptance
+    const secondThird = Math.round((totalAmount / 3) * 100) / 100; // charged on cleaning day
+    const finalThird = Math.round((totalAmount - firstThird - secondThird) * 100) / 100;
+
+    await db.$transaction(async (tx) => {
+      // 1. Charge the final 1/3
+      if (finalThird > 0) {
+        await tx.payment.create({
+          data: {
+            bookingId: booking.id,
+            stripeChargeId: `ch_mock_final_third_${Math.random().toString(36).substring(2, 11)}`,
+            amountChf: finalThird,
+            status: "succeeded",
+            refundedAmountChf: 0
+          }
+        });
+      }
+
+      // 2. Update booking status to completed
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "completed",
+          balanceAuthStatus: "captured"
+        }
+      });
+
+      // 3. Update any pending payouts to in_transit
+      const pendingPayouts = booking.payouts.filter(p => p.status === "scheduled");
+      for (const payout of pendingPayouts) {
+        await tx.payout.update({
+          where: { id: payout.id },
+          data: {
+            status: "in_transit"
+          }
+        });
+      }
+
+      // 4. Settle commission ledger
+      const unsettled = booking.commissionLedgers.filter(cl => !cl.settledAt);
+      for (const ledger of unsettled) {
+        await tx.commissionLedger.update({
+          where: { id: ledger.id },
+          data: {
+            settledAt: new Date()
+          }
+        });
+      }
+
+      // 5. Audit log
+      await tx.auditLog.create({
+        data: {
+          action: "confirm_service_completion",
+          targetTable: "Booking",
+          targetId: bookingId,
+          before: JSON.stringify({ status: booking.status }),
+          after: JSON.stringify({ status: "completed", finalThirdCharged: finalThird }),
+          actorUserId: "admin_user"
+        }
+      });
+    });
+
+    console.log(`[PAYMENTS] Service completed for booking ${bookingId}. Final 1/3 CHF ${finalThird.toFixed(2)} charged. Total: CHF ${totalAmount.toFixed(2)}.`);
+
+    return { success: true, finalThirdCharged: finalThird };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

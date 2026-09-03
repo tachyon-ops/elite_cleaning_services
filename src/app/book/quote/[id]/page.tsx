@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
 import { Logo } from "@/components/Logo";
-import { getBookingQuoteDetails, acceptQuoteAndPayDeposit } from "@/app/actions/booking";
+import { getBookingQuoteDetails, acceptQuoteAndPayDeposit, rejectQuote } from "@/app/actions/booking";
 import { Shield, Check, Lock, CreditCard, Calendar, Clock, MapPin, Mail, AlertTriangle, ArrowRight, Plane, Ship } from "lucide-react";
 
 export default function QuoteAcceptancePage() {
@@ -20,6 +20,12 @@ export default function QuoteAcceptancePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [submittingPayment, setSubmittingPayment] = useState(false);
+
+  // Decline flow states
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [declining, setDeclining] = useState(false);
+  const [declined, setDeclined] = useState(false);
 
   // Card input states
   const [cardName, setCardName] = useState("");
@@ -68,6 +74,21 @@ export default function QuoteAcceptancePage() {
     }
   };
 
+  const handleDecline = async () => {
+    if (!booking) return;
+    setDeclining(true);
+    setError("");
+    const res = await rejectQuote({ bookingId: booking.id, reason: declineReason || undefined });
+    setDeclining(false);
+    if (res.success) {
+      setDeclined(true);
+      setShowDeclineModal(false);
+      loadData();
+    } else {
+      setError(res.error || "Failed to decline quote.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center text-[#f2f2f2] font-medium text-body-md">
@@ -91,6 +112,28 @@ export default function QuoteAcceptancePage() {
           <Link
             href={localizeHref("/", locale)}
             className="inline-block border border-accent bg-accent/10 text-accent hover:bg-accent/20 px-6 py-3 rounded-md transition-colors text-button font-semibold uppercase tracking-wider text-xs"
+          >
+            Return to Homepage
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (declined) {
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center text-[#f2f2f2] p-6">
+        <div className="border border-[#262626] bg-[#141414] p-8 rounded-lg max-w-md w-full text-center space-y-6">
+          <div className="w-16 h-16 mx-auto bg-[#141414] border border-[#262626] rounded-full flex items-center justify-center">
+            <Check className="w-8 h-8 text-[#22c55e]" />
+          </div>
+          <h2 className="text-xl font-semibold">Quote Declined</h2>
+          <p className="text-sm text-[#a6a6a6] leading-relaxed">
+            Your CHF 50.00 pre-booking hold has been released. No charges will be applied to your card.
+          </p>
+          <Link
+            href={localizeHref("/", locale)}
+            className="inline-block border border-accent bg-accent/10 text-accent hover:bg-accent/20 px-6 py-3 rounded-md transition-colors text-xs font-semibold uppercase tracking-wider"
           >
             Return to Homepage
           </Link>
@@ -314,8 +357,16 @@ export default function QuoteAcceptancePage() {
                       <span className="text-[#f2f2f2]">CHF {booking.totalAmountChf}</span>
                     </div>
                     <div className="flex justify-between pt-3">
-                      <span className="text-accent uppercase tracking-wider font-mono">Secure Deposit (30%)</span>
-                      <span className="text-accent text-body-md font-bold">CHF {booking.depositAmountChf}</span>
+                      <span className="text-accent uppercase tracking-wider font-mono">1/3 Deposit on acceptance:</span>
+                      <span className="text-[#f2f2f2]">CHF {booking.depositAmountChf.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between pt-3">
+                      <span className="text-accent uppercase tracking-wider font-mono">Pre-booking hold applied:</span>
+                      <span className="text-green-400">-CHF {booking.prebookingDepositChf?.toFixed(2) || '50.00'}</span>
+                    </div>
+                    <div className="flex justify-between pt-3 border-t border-[#262626] mt-3">
+                      <span className="text-accent uppercase tracking-wider font-mono">Amount due now:</span>
+                      <span className="text-accent text-body-md font-bold">CHF {(booking.depositAmountChf - (booking.prebookingDepositChf || 50)).toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -421,6 +472,18 @@ export default function QuoteAcceptancePage() {
                   </button>
                 </form>
               )}
+
+              {/* Decline Quote Button */}
+              {booking.status === "quote_sent" && !isExpired && (
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setShowDeclineModal(true)}
+                    className="text-red-400 hover:text-red-300 text-sm underline underline-offset-4 transition-colors"
+                  >
+                    Decline this quote
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -433,6 +496,38 @@ export default function QuoteAcceptancePage() {
           <p className="font-mono text-body-xs">Secure mock platform payment. No actual funds are charged.</p>
         </div>
       </footer>
+
+      {showDeclineModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg max-w-md w-full p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-[#f2f2f2]">Decline Quote</h3>
+            <p className="text-sm text-[#a6a6a6]">
+              Your CHF 50 pre-booking hold will be released immediately — no charge.
+            </p>
+            <textarea
+              value={declineReason}
+              onChange={(e) => setDeclineReason(e.target.value)}
+              placeholder="Optional: Tell us why (helps us improve)"
+              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#f2f2f2] placeholder-[#595959] focus:outline-none focus:border-accent resize-none h-20"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeclineModal(false)}
+                className="flex-1 border border-[#262626] text-[#a6a6a6] hover:text-[#f2f2f2] px-4 py-2 rounded-md text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDecline}
+                disabled={declining}
+                className="flex-1 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 px-4 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                {declining ? "Declining..." : "Confirm Decline"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

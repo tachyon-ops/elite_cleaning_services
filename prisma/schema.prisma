@@ -40,6 +40,9 @@ model User {
   organizationId        String?
   organization          Organization?       @relation("OrgUsers", fields: [organizationId], references: [id], onDelete: SetNull)
   managedOrganizations  Organization[]      @relation("OrgAccountManager")
+
+  materialApprovalMode  String              @default("trust") // "trust" (auto-added to bill) or "approval" (customer must approve each material)
+  monthlyInvoices       MonthlyInvoice[]
 }
 
 // 2. Guest Verification
@@ -153,7 +156,7 @@ model Booking {
   locationGeo           String?
   providerTeamId        String?
   providerTeam          ProviderTeam?    @relation(fields: [providerTeamId], references: [id], onDelete: SetNull)
-  status                String           @default("draft") // draft, intake_submitted, quote_pending, quote_sent, quote_accepted, payment_pending, confirmed, offer_dispatched, offer_accepted, assigned, in_progress, completed, cancelled_by_customer, cancelled_by_ops, cancelled_no_provider
+  status                String           @default("draft") // draft, intake_submitted, prebooking_held, quote_pending, quote_sent, quote_accepted, payment_pending, confirmed, offer_dispatched, offer_accepted, assigned, in_progress, completed, cancelled_by_customer, cancelled_by_ops, cancelled_no_provider
   totalAmountChf        Decimal
   depositAmountChf      Decimal
   stripePaymentIntentId String?
@@ -170,6 +173,12 @@ model Booking {
   promoCampaignId       String?
   promoCampaign         PromoCampaign?   @relation("PromoBookings", fields: [promoCampaignId], references: [id], onDelete: SetNull)
   promoDiscountChf      Decimal?
+
+  // Pre-booking hold (CHF 50 refundable Stripe pre-authorization)
+  prebookingDepositChf              Decimal   @default(50.00)
+  prebookingHoldStatus              String    @default("none") // none, held, captured, released, failed
+  prebookingStripePaymentIntentId   String?
+
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
@@ -180,6 +189,7 @@ model Booking {
   payouts               Payout[]
   commissionLedgers     CommissionLedger[]
   disputes              Dispute[]
+  materialLineItems     MaterialLineItem[]
 
   @@index([customerId])
   @@index([guestEmail])
@@ -487,6 +497,9 @@ model Organization {
   properties          Property[]
   contracts           ServiceContract[]
   users               User[]            @relation("OrgUsers")
+
+  materialApprovalMode String           @default("trust") // "trust" or "approval"
+  monthlyInvoices     MonthlyInvoice[]
 }
 
 // Managed site under an Organization
@@ -531,6 +544,7 @@ model ServiceContract {
   updatedAt       DateTime          @updatedAt
 
   jobs            JobOccurrence[]
+  materialLineItems MaterialLineItem[]
 
   @@index([organizationId])
   @@index([propertyId])
@@ -550,6 +564,8 @@ model JobOccurrence {
   notes             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+
+  materialLineItems MaterialLineItem[]
 
   @@index([contractId])
 }
@@ -646,4 +662,82 @@ model MiningLead {
   @@index([canton, status])
   @@index([publicationDate])
   @@index([uid])
+}
+
+// 27. Material line items — variable costs added to bookings/contracts
+model MaterialLineItem {
+  id                String            @id @default(uuid())
+
+  // Polymorphic link: exactly one of these should be set
+  bookingId         String?
+  booking           Booking?          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  contractId        String?
+  contract          ServiceContract?  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  jobOccurrenceId   String?
+  jobOccurrence     JobOccurrence?    @relation(fields: [jobOccurrenceId], references: [id], onDelete: Cascade)
+
+  description       String            // "Cleaning products", "Disinfectant 5L", etc.
+  quantity          Int               @default(1)
+  unitPriceChf      Decimal
+  totalPriceChf     Decimal           // quantity × unitPriceChf
+
+  addedByUserId     String?           // Ops user who logged the material
+  supplierNote      String?           // Note from the supplier about the material
+
+  billingPeriodMonth Int              // 1-12
+  billingPeriodYear  Int              // 2026, 2027...
+
+  // Customer approval (only used when materialApprovalMode = "approval")
+  approvalStatus    String            @default("auto_approved") // auto_approved, pending_approval, approved, rejected
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+
+  invoiceId         String?
+  invoice           MonthlyInvoice?   @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([bookingId])
+  @@index([contractId])
+  @@index([jobOccurrenceId])
+  @@index([invoiceId])
+  @@index([billingPeriodYear, billingPeriodMonth])
+}
+
+// 28. Monthly invoice aggregating service fees + material charges
+model MonthlyInvoice {
+  id                    String            @id @default(uuid())
+
+  // Polymorphic: individual customer or B2B organization
+  customerId            String?
+  customer              User?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  organizationId        String?
+  organization          Organization?     @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  billingPeriodMonth    Int               // 1-12
+  billingPeriodYear     Int               // 2026, 2027...
+
+  serviceAmountChf      Decimal           @default(0)   // Fixed service fee portion
+  materialsAmountChf    Decimal           @default(0)   // Sum of material line items
+  totalAmountChf        Decimal           @default(0)   // service + materials
+
+  status                String            @default("draft") // draft, sent, paid, overdue, cancelled
+  paymentMethod         String            @default("card")  // card, invoice_net30
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?
+
+  sentAt                DateTime?
+  dueAt                 DateTime?
+  paidAt                DateTime?
+  notes                 String?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  lineItems             MaterialLineItem[]
+
+  @@unique([customerId, billingPeriodYear, billingPeriodMonth])
+  @@unique([organizationId, billingPeriodYear, billingPeriodMonth])
+  @@index([status])
 }
