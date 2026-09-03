@@ -244,7 +244,40 @@ function calculatePrice(categorySlug: string, intake: any, scheduledAt?: Date) {
         addons += 30.00;
       }
     }
+  } else if (categorySlug === "moveout") {
+    const rooms = Number(intake.moveoutRooms) || 3.5;
+    const area = Number(intake.moveoutArea) || 80;
+    const scope = Array.isArray(intake.moveoutScope) ? intake.moveoutScope : [];
+
+    // Zurich customer-facing benchmark rates (with 100% Abnahmegarantie included)
+    // Windows, Storen, oven, hood, fridge, balcony standardly included
+    if (rooms <= 2.5) {
+      basePrice = 600.00;
+      if (area > 60) sizeAdjustment = (area - 60) * 2.50;
+    } else if (rooms <= 3.5) {
+      basePrice = 770.00;
+      if (area > 90) sizeAdjustment = (area - 90) * 2.50;
+    } else if (rooms <= 4.5) {
+      basePrice = 960.00;
+      if (area > 120) sizeAdjustment = (area - 120) * 2.50;
+    } else {
+      basePrice = 1180.00;
+      if (area > 140) sizeAdjustment = (area - 140) * 2.50;
+    }
+
+    // Optional Add-ons
+    if (scope.includes("carpet_steam")) addons += 100.00;
+    if (scope.includes("keller_estrich") || scope.includes("garage")) addons += 80.00;
+    if (scope.includes("express_weekend") || intake?.preferredTime === "weekends") {
+      addons += 200.00;
+    }
+    if (intake?.preferredTime === "after-hours") {
+      addons += 50.00;
+    }
   }
+
+  // Option B: 10% Platform & Guarantee commission on top
+  const PLATFORM_COMMISSION_RATE = 0.10;
 
   const singleSubtotal = basePrice + sizeAdjustment + addons;
   const prepayFactor = (categorySlug === "commercial" || categorySlug === "domestic") && intake.frequency === "monthly"
@@ -252,14 +285,19 @@ function calculatePrice(categorySlug: string, intake: any, scheduledAt?: Date) {
     : 1;
 
   const subtotal = singleSubtotal * prepayFactor;
-  const discountAmount = subtotal * frequencyDiscount;
-  const total = subtotal - discountAmount;
+  const platformFee = Math.round(subtotal * PLATFORM_COMMISSION_RATE * 100) / 100;
+  const grossTotal = subtotal + platformFee;
+
+  const discountAmount = grossTotal * frequencyDiscount;
+  const total = grossTotal - discountAmount;
   // 30% deposit
   const deposit = total * 0.30;
 
   return {
     total: Math.round(total * 100) / 100,
-    deposit: Math.round(deposit * 100) / 100
+    deposit: Math.round(deposit * 100) / 100,
+    platformFee,
+    subtotal: Math.round(subtotal * 100) / 100
   };
 }
 
@@ -468,7 +506,8 @@ export async function createBooking(payload: {
         isFirstBooking: true,
         stripeSubscriptionId,
         promoCampaignId,
-        promoDiscountChf
+        promoDiscountChf,
+        commissionAmountChf: pricing.platformFee || (finalTotal ? Math.round(finalTotal * 0.10 * 100) / 100 : null)
       }
     });
 

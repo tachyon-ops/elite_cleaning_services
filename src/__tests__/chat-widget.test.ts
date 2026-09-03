@@ -9,12 +9,12 @@ describe("Chat Widget Quote Calculation & Booking Link Pre-filling", () => {
     expect(quote).not.toBeNull();
     expect(quote).toContain("Endreinigung (5.5 Zimmer)");
     expect(quote).toContain("Grundreinigung (5.5+ Zimmer)");
-    expect(quote).toContain("CHF 1450.00");
+    expect(quote).toContain("CHF 1180.00");
     expect(quote).toContain("Zusatz Balkon / Terrasse");
-    expect(quote).toContain("CHF 80.00");
+    expect(quote).toContain("Inbegriffen");
     expect(quote).toContain("Express / Wochenende-Zuschlag");
     expect(quote).toContain("CHF 200.00");
-    expect(quote).toContain("CHF 1730.00");
+    expect(quote).toContain("CHF 1380.00");
     expect(quote).toContain("100% Schweizer Abnahmegarantie");
     expect(quote).toContain("scope=handover_guarantee,balcony_terrace,express_weekend");
   });
@@ -36,10 +36,9 @@ describe("Chat Widget Quote Calculation & Booking Link Pre-filling", () => {
 
     expect(quote).not.toBeNull();
     expect(quote).toContain("3.5 Room Move-Out Deep Clean");
-    expect(quote).toContain("CHF 890.00");
+    expect(quote).toContain("CHF 770.00");
     expect(quote).toContain("Add-on Balcony / Terrace");
-    expect(quote).toContain("CHF 80.00");
-    expect(quote).toContain("CHF 970.00");
+    expect(quote).toContain("Included (CHF 0.00)");
     expect(quote).toContain("[Book with this Quote](/en/book/end-cleaning?rooms=3.5&area=80&beds=2&baths=1&scope=handover_guarantee,balcony_terrace)");
   });
 
@@ -49,7 +48,7 @@ describe("Chat Widget Quote Calculation & Booking Link Pre-filling", () => {
 
     expect(quote).not.toBeNull();
     expect(quote).toContain("Limpeza de Mudança (4.5 Divisões)");
-    expect(quote).toContain("CHF 1180.00");
+    expect(quote).toContain("CHF 960.00");
     expect(quote).toContain("100% Garantia de Entrega Suíça");
     expect(quote).toContain("[Reservar com este orçamento](/pt/reservar/limpeza-mudanca?rooms=4.5&area=100&beds=3&baths=2&scope=handover_guarantee)");
   });

@@ -55,13 +55,12 @@ You provide ultra-reliable, grounded, zero-hallucination assistance for Swiss cl
 
 Strict Swiss Pricing Catalog (CHF):
 1. Move-Out & End-of-Tenancy Deep Cleaning (Endreinigung mit 100% Schweizer Abnahmegarantie):
-   - 1.5 - 2.5 Zimmer (bis 60m²): CHF 650.00 (5 Std. Einsatz) [SKU: CLEAN-MOVE-2.5R]
-   - 3.5 Zimmer (bis 90m²): CHF 890.00 (7 Std. Einsatz) [SKU: CLEAN-MOVE-3.5R]
-   - 4.5 Zimmer (bis 120m²): CHF 1'180.00 (9 Std. Einsatz) [SKU: CLEAN-MOVE-4.5R]
-   - 5.5+ Zimmer (ab 120m²): CHF 1'450.00 (12 Std. Einsatz) [SKU: CLEAN-MOVE-5.5R]
-   - Add-on Balkon / Terrasse: +CHF 80.00
-   - Add-on Lamellenstoren / Blinds: +CHF 120.00
-   - Add-on Express 24h / Weekend: +CHF 200.00
+   - 1.5 - 2.5 Zimmer (bis 60m²): CHF 600.00 (Richtpreis-Spanne: CHF 480–720) [SKU: CLEAN-MOVE-2.5R]
+   - 3.0 - 3.5 Zimmer (bis 90m²): CHF 770.00 (Richtpreis-Spanne: CHF 620–920) [SKU: CLEAN-MOVE-3.5R]
+   - 4.0 - 4.5 Zimmer (bis 120m²): CHF 960.00 (Richtpreis-Spanne: CHF 780–1'150) [SKU: CLEAN-MOVE-4.5R]
+   - 5.0 - 5.5+ Zimmer (ab 120m²): CHF 1'180.00 (Richtpreis-Spanne: CHF 950–1'400) [SKU: CLEAN-MOVE-5.5R]
+   - Inbegriffen: Fenster, Lamellenstoren, Backofen, Dampfabzug, Kühlschrank, Balkon/Terrasse, 100% Abnahmegarantie.
+   - Optionale Zusätze: Teppich-Sprühextraktion (+CHF 100.00), Keller/Estrich/Garage (+CHF 80.00), Express 24h / Wochenende (+CHF 200.00).
    - ALL move-out cleans include 100% Handover Guarantee (Abnahmegarantie) with subcontractor presence at landlord handover.
 
 2. Regular Home & Villa Cleaning (Domestic): From CHF 80.00 base dispatch.
@@ -147,7 +146,7 @@ export function calculateDeterministicSwissQuote(message: string): string | null
   const hasBlinds = /storen|lamellen|blinds|persianas|volets|tapparelle/i.test(lower);
   const isUrgent = /dringend|urgent|morgen|tomorrow|samstag|saturday|weekend|wochenende|24h|amanhã|urgente|fim de semana/i.test(lower);
 
-  let basePrice = 650;
+  let basePrice = 600;
   let duration = 5;
   let sku = "CLEAN-MOVE-2.5R";
   let areaEst = 50;
@@ -155,28 +154,28 @@ export function calculateDeterministicSwissQuote(message: string): string | null
   let bathsEst = 1;
 
   if (rooms === 5.5) {
-    basePrice = 1450;
-    duration = 12;
+    basePrice = 1180;
+    duration = 10;
     sku = "CLEAN-MOVE-5.5R";
     areaEst = 130;
     bedsEst = 4;
     bathsEst = 2;
   } else if (rooms === 4.5) {
-    basePrice = 1180;
-    duration = 9;
+    basePrice = 960;
+    duration = 8;
     sku = "CLEAN-MOVE-4.5R";
     areaEst = 100;
     bedsEst = 3;
     bathsEst = 2;
   } else if (rooms === 3.5) {
-    basePrice = 890;
-    duration = 7;
+    basePrice = 770;
+    duration = 6;
     sku = "CLEAN-MOVE-3.5R";
     areaEst = 80;
     bedsEst = 2;
     bathsEst = 1;
   } else if (rooms === 2.5) {
-    basePrice = 650;
+    basePrice = 600;
     duration = 5;
     sku = "CLEAN-MOVE-2.5R";
     areaEst = 50;
@@ -187,11 +186,9 @@ export function calculateDeterministicSwissQuote(message: string): string | null
   let total = basePrice;
   const scopes = ["handover_guarantee"];
   if (hasBalcony) {
-    total += 80;
     scopes.push("balcony_terrace");
   }
   if (hasBlinds) {
-    total += 120;
     scopes.push("windows_shutters");
   }
   if (isUrgent) {
@@ -214,8 +211,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
   if (isEn) {
     const enBreakdown: string[] = [`• **Base Deep Clean (${rooms}+ Rooms)**: CHF ${basePrice.toFixed(2)} (approx. ${duration} hrs)`];
-    if (hasBalcony) enBreakdown.push("• **Add-on Balcony / Terrace**: CHF 80.00");
-    if (hasBlinds) enBreakdown.push("• **Add-on Window Blinds / Shutters**: CHF 120.00");
+    if (hasBalcony) enBreakdown.push("• **Add-on Balcony / Terrace**: Included (CHF 0.00)");
+    if (hasBlinds) enBreakdown.push("• **Add-on Window Blinds / Shutters**: Included (CHF 0.00)");
     if (isUrgent) enBreakdown.push("• **Express / Weekend Surcharge**: CHF 200.00");
 
     return `Hello! Here is your verified quote for a **${rooms} Room Move-Out Deep Clean**:\n\n` +
@@ -229,8 +226,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
   if (isPt) {
     const ptBreakdown: string[] = [`• **Limpeza Base (${rooms}+ Divisões)**: CHF ${basePrice.toFixed(2)} (aprox. ${duration} horas)`];
-    if (hasBalcony) ptBreakdown.push("• **Adicional Varanda / Terraço**: CHF 80.00");
-    if (hasBlinds) ptBreakdown.push("• **Adicional Persianas / Janelas**: CHF 120.00");
+    if (hasBalcony) ptBreakdown.push("• **Adicional Varanda / Terraço**: Incluído (CHF 0.00)");
+    if (hasBlinds) ptBreakdown.push("• **Adicional Persianas / Janelas**: Incluído (CHF 0.00)");
     if (isUrgent) ptBreakdown.push("• **Taxa Expresso / Fim de Semana**: CHF 200.00");
 
     return `Olá! Aqui está o seu orçamento verificado para a **Limpeza de Mudança (${rooms} Divisões)**:\n\n` +
@@ -244,8 +241,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
   if (isFr) {
     const frBreakdown: string[] = [`• **Nettoyage de base (${rooms}+ pièces)**: CHF ${basePrice.toFixed(2)} (env. ${duration} h)`];
-    if (hasBalcony) frBreakdown.push("• **Option Balcon / Terrasse**: CHF 80.00");
-    if (hasBlinds) frBreakdown.push("• **Option Stores / Fenêtres**: CHF 120.00");
+    if (hasBalcony) frBreakdown.push("• **Option Balcon / Terrasse**: Inclus (CHF 0.00)");
+    if (hasBlinds) frBreakdown.push("• **Option Stores / Fenêtres**: Inclus (CHF 0.00)");
     if (isUrgent) frBreakdown.push("• **Supplément Express / Week-end**: CHF 200.00");
 
     return `Bonjour! Voici votre devis vérifié pour le **Nettoyage de fin de bail (${rooms} pièces)**:\n\n` +
@@ -259,8 +256,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
   if (isIt) {
     const itBreakdown: string[] = [`• **Pulizia base (${rooms}+ locali)**: CHF ${basePrice.toFixed(2)} (ca. ${duration} ore)`];
-    if (hasBalcony) itBreakdown.push("• **Opzione Balcone / Terrazza**: CHF 80.00");
-    if (hasBlinds) itBreakdown.push("• **Opzione Tapparelle / Finestre**: CHF 120.00");
+    if (hasBalcony) itBreakdown.push("• **Opzione Balcone / Terrazza**: Incluso (CHF 0.00)");
+    if (hasBlinds) itBreakdown.push("• **Opzione Tapparelle / Finestre**: Incluso (CHF 0.00)");
     if (isUrgent) itBreakdown.push("• **Supplemento Express / Fine settimana**: CHF 200.00");
 
     return `Buongiorno! Ecco il preventivo verificato per la **Pulizia di fine locazione (${rooms} locali)**:\n\n` +
@@ -274,8 +271,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
 
   if (isEs) {
     const esBreakdown: string[] = [`• **Limpieza base (${rooms}+ habitaciones)**: CHF ${basePrice.toFixed(2)} (aprox. ${duration} hrs)`];
-    if (hasBalcony) esBreakdown.push("• **Opción Balcón / Terraza**: CHF 80.00");
-    if (hasBlinds) esBreakdown.push("• **Opción Persianas / Ventanas**: CHF 120.00");
+    if (hasBalcony) esBreakdown.push("• **Opción Balcón / Terraza**: Incluido (CHF 0.00)");
+    if (hasBlinds) esBreakdown.push("• **Opción Persianas / Ventanas**: Incluido (CHF 0.00)");
     if (isUrgent) esBreakdown.push("• **Suplemento Express / Fin de semana**: CHF 200.00");
 
     return `¡Hola! Aquí tiene su presupuesto verificado para la **Limpieza de fin de alquiler (${rooms} habitaciones)**:\n\n` +
@@ -288,8 +285,8 @@ export function calculateDeterministicSwissQuote(message: string): string | null
   }
 
   const deBreakdown: string[] = [`• **Grundreinigung (${rooms}+ Zimmer)**: CHF ${basePrice.toFixed(2)} (ca. ${duration} Std. Einsatz)`];
-  if (hasBalcony) deBreakdown.push("• **Zusatz Balkon / Terrasse**: CHF 80.00");
-  if (hasBlinds) deBreakdown.push("• **Zusatz Lamellenstoren / Fenster**: CHF 120.00");
+  if (hasBalcony) deBreakdown.push("• **Zusatz Balkon / Terrasse**: Inbegriffen (CHF 0.00)");
+  if (hasBlinds) deBreakdown.push("• **Zusatz Lamellenstoren / Fenster**: Inbegriffen (CHF 0.00)");
   if (isUrgent) deBreakdown.push("• **Express / Wochenende-Zuschlag**: CHF 200.00");
 
   return `Grüezi! Gerne berechne ich Ihnen die verbindliche Richtofferte für die **Endreinigung (${rooms} Zimmer)**:\n\n` +
@@ -308,9 +305,9 @@ export function getOfflineReply(message: string): string {
   const lower = (message || "").toLowerCase();
   if (lower.includes("price") || lower.includes("preis") || lower.includes("cost") || lower.includes("kosten") || lower.includes("preço")) {
     return "Mondar Preisübersicht (Schweiz):\n\n" +
-           "• **Umzugsreinigung (Endreinigung mit 100% Abnahmegarantie)**: ab CHF 650.00 → [Umzugsreinigung buchen](/de/buchen/endreinigung)\n" +
-           "• **Privat- & Unterhaltsreinigung**: ab CHF 80.00 → [Privatreinigung buchen](/de/buchen/haus)\n" +
-           "• **Büro & Gewerbe**: ab CHF 150.00 → [Büroreinigung buchen](/de/buchen/gewerbe)\n" +
+           "• **Umzugsreinigung (Endreinigung mit 100% Abnahmegarantie)**: ab CHF 480.00 → [Umzugsreinigung buchen](/de/buchen/endreinigung)\n" +
+           "• **Privat- & Unterhaltsreinigung**: ab CHF 110.00 → [Privatreinigung buchen](/de/buchen/haus)\n" +
+           "• **Büro & Gewerbe**: ab CHF 120.00 → [Büroreinigung buchen](/de/buchen/gewerbe)\n" +
            "• **Airbnb & Hospitality**: ab CHF 120.00 pro Turnover → [Airbnb buchen](/de/buchen/airbnb)\n" +
            "• **Aviation & Yacht Detailing**: Individuelle Offerte innert 4 Stunden → [Aviation](/de/buchen/luftfahrt) / [Yacht](/de/buchen/yacht)\n\n" +
            "Für welches Objekt oder wie viele Zimmer möchten Sie eine Offerte berechnen?";

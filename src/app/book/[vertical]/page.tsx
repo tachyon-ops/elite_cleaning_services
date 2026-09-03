@@ -631,15 +631,18 @@ export default function BookingPage() {
     let sizeAdjustment = 0;
     let frequencyDiscount = 0;
     let addons = 0;
+    let rangeMin = 0;
+    let rangeMax = 0;
 
     let hasAfterHoursSurcharge = false;
     let hasWeekendSurcharge = false;
 
     if (vertical === "commercial") {
-      basePrice = 150.00;
-      const area = Number(intake.surfaceArea) || 0;
+      const area = Number(intake.surfaceArea) || 100;
+      // Zurich small office benchmark: 100 m² weekly ~ CHF 100–200 per clean (CHF 500–1'500/mo)
+      basePrice = 120.00;
       if (area > 50) {
-        sizeAdjustment = (area - 50) * 1.20;
+        sizeAdjustment = (area - 50) * 1.00;
       }
       const freq = intake.frequency;
       if (freq === "weekly") frequencyDiscount = 0.15;
@@ -658,20 +661,41 @@ export default function BookingPage() {
         hasWeekendSurcharge = true;
       }
     } else if (vertical === "hospitality") {
-      basePrice = 120.00;
+      // Airbnb turnover: Studio/1R CHF 100 (80-130); 2R CHF 135 (110-160); 3R CHF 200 (160-250)
       const bedrooms = Number(intake.bedrooms) || 1;
-      const bathrooms = Number(intake.bathrooms) || 1;
-      sizeAdjustment = (bedrooms - 1) * 30.00 + (bathrooms - 1) * 20.00;
+      if (bedrooms <= 1) {
+        basePrice = 100.00;
+      } else if (bedrooms === 2) {
+        basePrice = 135.00;
+      } else if (bedrooms === 3) {
+        basePrice = 200.00;
+      } else {
+        basePrice = 200.00 + (bedrooms - 3) * 40.00;
+      }
+
       if (intake.linenChange) {
         addons = 35.00;
       }
       const freq = intake.frequency;
-      if (freq === "weekly") frequencyDiscount = 0.10;
+      if (freq === "weekly") frequencyDiscount = 0.15;
     } else if (vertical === "domestic") {
-      basePrice = 80.00;
+      // Home cleaning flat per visit: 2.5R CHF 135 (110-160), 3.5R CHF 170 (140-200), 4.5R CHF 220 (180-260)
       const bedrooms = Number(intake.bedrooms) || 1;
       const bathrooms = Number(intake.bathrooms) || 1;
-      sizeAdjustment = (bedrooms - 1) * 20.00 + (bathrooms - 1) * 15.00;
+      const roomEst = bedrooms + 1.5;
+      if (roomEst <= 2.5) {
+        basePrice = 135.00;
+      } else if (roomEst <= 3.5) {
+        basePrice = 170.00;
+      } else if (roomEst <= 4.5) {
+        basePrice = 220.00;
+      } else {
+        basePrice = 270.00;
+      }
+      if (bathrooms > 2) {
+        sizeAdjustment = (bathrooms - 2) * 15.00;
+      }
+
       const freq = intake.frequency;
       if (freq === "weekly") frequencyDiscount = 0.15;
       else if (freq === "bi-weekly") frequencyDiscount = 0.10;
@@ -689,7 +713,44 @@ export default function BookingPage() {
           hasWeekendSurcharge = true;
         }
       }
+    } else if (vertical === "moveout") {
+      // Zurich Endreinigung benchmark: All-inclusive (windows, storen, oven, hood, fridge, balcony, Abnahmegarantie)
+      // 1.5-2.5R: CHF 600.00 (range: 480 - 720)
+      // 3-3.5R: CHF 770.00 (range: 620 - 920)
+      // 4-4.5R: CHF 960.00 (range: 780 - 1'150)
+      // 5-5.5+R: CHF 1'180.00 (range: 950 - 1'400)
+      const rooms = Number(intake.moveoutRooms) || 3.5;
+      const area = Number(intake.moveoutArea) || 80;
+      const scope = Array.isArray(intake.moveoutScope) ? intake.moveoutScope : [];
+
+      if (rooms <= 2.5) {
+        basePrice = 600.00;
+        if (area > 60) sizeAdjustment = (area - 60) * 2.50;
+      } else if (rooms <= 3.5) {
+        basePrice = 770.00;
+        if (area > 90) sizeAdjustment = (area - 90) * 2.50;
+      } else if (rooms <= 4.5) {
+        basePrice = 960.00;
+        if (area > 120) sizeAdjustment = (area - 120) * 2.50;
+      } else {
+        basePrice = 1180.00;
+        if (area > 140) sizeAdjustment = (area - 140) * 2.50;
+      }
+
+      // Add-ons
+      if (scope.includes("carpet_steam")) addons += 100.00;
+      if (scope.includes("keller_estrich") || scope.includes("garage")) addons += 80.00;
+      if (scope.includes("express_weekend") || intake.preferredTime === "weekends") {
+        addons += 200.00;
+        hasWeekendSurcharge = true;
+      }
+      if (intake.preferredTime === "after-hours") {
+        addons += 50.00;
+        hasAfterHoursSurcharge = true;
+      }
     }
+
+    const PLATFORM_COMMISSION_RATE = 0.10; // 10% platform & guarantee commission on top
 
     const singleSubtotal = basePrice + sizeAdjustment + addons;
     const prepayFactor = (vertical === "commercial" || vertical === "domestic") && intake.frequency === "monthly"
@@ -697,14 +758,17 @@ export default function BookingPage() {
       : 1;
 
     const subtotal = singleSubtotal * prepayFactor;
-    const frequencyDiscountAmount = subtotal * frequencyDiscount;
+    const platformFee = Math.round(subtotal * PLATFORM_COMMISSION_RATE * 100) / 100;
+    const grossTotal = subtotal + platformFee;
 
-    // Calculate promo discount (does NOT stack with frequency — higher wins)
+    const frequencyDiscountAmount = grossTotal * frequencyDiscount;
+
+    // Calculate promo discount on gross total (does NOT stack with frequency — higher wins)
     let promoDiscountAmount = 0;
     let promoApplied = false;
     if (promoData?.valid && promoData.discountValue) {
       if (promoData.discountType === "percentage") {
-        promoDiscountAmount = subtotal * (promoData.discountValue / 100);
+        promoDiscountAmount = grossTotal * (promoData.discountValue / 100);
       } else {
         promoDiscountAmount = promoData.discountValue;
       }
@@ -717,8 +781,66 @@ export default function BookingPage() {
       promoApplied = true;
     }
 
-    const total = Math.max(0, subtotal - effectiveDiscount);
+    const total = Math.max(0, grossTotal - effectiveDiscount);
     const deposit = total * 0.30;
+
+    // Calculate Instant Probable Price Range (including 10% platform commission)
+    const discountRatio = grossTotal > 0 ? total / grossTotal : 1;
+
+    if (vertical === "moveout") {
+      const rooms = Number(intake.moveoutRooms) || 3.5;
+      let rawMin = 480;
+      let rawMax = 720;
+      if (rooms <= 2.5) { rawMin = 480; rawMax = 720; }
+      else if (rooms <= 3.5) { rawMin = 620; rawMax = 920; }
+      else if (rooms <= 4.5) { rawMin = 780; rawMax = 1150; }
+      else { rawMin = 950; rawMax = 1400; }
+
+      const extra = sizeAdjustment + addons;
+      const baseWithCommissionMin = (rawMin + extra) * (1 + PLATFORM_COMMISSION_RATE);
+      const baseWithCommissionMax = (rawMax + extra) * (1 + PLATFORM_COMMISSION_RATE);
+      rangeMin = Math.max(0, Math.round((baseWithCommissionMin * discountRatio) / 10) * 10);
+      rangeMax = Math.max(0, Math.round((baseWithCommissionMax * discountRatio) / 10) * 10);
+    } else if (vertical === "domestic") {
+      const bedrooms = Number(intake.bedrooms) || 1;
+      const roomEst = bedrooms + 1.5;
+      let rawMin = 110;
+      let rawMax = 160;
+      if (roomEst <= 2.5) { rawMin = 110; rawMax = 160; }
+      else if (roomEst <= 3.5) { rawMin = 140; rawMax = 200; }
+      else if (roomEst <= 4.5) { rawMin = 180; rawMax = 260; }
+      else { rawMin = 230; rawMax = 320; }
+
+      const baseWithCommissionMin = rawMin * (1 + PLATFORM_COMMISSION_RATE);
+      const baseWithCommissionMax = rawMax * (1 + PLATFORM_COMMISSION_RATE);
+      rangeMin = Math.max(0, Math.round((baseWithCommissionMin * discountRatio) / 5) * 5);
+      rangeMax = Math.max(0, Math.round((baseWithCommissionMax * discountRatio) / 5) * 5);
+    } else if (vertical === "hospitality") {
+      const bedrooms = Number(intake.bedrooms) || 1;
+      let rawMin = 80;
+      let rawMax = 130;
+      if (bedrooms <= 1) { rawMin = 80; rawMax = 130; }
+      else if (bedrooms === 2) { rawMin = 110; rawMax = 160; }
+      else { rawMin = 160; rawMax = 250; }
+
+      if (intake.linenChange) {
+        rawMin += 35;
+        rawMax += 35;
+      }
+      const baseWithCommissionMin = rawMin * (1 + PLATFORM_COMMISSION_RATE);
+      const baseWithCommissionMax = rawMax * (1 + PLATFORM_COMMISSION_RATE);
+      rangeMin = Math.max(0, Math.round((baseWithCommissionMin * discountRatio) / 5) * 5);
+      rangeMax = Math.max(0, Math.round((baseWithCommissionMax * discountRatio) / 5) * 5);
+    } else if (vertical === "commercial") {
+      const area = Number(intake.surfaceArea) || 100;
+      const rawMin = Math.round(area * 1.00 * (1 + PLATFORM_COMMISSION_RATE));
+      const rawMax = Math.round(area * 2.00 * (1 + PLATFORM_COMMISSION_RATE));
+      rangeMin = Math.max(50, Math.round((rawMin * discountRatio) / 10) * 10);
+      rangeMax = Math.max(80, Math.round((rawMax * discountRatio) / 10) * 10);
+    } else if (total > 0) {
+      rangeMin = Math.max(0, Math.round((total * 0.90) / 10) * 10);
+      rangeMax = Math.round((total * 1.10) / 10) * 10;
+    }
 
     return {
       basePrice,
@@ -727,12 +849,16 @@ export default function BookingPage() {
       singleSubtotal: Math.round(singleSubtotal * 100) / 100,
       prepayFactor,
       subtotal: Math.round(subtotal * 100) / 100,
+      platformFee,
+      grossTotal: Math.round(grossTotal * 100) / 100,
       discount: Math.round(effectiveDiscount * 100) / 100,
       frequencyDiscount: Math.round(frequencyDiscountAmount * 100) / 100,
       promoDiscountAmount: Math.round(promoDiscountAmount * 100) / 100,
       promoApplied,
       total: Math.round(total * 100) / 100,
       deposit: Math.round(deposit * 100) / 100,
+      rangeMin,
+      rangeMax,
       hasAfterHoursSurcharge,
       hasWeekendSurcharge
     };
@@ -1720,37 +1846,65 @@ Please verify and confirm my dispatch request. Thank you!`;
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-caption text-ink font-semibold uppercase block font-body">{t("servScope")}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm text-ink-muted">
-                      {[
-                        { id: "handover_guarantee", label: t("handoverGuaranteeOption"), disabled: false },
-                        { id: "windows_shutters", label: t("windowShuttersOption"), disabled: false },
-                        { id: "oven_deep_clean", label: t("ovenDeepCleanOption"), disabled: false },
-                        { id: "balcony_terrace", label: t("balconyTerraceOption"), disabled: false },
-                        { id: "carpet_steam", label: t("carpetSteamOption"), disabled: false },
-                        { id: "express_weekend", label: allowWeekends ? t("expressWeekendOption") : `${t("expressWeekendOption")} (Paused)`, disabled: !allowWeekends }
-                      ].map((item: any) => {
-                        const isChecked = intake.moveoutScope?.includes(item.id);
-                        return (
-                          <label key={item.id} className={`flex items-center gap-2.5 ${item.disabled ? "opacity-50 cursor-not-allowed text-ink-muted select-none" : "cursor-pointer"}`}>
-                            <input
-                              type="checkbox"
-                              disabled={item.disabled}
-                              checked={!item.disabled && isChecked}
-                              onChange={(e) => {
-                                if (item.disabled) return;
-                                const nextScope = e.target.checked
-                                  ? [...(intake.moveoutScope || []), item.id]
-                                  : (intake.moveoutScope || []).filter((id: string) => id !== item.id);
-                                handleIntakeChange("moveoutScope", nextScope);
-                              }}
-                              className="accent-accent h-4 w-4 disabled:cursor-not-allowed"
-                            />
-                            {item.label}
-                          </label>
-                        );
-                      })}
+                  <div className="space-y-4">
+                    {/* Standard Inclusions */}
+                    <div className="bg-bg-subtle border border-border p-4 rounded-md space-y-2">
+                      <div className="flex items-center gap-2 text-caption uppercase font-bold text-accent">
+                        <Shield className="w-4 h-4 text-accent" />
+                        <span>{t("includedInBaseRate") || "Standard Inclusions (Included in Base Benchmark)"}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-xs text-ink-muted">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <span>{t("handoverGuaranteeIncluded") || "100% Handover Guarantee (Abnahmegarantie)"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <span>{t("windowShuttersOption") || "Windows, Frames & Roller Shutters (Storen)"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <span>{t("ovenDeepCleanOption") || "Oven, Cooker Hood & Refrigerator Deep Clean"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <span>{t("balconyTerraceOption") || "Balcony or Terrace Cleaning"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Optional Add-ons */}
+                    <div className="space-y-2">
+                      <label className="text-caption text-ink font-semibold uppercase block font-body">
+                        {t("optionalAddons") || "Optional Extras"}
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-body-sm text-ink-muted">
+                        {[
+                          { id: "carpet_steam", label: `${t("carpetSteamOption")} (+CHF 100)`, disabled: false },
+                          { id: "keller_estrich", label: `${t("kellerEstrichOption") || "Cellar, attic or garage (Keller / Estrich / Garage)"} (+CHF 80)`, disabled: false },
+                          { id: "express_weekend", label: allowWeekends ? `${t("expressWeekendOption")} (+CHF 200)` : `${t("expressWeekendOption")} (Paused)`, disabled: !allowWeekends }
+                        ].map((item: any) => {
+                          const isChecked = intake.moveoutScope?.includes(item.id);
+                          return (
+                            <label key={item.id} className={`flex items-center gap-2.5 p-2.5 rounded border border-border bg-bg hover:border-accent transition-colors ${item.disabled ? "opacity-50 cursor-not-allowed select-none" : "cursor-pointer"}`}>
+                              <input
+                                type="checkbox"
+                                disabled={item.disabled}
+                                checked={!item.disabled && isChecked}
+                                onChange={(e) => {
+                                  if (item.disabled) return;
+                                  const nextScope = e.target.checked
+                                    ? [...(intake.moveoutScope || []), item.id]
+                                    : (intake.moveoutScope || []).filter((id: string) => id !== item.id);
+                                  handleIntakeChange("moveoutScope", nextScope);
+                                }}
+                                className="accent-accent h-4 w-4 disabled:cursor-not-allowed"
+                              />
+                              <span className="text-body-xs font-medium text-ink">{item.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -2540,11 +2694,11 @@ Please verify and confirm my dispatch request. Thank you!`;
           {/* STEP 3: QUOTE / REVIEW */}
           {step === 3 && (
             <div className="space-y-6">
-              {["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(vertical) ? (
+              {["aviation", "yacht", "special", "building-care", "restaurant"].includes(vertical) ? (
                 <div className="space-y-4 pt-4">
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("bespokeQuoteRequired")}</h2>
                   <p className="text-body-sm text-ink-muted">
-                    {vertical === "moveout" ? t("moveoutQuoteDesc") : vertical === "building-care" ? t("buildingCareQuoteDesc") : vertical === "restaurant" ? t("restaurantQuoteDesc") : t("aviationYachtQuoteDesc")}
+                    {vertical === "building-care" ? t("buildingCareQuoteDesc") : vertical === "restaurant" ? t("restaurantQuoteDesc") : t("aviationYachtQuoteDesc")}
                   </p>
                   <div className="border border-border p-6 rounded-md bg-bg-subtle space-y-4 pt-6 text-body-sm leading-relaxed">
                     <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
@@ -2565,6 +2719,29 @@ Please verify and confirm my dispatch request. Thank you!`;
                   <h2 className="text-display-sm font-display font-medium text-ink">{t("reviewDetailsTitle")}</h2>
                   <p className="text-body-sm text-ink-muted">{t("reviewDetailsSubtitle")}</p>
 
+                  {/* Move-out Probable Range Card */}
+                  {vertical === "moveout" && pricing.rangeMin > 0 && (
+                    <div className="bg-accent/10 border border-accent/30 rounded-md p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-caption font-semibold uppercase text-accent flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>{t("probablePriceRange")}</span>
+                        </div>
+                        <div className="text-display-xs sm:text-display-sm font-bold text-ink font-display mt-0.5">
+                          CHF {pricing.rangeMin.toLocaleString()} – {pricing.rangeMax.toLocaleString()}
+                        </div>
+                        <div className="text-body-xs text-ink-muted mt-0.5">
+                          {t("benchmarkRate")}: <span className="font-semibold text-ink">CHF {pricing.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="sm:text-right">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-accent/20 text-accent text-body-xs font-semibold">
+                          <Shield className="w-3.5 h-3.5" /> {t("handoverGuaranteeIncluded")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="border border-border p-6 rounded-md bg-bg-subtle/50 space-y-4 pt-6 text-body-sm leading-relaxed">
                     <div className="flex justify-between py-2 border-b border-border/40">
                       <span className="font-semibold text-ink-muted">{t("selectedService")}</span>
@@ -2576,7 +2753,19 @@ Please verify and confirm my dispatch request. Thank you!`;
                         <span className="text-ink font-medium capitalize">{t(intake.officeType === "office" ? "corporateOffice" : intake.officeType === "studio" ? "studioCreative" : intake.officeType === "retail" ? "retailShowroom" : intake.officeType === "gym" ? "gymFitness" : intake.officeType === "restaurant" ? "restaurantKitchen" : intake.officeType)}</span>
                       </div>
                     )}
-                    {intake.surfaceArea && (
+                    {intake.moveoutRooms && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("moveoutRooms")}</span>
+                        <span className="text-ink font-medium">{intake.moveoutRooms}</span>
+                      </div>
+                    )}
+                    {intake.moveoutArea && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("surfaceArea")}</span>
+                        <span className="text-ink font-medium">{intake.moveoutArea} m²</span>
+                      </div>
+                    )}
+                    {intake.surfaceArea && !intake.moveoutArea && (
                       <div className="flex justify-between py-2 border-b border-border/40">
                         <span className="font-semibold text-ink-muted">{t("surfaceArea")}</span>
                         <span className="text-ink font-medium">{intake.surfaceArea} m²</span>
@@ -2594,10 +2783,28 @@ Please verify and confirm my dispatch request. Thank you!`;
                         <span className="text-ink font-medium">{intake.bathrooms}</span>
                       </div>
                     )}
-                    <div className="flex justify-between py-2 border-b border-border/40">
-                      <span className="font-semibold text-ink-muted">{t("frequencies")}</span>
-                      <span className="text-ink font-medium capitalize">{t(intake.frequency)}</span>
-                    </div>
+                    {intake.moveoutScope && intake.moveoutScope.length > 0 && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("servScope") || "Scope"}</span>
+                        <span className="text-ink font-medium text-right text-body-xs max-w-[60%]">
+                          {intake.moveoutScope.map((id: string) => {
+                            if (id === "handover_guarantee") return t("handoverGuaranteeOption");
+                            if (id === "windows_shutters") return t("windowShuttersOption");
+                            if (id === "oven_deep_clean") return t("ovenDeepCleanOption");
+                            if (id === "balcony_terrace") return t("balconyTerraceOption");
+                            if (id === "carpet_steam") return t("carpetSteamOption");
+                            if (id === "express_weekend") return t("expressWeekendOption");
+                            return id;
+                          }).join(", ")}
+                        </span>
+                      </div>
+                    )}
+                    {vertical !== "moveout" && (
+                      <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="font-semibold text-ink-muted">{t("frequencies")}</span>
+                        <span className="text-ink font-medium capitalize">{t(intake.frequency)}</span>
+                      </div>
+                    )}
                     {intake.frequency === "monthly" && intake.prepayPeriod && (
                       <div className="flex justify-between py-2 border-b border-border/40">
                         <span className="font-semibold text-ink-muted">{t("prepaymentCommitment")}</span>
@@ -2898,38 +3105,220 @@ Please verify and confirm my dispatch request. Thank you!`;
 
             {/* Pricing / Booking Summary Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              {["aviation", "yacht", "special", "moveout", "building-care", "restaurant"].includes(vertical) ? (
+              {(["aviation", "yacht", "special", "building-care", "restaurant"].includes(vertical) || (vertical === "commercial" && (Number(intake.surfaceArea) || 100) > 300)) ? (
                 <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
                   <h3 className="text-body-md font-display font-medium text-ink tracking-wide uppercase border-b border-border pb-2">
-                    {t("bespokeInquiry")}
+                    {t("richtpreisTitle") || "Richtpreis nach Besichtigung"}
                   </h3>
                   <div className="space-y-4 text-body-sm leading-relaxed text-ink-muted">
                     <span className="text-caption text-accent uppercase font-semibold flex items-center gap-2">
                       <Clock className="w-4 h-4" /> {t("reviewPending")}
                     </span>
                     <p>{t("subcontractorNetworkNote")}</p>
-                    <p dangerouslySetInnerHTML={{ __html: t("dispatchDeskNote") }} />
+
+                    {/* Sanity Check Rate Card */}
+                    <div className="bg-bg-subtle/80 border border-border p-3.5 rounded-md space-y-2.5">
+                      <div className="text-[11px] uppercase tracking-wider font-bold text-accent flex items-center gap-1.5">
+                        <Info className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t("sanityCheckTitle") || "Zurich Market Benchmark Rates"}</span>
+                      </div>
+                      <div className="space-y-2 text-[12px] text-ink">
+                        {vertical === "restaurant" && (
+                          <>
+                            <div className="border-b border-border/40 pb-1.5">
+                              <span className="font-semibold block">{t("rateCardRestaurantMaint") || "Nightly/weekly maintenance: CHF 50–70/h (typically 2–3 h/night)"}</span>
+                            </div>
+                            <div className="border-b border-border/40 pb-1.5">
+                              <span className="font-semibold block">{t("rateCardKitchenDeep") || "Kitchen deep clean (Grundreinigung): CHF 900–1'800"}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold block">{t("rateCardExhaustDuct") || "Küchenabluft / VDI 2052 fire compliance: CHF 1'200–3'500 (Hood-only: CHF 300–500)"}</span>
+                            </div>
+                          </>
+                        )}
+                        {vertical === "building-care" && (
+                          <>
+                            <div className="border-b border-border/40 pb-1.5">
+                              <span className="font-semibold block">{t("rateCardStairwell") || "Weekly stairwell clean (6–12 units): CHF 150–300/month"}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold block">{t("rateCardHauswartung") || "Hauswartung with grounds: CHF 400–1'200/month"}</span>
+                            </div>
+                          </>
+                        )}
+                        {vertical === "yacht" && (
+                          <div>
+                            <span className="font-semibold block">{t("rateCardYacht") || "Yacht detail (Lake Zurich): CHF 80–120/h (or CHF 25–45/ft)"}</span>
+                          </div>
+                        )}
+                        {vertical === "aviation" && (
+                          <div>
+                            <span className="font-semibold block">{t("rateCardAviation") || "Light-jet interior detail: CHF 800–2'000 per job"}</span>
+                          </div>
+                        )}
+                        {vertical === "commercial" && (
+                          <div>
+                            <span className="font-semibold block">{t("rateCardOfficeLarge") || "Office >300 m²: CHF 1.10–2.20/m² per clean"}</span>
+                          </div>
+                        )}
+                        {vertical === "special" && (
+                          <div>
+                            <span className="font-semibold block">Confidential rapid-response protocol & specialized decontamination</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="border-t border-border pt-4 text-caption uppercase text-accent font-semibold flex justify-between">
                       <span>{t("quoteStatus")}</span>
                       <span>{t("quotePending")}</span>
                     </div>
+
+                    {/* Promo Code for bespoke inquiries */}
+                    {promoData?.valid ? (
+                      <div className="pt-3 border-t border-border flex items-center justify-between text-body-xs text-green-600 bg-green-500/10 p-2.5 rounded">
+                        <span className="flex items-center gap-1.5 font-semibold truncate pr-1">
+                          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">Promo {promoCode || promoData?.code} ({promoData?.discountType === "percentage" ? `${promoData.discountValue}% OFF` : `CHF ${promoData?.discountValue} OFF`})</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleRemovePromo}
+                          title="Remove promo"
+                          className="text-ink-muted hover:text-red-500 transition-colors p-0.5 rounded cursor-pointer shrink-0"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="pt-3 border-t border-border space-y-1.5">
+                        <label className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider block">
+                          {t("havePromoCode") || "Have a promo code?"}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={promoInput}
+                            onChange={(e) => {
+                              setPromoInput(e.target.value);
+                              if (promoInputError) setPromoInputError("");
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleApplyPromo();
+                              }
+                            }}
+                            placeholder="e.g. VIP2026"
+                            className="flex-1 min-w-0 border border-border bg-bg text-ink px-2.5 py-1.5 rounded text-body-xs uppercase font-mono placeholder:normal-case placeholder:font-sans focus:border-accent outline-none font-semibold"
+                          />
+                          <button
+                            type="button"
+                            disabled={!promoInput.trim() || isApplyingPromo}
+                            onClick={() => handleApplyPromo()}
+                            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-ink-inverse text-body-xs font-bold px-3 py-1.5 rounded transition-colors cursor-pointer shrink-0 uppercase tracking-wider"
+                          >
+                            {isApplyingPromo ? "..." : (t("apply") || "Apply")}
+                          </button>
+                        </div>
+                        {promoInputError && (
+                          <p className="text-[11px] text-red-500 font-medium leading-tight">
+                            {promoInputError}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="bg-bg border border-border p-6 rounded-lg shadow-sm space-y-4">
                   <h3 className="text-body-sm font-semibold text-ink uppercase tracking-wide border-b border-border/60 pb-2">
-                    {t("indicativeEstimate") || t("quoteSummaryTitle")}
+                    {t("probablePriceRange") || "Probable Price Range & Quote"}
                   </h3>
                   <div className="space-y-3 pt-2">
+                    {/* Probable Price Range Badge */}
+                    {pricing.rangeMin > 0 && (
+                      <div className="bg-accent/10 border border-accent/30 rounded-md p-3.5 text-center space-y-1 mb-3">
+                        <div className="text-[11px] uppercase tracking-wider font-bold text-accent flex items-center justify-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                          <span>{t("probablePriceRange")}</span>
+                        </div>
+                        <div className="text-display-xs sm:text-display-sm font-bold text-ink font-display">
+                          CHF {pricing.rangeMin.toLocaleString()} – {pricing.rangeMax.toLocaleString()}
+                          <span className="text-[12px] font-sans font-normal text-ink-muted ml-1">
+                            {vertical === "domestic" ? (t("perVisit") || "/ visit") : vertical === "hospitality" ? (t("perTurnover") || "/ turnover") : vertical === "commercial" ? (t("perVisit") || "/ clean") : ""}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-ink-muted flex items-center justify-center gap-1">
+                          <span>{t("benchmarkRate")}:</span>
+                          <span className="font-semibold text-ink">CHF {pricing.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+
                     {pricing.prepayFactor > 1 && (
                       <div className="text-body-xs font-semibold uppercase text-accent tracking-wider pb-2 border-b border-border/50">
                         {t("prepaymentCommitment")}: {pricing.prepayFactor} {t("months")}
                       </div>
                     )}
                     <div className="flex justify-between text-body-sm text-ink-muted">
-                      <span>{t("baseFee")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
+                      <span>
+                        {vertical === "moveout" 
+                          ? `${t("moveoutBaseClean")} (${intake.moveoutRooms || 3.5} Zi.)` 
+                          : vertical === "domestic"
+                          ? `${t("serviceDomestic") || "Home Cleaning"} (${intake.bedrooms || 1} Bed)`
+                          : vertical === "hospitality"
+                          ? `${t("serviceHospitality") || "Airbnb Turnover"} (${intake.bedrooms || 1} Bed)`
+                          : t("baseFee")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}
+                      </span>
                       <span>CHF {(pricing.basePrice * pricing.prepayFactor).toFixed(2)}</span>
                     </div>
+
+                    {/* Move-out Standard Inclusions */}
+                    {vertical === "moveout" && (
+                      <div className="space-y-1.5 py-1.5 border-y border-border/40 text-[12px]">
+                        <div className="flex justify-between text-accent font-medium">
+                          <span className="flex items-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5 shrink-0" />
+                            <span>{t("handoverGuaranteeIncluded")}</span>
+                          </span>
+                          <span className="uppercase font-bold text-accent text-[11px]">{t("includedFree")}</span>
+                        </div>
+                        <div className="flex justify-between text-ink-muted">
+                          <span>{t("windowShuttersOption") || "Windows, Frames & Storen"}</span>
+                          <span className="text-[11px] text-accent font-semibold">{t("includedFree")}</span>
+                        </div>
+                        <div className="flex justify-between text-ink-muted">
+                          <span>{t("ovenDeepCleanOption") || "Oven, Hood & Fridge"}</span>
+                          <span className="text-[11px] text-accent font-semibold">{t("includedFree")}</span>
+                        </div>
+                        <div className="flex justify-between text-ink-muted">
+                          <span>{t("balconyTerraceOption") || "Balcony / Terrace"}</span>
+                          <span className="text-[11px] text-accent font-semibold">{t("includedFree")}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Move-out Optional Add-ons */}
+                    {vertical === "moveout" && intake.moveoutScope?.includes("carpet_steam") && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("carpetSteamOption")}</span>
+                        <span>+CHF 100.00</span>
+                      </div>
+                    )}
+                    {vertical === "moveout" && (intake.moveoutScope?.includes("keller_estrich") || intake.moveoutScope?.includes("garage")) && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("kellerEstrichOption") || "Keller / Estrich / Garage"}</span>
+                        <span>+CHF 80.00</span>
+                      </div>
+                    )}
+                    {vertical === "moveout" && intake.moveoutScope?.includes("express_weekend") && (
+                      <div className="flex justify-between text-body-sm text-ink-muted">
+                        <span>{t("expressWeekendOption")}</span>
+                        <span>+CHF 200.00</span>
+                      </div>
+                    )}
+
                     {pricing.sizeAdjustment > 0 && (
                       <div className="flex justify-between text-body-sm text-ink-muted">
                         <span>{t("sizeAdjustment")}{pricing.prepayFactor > 1 ? ` (x${pricing.prepayFactor})` : ""}</span>
@@ -2954,6 +3343,17 @@ Please verify and confirm my dispatch request. Thank you!`;
                         <span>+CHF {((vertical === "commercial" ? 80 : 30) * pricing.prepayFactor).toFixed(2)}</span>
                       </div>
                     )}
+                    {/* Platform Commission & Guarantee Fee (Option B) */}
+                    {pricing.platformFee > 0 && (
+                      <div className="flex justify-between text-body-sm text-accent font-medium pt-1 border-t border-border/40">
+                        <span className="flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 shrink-0" />
+                          <span>{t("platformFee") || "Platform & Guarantee Fee (10%)"}</span>
+                        </span>
+                        <span>+CHF {pricing.platformFee.toFixed(2)}</span>
+                      </div>
+                    )}
+
                     {pricing.promoApplied && pricing.promoDiscountAmount > 0 ? (
                       <div className="flex justify-between items-center text-body-sm text-green-600 font-medium bg-green-500/10 px-2.5 py-1.5 rounded">
                         <span className="flex items-center gap-1.5 font-semibold truncate pr-2">
@@ -3021,31 +3421,51 @@ Please verify and confirm my dispatch request. Thank you!`;
 
                     <div className="border-t border-border pt-4 flex justify-between items-start text-body-lg text-ink font-bold font-display">
                       <div className="flex flex-col">
-                        <span>{t("estimatedBaseTotal") || t("totalAmount")}</span>
+                        <span>
+                          {vertical === "moveout"
+                            ? (t("benchmarkRate") || "Indicative Benchmark Total")
+                            : (t("estimatedBaseTotal") || t("totalAmount"))}
+                        </span>
                         <span className="text-[11px] font-normal text-ink-muted font-sans italic tracking-normal">
-                          {t("hourlySettlementNote") || "(Final cost fixed by provider based on hours taken)"}
+                          {vertical === "moveout"
+                            ? "(100% Swiss Abnahmegarantie included)"
+                            : (t("hourlySettlementNote") || "(Final cost fixed by provider based on hours taken)")}
                         </span>
                       </div>
                       <span className="shrink-0 text-right">CHF {pricing.total.toFixed(2)}</span>
                     </div>
 
-                    <div className="border-t border-border border-dashed pt-4 flex justify-between items-start text-body-md text-accent font-semibold">
-                      <div className="flex flex-col">
-                        <span>{t("stripeDeposit")}</span>
-                        <span className="text-[10px] font-normal text-ink-muted font-sans tracking-normal">
-                          {t("depositSecuresReservation") || "(Deducted from final invoice)"}
-                        </span>
+                    {vertical === "moveout" ? (
+                      <div className="border-t border-border border-dashed pt-4 flex justify-between items-start text-body-sm text-accent font-semibold">
+                        <div className="flex items-center gap-1.5">
+                          <Shield className="w-4 h-4 shrink-0" />
+                          <span>{t("noDepositRequired")}</span>
+                        </div>
+                        <span className="text-[11px] uppercase tracking-wider text-ink-muted">{t("reviewPending")}</span>
                       </div>
-                      <span className="shrink-0 text-right">CHF {pricing.deposit.toFixed(2)}</span>
-                    </div>
+                    ) : (
+                      <div className="border-t border-border border-dashed pt-4 flex justify-between items-start text-body-md text-accent font-semibold">
+                        <div className="flex flex-col">
+                          <span>{t("stripeDeposit")}</span>
+                          <span className="text-[10px] font-normal text-ink-muted font-sans tracking-normal">
+                            {t("depositSecuresReservation") || "(Deducted from final invoice)"}
+                          </span>
+                        </div>
+                        <span className="shrink-0 text-right">CHF {pricing.deposit.toFixed(2)}</span>
+                      </div>
+                    )}
 
                     <div className="pt-3 border-t border-border/50 text-[11px] text-ink-muted leading-relaxed bg-bg-subtle/80 p-3 rounded-md border border-border/70 space-y-1">
                       <div className="flex items-center gap-1.5 font-semibold text-accent">
                         <Info className="w-3.5 h-3.5 shrink-0" />
-                        <span>{t("estimateDisclaimerTitle") || "Important: Base Estimate Only"}</span>
+                        <span>
+                          {vertical === "moveout"
+                            ? t("handoverGuaranteeIncluded")
+                            : (t("estimateDisclaimerTitle") || "Important: Base Estimate Only")}
+                        </span>
                       </div>
                       <p className="text-ink-subtle">
-                        {t("providerCostDisclaimer")}
+                        {vertical === "moveout" ? t("moveoutDisclaimerNote") : t("providerCostDisclaimer")}
                       </p>
                     </div>
                   </div>

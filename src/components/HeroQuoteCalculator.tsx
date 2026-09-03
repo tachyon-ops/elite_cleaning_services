@@ -389,7 +389,7 @@ export default function HeroQuoteCalculator() {
 
   // Calculate pricing values dynamically (matches official booking algorithms)
   const calculatePricing = () => {
-    if (vertical === "aviation" || vertical === "yacht" || vertical === "moveout") {
+    if (vertical === "aviation" || vertical === "yacht") {
       return { priceStr: calcText.quoteOnRequest, isQuote: true };
     }
     if (vertical === "special") {
@@ -401,39 +401,88 @@ export default function HeroQuoteCalculator() {
     let frequencyDiscount = 0;
     let addons = 0;
 
-    if (vertical === "commercial") {
-      basePrice = 150.00;
-      if (surfaceArea > 50) {
-        sizeAdjustment = (surfaceArea - 50) * 1.20;
-      }
-      if (frequency === "weekly") frequencyDiscount = 0.15;
-      else if (frequency === "bi-weekly") frequencyDiscount = 0.10;
-      else if (frequency === "monthly") frequencyDiscount = 0.05;
-      
-      if (preferredTime === "after-hours") addons += 50.00;
-      else if (preferredTime === "weekends") addons += 80.00;
-    } else if (vertical === "hospitality") {
-      basePrice = 120.00;
-      sizeAdjustment = (bedrooms - 1) * 30.00 + (bathrooms - 1) * 20.00;
-      if (linenChange) addons += 35.00;
-      if (frequency === "weekly") frequencyDiscount = 0.10;
-    } else if (vertical === "domestic") {
-      basePrice = 80.00;
-      sizeAdjustment = (bedrooms - 1) * 20.00 + (bathrooms - 1) * 15.00;
-      if (frequency === "weekly") frequencyDiscount = 0.15;
-      else if (frequency === "bi-weekly") frequencyDiscount = 0.10;
-      else if (frequency === "monthly") frequencyDiscount = 0.05;
-      
-      if (preferredTime === "weekends") addons += 30.00;
+    const COMM_RATE = 1.10; // Option B: 10% platform commission on top
+
+    if (vertical === "moveout") {
+      let rMin = 480;
+      let rMax = 720;
+      if (bedrooms <= 1) { rMin = 480; rMax = 720; }
+      else if (bedrooms === 2) { rMin = 620; rMax = 920; }
+      else if (bedrooms === 3) { rMin = 780; rMax = 1150; }
+      else { rMin = 950; rMax = 1400; }
+
+      const finalMin = Math.round((rMin * COMM_RATE) / 10) * 10;
+      const finalMax = Math.round((rMax * COMM_RATE) / 10) * 10;
+
+      return {
+        priceStr: `CHF ${finalMin.toLocaleString()} – ${finalMax.toLocaleString()}`,
+        isQuote: false,
+        discountPercent: 0
+      };
     }
 
-    const singleSubtotal = basePrice + sizeAdjustment + addons;
-    const total = singleSubtotal - (singleSubtotal * frequencyDiscount);
-    
+    if (vertical === "commercial") {
+      if (surfaceArea <= 300) {
+        const minVisit = Math.round((surfaceArea * 1.00 * COMM_RATE) / 10) * 10;
+        const maxVisit = Math.round((surfaceArea * 2.00 * COMM_RATE) / 10) * 10;
+        return {
+          priceStr: `CHF ${minVisit} – ${maxVisit}`,
+          isQuote: false,
+          discountPercent: frequency === "weekly" ? 15 : frequency === "bi-weekly" ? 10 : 5
+        };
+      } else {
+        return {
+          priceStr: `CHF 1.10 – 2.20/m²`,
+          isQuote: true,
+          discountPercent: 0
+        };
+      }
+    }
+
+    if (vertical === "domestic") {
+      let rMin = 110;
+      let rMax = 160;
+      if (bedrooms <= 1) { rMin = 110; rMax = 160; }
+      else if (bedrooms === 2) { rMin = 140; rMax = 200; }
+      else if (bedrooms === 3) { rMin = 180; rMax = 260; }
+      else { rMin = 230; rMax = 320; }
+
+      const freqDiscount = frequency === "weekly" ? 0.15 : frequency === "bi-weekly" ? 0.10 : 0.05;
+      const finalMin = Math.round((rMin * COMM_RATE * (1 - freqDiscount)) / 5) * 5;
+      const finalMax = Math.round((rMax * COMM_RATE * (1 - freqDiscount)) / 5) * 5;
+
+      return {
+        priceStr: `CHF ${finalMin} – ${finalMax}`,
+        isQuote: false,
+        discountPercent: Math.round(freqDiscount * 100)
+      };
+    }
+
+    if (vertical === "hospitality") {
+      let rMin = 80;
+      let rMax = 130;
+      if (bedrooms <= 1) { rMin = 80; rMax = 130; }
+      else if (bedrooms === 2) { rMin = 110; rMax = 160; }
+      else { rMin = 160; rMax = 250; }
+
+      if (linenChange) {
+        rMin += 35;
+        rMax += 35;
+      }
+      const finalMin = Math.round((rMin * COMM_RATE) / 5) * 5;
+      const finalMax = Math.round((rMax * COMM_RATE) / 5) * 5;
+
+      return {
+        priceStr: `CHF ${finalMin} – ${finalMax}`,
+        isQuote: false,
+        discountPercent: frequency === "weekly" ? 15 : 0
+      };
+    }
+
     return {
-      priceStr: `CHF ${total.toFixed(2)}`,
+      priceStr: "CHF 120.00",
       isQuote: false,
-      discountPercent: Math.round(frequencyDiscount * 100)
+      discountPercent: 0
     };
   };
 
@@ -441,7 +490,14 @@ export default function HeroQuoteCalculator() {
 
   // Dynamically compute list bullet items matching calculated state
   const getBulletItems = () => {
-    if (vertical === "aviation" || vertical === "yacht" || vertical === "moveout") {
+    if (vertical === "moveout") {
+      return [
+        "100% Swiss Abnahmegarantie included",
+        calcText.vettedSub,
+        calcText.fullyInsured
+      ];
+    }
+    if (vertical === "aviation" || vertical === "yacht") {
       return [
         calcText.vettedSub,
         calcText.dispatchOrganizes,
@@ -534,7 +590,7 @@ export default function HeroQuoteCalculator() {
           {pricing.priceStr}
         </span>
         <span className="text-body-sm text-ink-subtle block mb-6">
-          {vertical === "aviation" || vertical === "yacht" || vertical === "moveout"
+          {vertical === "aviation" || vertical === "yacht"
             ? calcText.bespokeDesc
             : vertical === "special"
             ? calcText.biohazardDesc
