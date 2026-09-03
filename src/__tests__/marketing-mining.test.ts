@@ -180,6 +180,68 @@ describe("Commercial Lead Mining & Qualification Engine (Option C)", () => {
       expect(candidate?.changeType).toBe("incorporation");
       expect(candidate?.newAddress).toContain("Bundesplatz 5, 3011 Bern");
     });
+
+    it("should parse real SHAB HR02 XML with namespace prefixes and commonsNew/commonsActual", () => {
+      const realShabXml = `<?xml version='1.0' encoding='UTF-8'?>
+<HR02:publication xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:HR02="https://shab.ch/shab/HR02-export">
+<meta>
+  <id>b020957c-real-test</id>
+  <rubric>HR</rubric>
+  <subRubric>HR02</subRubric>
+  <language>de</language>
+  <publicationDate>2026-09-02</publicationDate>
+  <cantons>ZH</cantons>
+</meta>
+<content>
+  <publicationText>Carmela's AG, in Baar, CHE-478.727.857. Die Rechtseinheit wird infolge Verlegung des Sitzes nach Opfikon im Handelsregister des Kantons Zürich eingetragen.</publicationText>
+  <commonsNew>
+    <company>
+      <name>Carmela's AG</name>
+      <uid>CHE-478.727.857</uid>
+      <seat>Opfikon</seat>
+      <legalForm>0106</legalForm>
+      <address>
+        <street>Boulevard Lilienthal</street>
+        <houseNumber>12</houseNumber>
+        <swissZipCode>8152</swissZipCode>
+        <town>Glattpark (Opfikon)</town>
+      </address>
+    </company>
+    <purpose>Gastronomiebetrieb</purpose>
+  </commonsNew>
+  <commonsActual>
+    <company>
+      <name>Carmela's AG</name>
+      <uid>CHE-478.727.857</uid>
+      <seat>Baar</seat>
+      <address>
+        <street>Blegistrasse</street>
+        <houseNumber>9</houseNumber>
+        <swissZipCode>6340</swissZipCode>
+        <town>Baar</town>
+      </address>
+    </company>
+  </commonsActual>
+  <transaction>
+    <update>
+      <changements>
+        <seatChanged>true</seatChanged>
+        <addressChanged>true</addressChanged>
+      </changements>
+    </update>
+  </transaction>
+</content>
+</HR02:publication>`;
+
+      const candidate = parseShabXml("b020957c-real-test", realShabXml);
+      expect(candidate).not.toBeNull();
+      expect(candidate?.companyName).toBe("Carmela's AG");
+      expect(candidate?.uid).toBe("CHE-478.727.857");
+      expect(candidate?.newSeat).toBe("Opfikon");
+      expect(candidate?.newAddress).toContain("Boulevard Lilienthal 12, 8152 Glattpark (Opfikon)");
+      expect(candidate?.oldAddress).toContain("Blegistrasse 9, 6340 Baar");
+      expect(candidate?.changeType).toBe("seat+domicile");
+    });
   });
 
   describe("3. Lead Management & 1-Click Quote Pipeline Actions", () => {
