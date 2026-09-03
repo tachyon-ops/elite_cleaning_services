@@ -598,3 +598,48 @@ model PromoScan {
   @@index([campaignId])
   @@index([scannedAt])
 }
+
+// 26. Commercial Marketing Mining (Handelsregister / Relocations / Incorporations)
+model MiningLead {
+  id                    String      @id @default(uuid())
+  source                String      @default("shab") // shab, zefix, manual, csv
+  subRubric             String?     // HR01 (new), HR02 (relocation), HR03 (deletion)
+  publicationId         String?     @unique
+  publicationDate       DateTime
+  canton                String      // ZH, BE, ZG, etc.
+  uid                   String?     // CHE-xxx.xxx.xxx
+  companyName           String
+  legalForm             String?     // AG, GmbH, Einzelunternehmen, etc.
+  changeType            String?     // seat, domicile, seat+domicile, incorporation
+  newSeat               String?     // Municipality
+  newAddress            String?     // Street, number, zip, city
+  oldAddress            String?     // Previous address / seat (key for move-out cleaning)
+  purpose               String?     // Official company purpose (Zweck)
+
+  // Intelligence & Qualification
+  detectedVertical      String      @default("commercial") // commercial, moveout, hospitality, special
+  priorityScore         Int         @default(50) // 0 - 100
+  confidence            String      @default("medium") // high, medium, low
+
+  // CRM & Pipeline
+  status                String      @default("new") // new, contacted, qualified, quoted, won, dismissed
+  contactedAt           DateTime?
+  contactNotes          String?
+  assignedToUserId      String?
+  sourceUrl             String?
+
+  // Geocoding / Verification
+  geoLatitude           Float?
+  geoLongitude          Float?
+  zefixVerified         Boolean     @default(false)
+
+  // Optional link if converted to a Booking / Quote
+  convertedBookingId    String?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([canton, status])
+  @@index([publicationDate])
+  @@index([uid])
+}

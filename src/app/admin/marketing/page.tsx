@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Plus, Search, Tag, BarChart2, Calendar, FileText, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getCampaigns } from "@/app/actions/marketing";
@@ -43,6 +44,19 @@ export default function MarketingPage() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-[#f2f2f2] p-8">
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-4 border-b border-[#262626] pb-4">
+          <span className="text-sm font-medium text-[#d4af37] border-b-2 border-[#d4af37] pb-4 -mb-4">
+            Campaigns & Pamphlets
+          </span>
+          <Link
+            href="/admin/marketing/mining"
+            className="text-sm font-medium text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors"
+          >
+            Commercial Lead Mining (SHAB)
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
