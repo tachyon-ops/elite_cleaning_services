@@ -104,27 +104,40 @@ export async function getMiningLeads(filters: GetMiningLeadsFilter = {}) {
   }
 }
 
+export interface UpdateMiningLeadInput {
+  status?: string;
+  notes?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  contactPerson?: string;
+  website?: string;
+}
+
 /**
- * Update CRM pipeline status and outreach notes for a mined lead
+ * Update CRM pipeline status, outreach notes, and direct contact details for a mined lead
  */
-export async function updateMiningLeadStatus(leadId: string, status: string, notes?: string) {
+export async function updateMiningLead(leadId: string, input: UpdateMiningLeadInput) {
   try {
     if (!(await isAdminAuthenticated())) {
       return { success: false, error: "Unauthorized" };
     }
 
     const updateData: any = {
-      status,
       updatedAt: new Date(),
     };
 
-    if (notes !== undefined) {
-      updateData.contactNotes = notes;
+    if (input.status) {
+      updateData.status = input.status;
+      if (["contacted", "qualified", "quoted", "won"].includes(input.status)) {
+        updateData.contactedAt = new Date();
+      }
     }
 
-    if (["contacted", "qualified", "quoted", "won"].includes(status)) {
-      updateData.contactedAt = new Date();
-    }
+    if (input.notes !== undefined) updateData.contactNotes = input.notes;
+    if (input.contactPhone !== undefined) updateData.contactPhone = input.contactPhone;
+    if (input.contactEmail !== undefined) updateData.contactEmail = input.contactEmail;
+    if (input.contactPerson !== undefined) updateData.contactPerson = input.contactPerson;
+    if (input.website !== undefined) updateData.website = input.website;
 
     const updated = await db.miningLead.update({
       where: { id: leadId },
@@ -133,9 +146,16 @@ export async function updateMiningLeadStatus(leadId: string, status: string, not
 
     return { success: true, lead: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
-    console.error("[updateMiningLeadStatus error]:", error);
-    return { success: false, error: error.message || "Failed to update lead status" };
+    console.error("[updateMiningLead error]:", error);
+    return { success: false, error: error.message || "Failed to update lead" };
   }
+}
+
+/**
+ * Update CRM pipeline status and outreach notes (wrapper for backwards compatibility)
+ */
+export async function updateMiningLeadStatus(leadId: string, status: string, notes?: string) {
+  return updateMiningLead(leadId, { status, notes });
 }
 
 /**
@@ -372,6 +392,10 @@ export async function exportMiningLeadsCsv(filters: GetMiningLeadsFilter = {}) {
       "New Address",
       "New Seat",
       "Old Address",
+      "Phone",
+      "Email",
+      "Contact Person",
+      "Website",
       "Priority Score",
       "Vertical",
       "Status",
@@ -391,6 +415,10 @@ export async function exportMiningLeadsCsv(filters: GetMiningLeadsFilter = {}) {
       `"${(l.newAddress || "").replace(/"/g, '""')}"`,
       `"${(l.newSeat || "").replace(/"/g, '""')}"`,
       `"${(l.oldAddress || "").replace(/"/g, '""')}"`,
+      `"${(l.contactPhone || "").replace(/"/g, '""')}"`,
+      `"${(l.contactEmail || "").replace(/"/g, '""')}"`,
+      `"${(l.contactPerson || "").replace(/"/g, '""')}"`,
+      `"${(l.website || "").replace(/"/g, '""')}"`,
       l.priorityScore,
       l.detectedVertical,
       l.status,
