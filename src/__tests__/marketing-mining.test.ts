@@ -4,6 +4,7 @@ import { classifyLead } from "@/lib/mining/lead-classifier";
 import { parseShabXml } from "@/lib/mining/shab-client";
 import {
   getMiningLeads,
+  updateMiningLead,
   updateMiningLeadStatus,
   convertLeadToDraftBooking,
 } from "@/app/actions/mining";
@@ -236,6 +237,22 @@ describe("Commercial Lead Mining & Qualification Engine (Option C)", () => {
       expect(res.lead.status).toBe("contacted");
       expect(res.lead.contactNotes).toContain("Managing Partner");
       expect(res.lead.contactedAt).toBeDefined();
+    });
+
+    it("should save direct contact phone, email, person, and website", async () => {
+      expect(createdLeadId).not.toBeNull();
+      const res = await updateMiningLead(createdLeadId!, {
+        contactPhone: "+41 44 211 55 00",
+        contactEmail: "info@relocating-lawyers.ch",
+        contactPerson: "Dr. Thomas Keller",
+        website: "https://relocating-lawyers.ch",
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.lead.contactPhone).toBe("+41 44 211 55 00");
+      expect(res.lead.contactEmail).toBe("info@relocating-lawyers.ch");
+      expect(res.lead.contactPerson).toBe("Dr. Thomas Keller");
+      expect(res.lead.website).toBe("https://relocating-lawyers.ch");
     });
 
     it("should convert lead to draft commercial booking with 1-click", async () => {

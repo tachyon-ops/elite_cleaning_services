@@ -625,6 +625,10 @@ model MiningLead {
   status                String      @default("new") // new, contacted, qualified, quoted, won, dismissed
   contactedAt           DateTime?
   contactNotes          String?
+  contactPhone          String?     // Direct phone number
+  contactEmail          String?     // Contact email
+  contactPerson         String?     // Contact person / decision-maker name
+  website               String?     // Company website
   assignedToUserId      String?
   sourceUrl             String?
 

@@ -22,9 +22,18 @@ import {
   Briefcase,
   ChevronRight,
   Sparkles,
+  Kanban,
+  List,
+  Phone,
+  Mail,
+  User,
+  Globe,
+  GripVertical,
+  Share2,
 } from "lucide-react";
 import {
   getMiningLeads,
+  updateMiningLead,
   updateMiningLeadStatus,
   triggerMiningSync,
   convertLeadToDraftBooking,
@@ -44,14 +53,13 @@ const CANTONS = [
   { code: "VD", label: "VD - Vaud" },
 ];
 
-const STATUS_LIST = [
-  { id: "all", label: "All Statuses" },
-  { id: "new", label: "New", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  { id: "qualified", label: "Qualified", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
-  { id: "contacted", label: "Contacted", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  { id: "quoted", label: "Quoted", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
-  { id: "won", label: "Won", color: "bg-green-500/10 text-green-400 border-green-500/20" },
-  { id: "dismissed", label: "Dismissed", color: "bg-neutral-800 text-neutral-400 border-neutral-700" },
+const KANBAN_COLUMNS = [
+  { id: "new", label: "New Leads", color: "border-blue-500/30 bg-blue-500/5 text-blue-400" },
+  { id: "qualified", label: "Qualified", color: "border-indigo-500/30 bg-indigo-500/5 text-indigo-400" },
+  { id: "contacted", label: "Contacted", color: "border-amber-500/30 bg-amber-500/5 text-amber-400" },
+  { id: "quoted", label: "Quoted", color: "border-purple-500/30 bg-purple-500/5 text-purple-400" },
+  { id: "won", label: "Won / Client", color: "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" },
+  { id: "dismissed", label: "Dismissed", color: "border-neutral-700 bg-neutral-900 text-neutral-400" },
 ];
 
 export default function MarketingMiningPage() {
@@ -61,6 +69,9 @@ export default function MarketingMiningPage() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  // View mode
+  const [viewMode, setViewMode] = useState<"kanban" | "table">("kanban");
 
   // Filters
   const [canton, setCanton] = useState("all");
@@ -73,8 +84,16 @@ export default function MarketingMiningPage() {
   // Selected lead for Master-Detail Drawer
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [notesInput, setNotesInput] = useState("");
-  const [savingNotes, setSavingNotes] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [personInput, setPersonInput] = useState("");
+  const [websiteInput, setWebsiteInput] = useState("");
+  const [savingContact, setSavingContact] = useState(false);
   const [converting, setConverting] = useState(false);
+
+  // Drag-and-Drop state
+  const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
 
   // Sync Modal state
   const [showSyncModal, setShowSyncModal] = useState(false);
@@ -91,14 +110,13 @@ export default function MarketingMiningPage() {
         subRubric,
         search,
         page,
-        pageSize: 25,
+        pageSize: viewMode === "kanban" ? 100 : 25,
       });
 
       if (res.success) {
         setLeads(res.leads || []);
         setStats(res.stats || {});
         setTotalPages(res.totalPages || 1);
-        // keep selectedLead updated if open
         if (selectedLead) {
           const updated = (res.leads || []).find((l: any) => l.id === selectedLead.id);
           if (updated) setSelectedLead(updated);
@@ -115,9 +133,8 @@ export default function MarketingMiningPage() {
 
   useEffect(() => {
     fetchLeads();
-  }, [canton, status, subRubric, page]);
+  }, [canton, status, subRubric, page, viewMode]);
 
-  // Handle Search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
@@ -127,45 +144,58 @@ export default function MarketingMiningPage() {
   const handleOpenLead = (lead: any) => {
     setSelectedLead(lead);
     setNotesInput(lead.contactNotes || "");
+    setPhoneInput(lead.contactPhone || "");
+    setEmailInput(lead.contactEmail || "");
+    setPersonInput(lead.contactPerson || "");
+    setWebsiteInput(lead.website || "");
     setError("");
     setSuccessMsg("");
   };
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
+    // Optimistic UI update
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)));
+    if (selectedLead?.id === leadId) {
+      setSelectedLead((prev: any) => (prev ? { ...prev, status: newStatus } : null));
+    }
+
     try {
       const res = await updateMiningLeadStatus(leadId, newStatus);
-      if (res.success && res.lead) {
-        setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)));
-        if (selectedLead?.id === leadId) {
-          setSelectedLead({ ...selectedLead, status: newStatus });
-        }
-        setSuccessMsg(`Status updated to ${newStatus}`);
+      if (res.success) {
+        setSuccessMsg(`Moved to ${newStatus}`);
       } else {
         setError(res.error || "Failed to update status");
+        fetchLeads(); // rollback
       }
     } catch (err: any) {
       setError(err.message || "Failed to update status");
+      fetchLeads();
     }
   };
 
-  const handleSaveNotes = async () => {
+  const handleSaveContactDetails = async () => {
     if (!selectedLead) return;
-    setSavingNotes(true);
+    setSavingContact(true);
     try {
-      const res = await updateMiningLeadStatus(selectedLead.id, selectedLead.status, notesInput);
-      if (res.success) {
-        setSelectedLead({ ...selectedLead, contactNotes: notesInput });
-        setLeads((prev) =>
-          prev.map((l) => (l.id === selectedLead.id ? { ...l, contactNotes: notesInput } : l))
-        );
-        setSuccessMsg("Notes saved successfully");
+      const res = await updateMiningLead(selectedLead.id, {
+        notes: notesInput,
+        contactPhone: phoneInput,
+        contactEmail: emailInput,
+        contactPerson: personInput,
+        website: websiteInput,
+      });
+
+      if (res.success && res.lead) {
+        setSelectedLead(res.lead);
+        setLeads((prev) => prev.map((l) => (l.id === selectedLead.id ? res.lead : l)));
+        setSuccessMsg("Contact details saved successfully");
       } else {
-        setError(res.error || "Failed to save notes");
+        setError(res.error || "Failed to save contact details");
       }
     } catch (err: any) {
-      setError(err.message || "Error saving notes");
+      setError(err.message || "Error saving contact");
     } finally {
-      setSavingNotes(false);
+      setSavingContact(false);
     }
   };
 
@@ -241,50 +271,44 @@ export default function MarketingMiningPage() {
   const getPriorityBadge = (score: number) => {
     if (score >= 80) {
       return (
-        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
           {score} • High
         </span>
       );
     }
     if (score >= 50) {
       return (
-        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          {score} • Medium
+        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          {score} • Med
         </span>
       );
     }
     return (
-      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
+      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
         {score} • Low
       </span>
     );
   };
 
-  const getRubricBadge = (rubric?: string, changeType?: string) => {
-    if (rubric === "HR02") {
-      return (
-        <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          Office Mover (HR02)
-        </span>
-      );
-    }
-    if (rubric === "HR01") {
-      return (
-        <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-          New Formation (HR01)
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300">
-        {changeType || "Mutation"}
-      </span>
-    );
+  // Swiss Directory Search URL builders
+  const getSearchChUrl = (lead: any) => {
+    const term = lead.companyName;
+    const loc = lead.newSeat || lead.canton || "";
+    return `https://tel.search.ch/?was=${encodeURIComponent(term)}&wo=${encodeURIComponent(loc)}`;
+  };
+
+  const getGoogleSearchUrl = (lead: any) => {
+    const q = `${lead.companyName} ${lead.newSeat || lead.canton || "Schweiz"}`;
+    return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+  };
+
+  const getLinkedInSearchUrl = (lead: any) => {
+    return `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(lead.companyName)}`;
   };
 
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-[#f2f2f2] p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-[1600px] mx-auto space-y-8">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-4 border-b border-[#262626] pb-4">
           <Link
@@ -308,36 +332,60 @@ export default function MarketingMiningPage() {
               </span>
             </div>
             <p className="text-[#a6a6a6] font-body mt-1">
-              Mining Swiss Commercial Register (SHAB) publications for high-intent office relocations & new premises.
+              Live pipeline of office relocations (HR02) and new incorporations (HR01). Drag leads across columns to advance outreach.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-[#1a1a1a] border border-[#262626] rounded-md p-0.5">
+              <button
+                onClick={() => setViewMode("kanban")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                  viewMode === "kanban"
+                    ? "bg-[#d4af37] text-black font-semibold shadow"
+                    : "text-[#a6a6a6] hover:text-[#f2f2f2]"
+                }`}
+              >
+                <Kanban className="w-3.5 h-3.5" /> Kanban Pipeline
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                  viewMode === "table"
+                    ? "bg-[#d4af37] text-black font-semibold shadow"
+                    : "text-[#a6a6a6] hover:text-[#f2f2f2]"
+                }`}
+              >
+                <List className="w-3.5 h-3.5" /> Table View
+              </button>
+            </div>
+
             <button
               onClick={handleExportCsv}
-              className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#262626] text-[#f2f2f2] px-3.5 py-2 rounded-md font-medium text-sm transition-colors border border-[#262626]"
+              className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#262626] text-[#f2f2f2] px-3.5 py-2 rounded-md font-medium text-xs transition-colors border border-[#262626]"
             >
               <Download className="w-4 h-4" /> Export CSV
             </button>
             <button
               onClick={() => setShowSyncModal(true)}
               disabled={syncing}
-              className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b5952f] text-black px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b5952f] text-black px-4 py-2 rounded-md font-semibold text-xs transition-colors shadow-sm disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Syncing Register..." : "Sync Commercial Register"}
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing..." : "Sync Commercial Register"}
             </button>
           </div>
         </div>
 
         {/* Status Messages */}
         {error && (
-          <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm flex items-center gap-2">
+          <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
         {successMsg && (
-          <div className="p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm flex items-center gap-2">
+          <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" /> {successMsg}
           </div>
         )}
@@ -357,7 +405,7 @@ export default function MarketingMiningPage() {
             <span className="text-2xl font-display font-semibold mt-1 block text-amber-300">
               {stats.totalMovers ?? 0}
             </span>
-            <span className="text-[11px] text-[#737373] mt-1 block">HR02 seat/domicile shifts</span>
+            <span className="text-[11px] text-[#737373] mt-1 block">HR02 relocations</span>
           </div>
 
           <div className="bg-[#141414] border border-[#262626] p-4 rounded-xl">
@@ -377,7 +425,7 @@ export default function MarketingMiningPage() {
           </div>
 
           <div className="bg-[#141414] border border-[#262626] p-4 rounded-xl">
-            <span className="text-xs text-green-400 uppercase tracking-wider block">Won / Converted</span>
+            <span className="text-xs text-green-400 uppercase tracking-wider block">Won Conversions</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-display font-semibold text-green-400">
                 {stats.totalWon ?? 0}
@@ -394,10 +442,10 @@ export default function MarketingMiningPage() {
             <Search className="w-4 h-4 text-[#737373] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search company, UID, town, or purpose..."
+              placeholder="Search company, UID, town, phone, email, purpose..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#262626] rounded-md pl-9 pr-3 py-2 text-sm text-[#f2f2f2] placeholder-[#737373] focus:outline-none focus:border-[#d4af37]"
+              className="w-full bg-[#1a1a1a] border border-[#262626] rounded-md pl-9 pr-3 py-2 text-xs text-[#f2f2f2] placeholder-[#737373] focus:outline-none focus:border-[#d4af37]"
             />
           </form>
 
@@ -410,7 +458,7 @@ export default function MarketingMiningPage() {
                 setCanton(e.target.value);
                 setPage(1);
               }}
-              className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+              className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
             >
               {CANTONS.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -422,14 +470,14 @@ export default function MarketingMiningPage() {
 
           {/* SubRubric Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#a6a6a6]">Type:</span>
+            <span className="text-xs text-[#a6a6a6]">Event:</span>
             <select
               value={subRubric}
               onChange={(e) => {
                 setSubRubric(e.target.value);
                 setPage(1);
               }}
-              className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+              className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
             >
               <option value="all">All Events</option>
               <option value="HR02">Office Movers (HR02)</option>
@@ -437,167 +485,351 @@ export default function MarketingMiningPage() {
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#a6a6a6]">Status:</span>
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                setPage(1);
-              }}
-              className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
-            >
-              {STATUS_LIST.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Status Filter (Table view only) */}
+          {viewMode === "table" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[#a6a6a6]">Status:</span>
+              <select
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-[#1a1a1a] border border-[#262626] rounded-md px-3 py-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+              >
+                <option value="all">All Statuses</option>
+                {KANBAN_COLUMNS.map((col) => (
+                  <option key={col.id} value={col.id}>
+                    {col.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
-        {/* Master-Detail Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Table (2 cols) */}
-          <div className="lg:col-span-2 bg-[#141414] border border-[#262626] rounded-xl overflow-hidden">
+        {/* Master-Detail Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Area (3 cols): Kanban or Table */}
+          <div className="lg:col-span-3">
             {loading ? (
-              <div className="p-12 text-center text-[#a6a6a6] flex items-center justify-center gap-2">
-                <RefreshCw className="w-5 h-5 animate-spin" /> Loading mined leads...
+              <div className="bg-[#141414] border border-[#262626] rounded-xl p-16 text-center text-[#a6a6a6] flex items-center justify-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin text-[#d4af37]" /> Loading commercial leads...
               </div>
             ) : leads.length === 0 ? (
-              <div className="p-16 text-center flex flex-col items-center justify-center">
+              <div className="bg-[#141414] border border-[#262626] rounded-xl p-16 text-center flex flex-col items-center justify-center">
                 <Building2 className="w-12 h-12 text-[#404040] mb-3" />
                 <h3 className="text-lg font-medium text-white mb-1">No commercial leads found</h3>
-                <p className="text-sm text-[#a6a6a6] max-w-sm mb-6">
-                  Try adjusting your search filters, or trigger a new sync from the Swiss Commercial Register.
+                <p className="text-xs text-[#a6a6a6] max-w-sm mb-6">
+                  Try adjusting your filters, or trigger a live pull from the Swiss Commercial Register.
                 </p>
                 <button
                   onClick={() => setShowSyncModal(true)}
-                  className="flex items-center gap-2 bg-[#d4af37] text-black px-4 py-2 rounded-md font-medium text-sm hover:bg-[#b5952f] transition-colors"
+                  className="flex items-center gap-2 bg-[#d4af37] text-black px-4 py-2 rounded-md font-semibold text-xs hover:bg-[#b5952f] transition-colors"
                 >
                   <RefreshCw className="w-4 h-4" /> Run First Sync
                 </button>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-body text-sm">
-                  <thead className="bg-[#1a1a1a] border-b border-[#262626] text-[#a6a6a6]">
-                    <tr>
-                      <th className="p-4">Priority</th>
-                      <th className="p-4">Company & UID</th>
-                      <th className="p-4">Event Type</th>
-                      <th className="p-4">New Address</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4">Date</th>
-                      <th className="p-4 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#262626]">
-                    {leads.map((lead) => {
-                      const isSelected = selectedLead?.id === lead.id;
-                      return (
-                        <tr
-                          key={lead.id}
-                          onClick={() => handleOpenLead(lead)}
-                          className={`hover:bg-[#1a1a1a] transition-colors cursor-pointer ${
-                            isSelected ? "bg-[#1c1c1c] border-l-2 border-l-[#d4af37]" : ""
-                          }`}
-                        >
-                          <td className="p-4 whitespace-nowrap">
-                            {getPriorityBadge(lead.priorityScore)}
-                          </td>
-                          <td className="p-4">
-                            <div className="font-medium text-[#f2f2f2]">{lead.companyName}</div>
-                            <div className="text-xs font-mono text-[#737373]">
-                              {lead.uid || "Pending UID"} • {lead.legalForm || "GmbH/AG"}
-                            </div>
-                          </td>
-                          <td className="p-4 whitespace-nowrap">
-                            {getRubricBadge(lead.subRubric, lead.changeType)}
-                          </td>
-                          <td className="p-4 text-xs text-[#a6a6a6] max-w-[200px] truncate">
-                            <div className="flex items-center gap-1 font-medium text-[#f2f2f2]">
-                              <MapPin className="w-3 h-3 text-[#d4af37] shrink-0" />
-                              {lead.newSeat || lead.canton}
-                            </div>
-                            <div className="truncate">{lead.newAddress || "Address in extract"}</div>
-                          </td>
-                          <td className="p-4 whitespace-nowrap">
-                            <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
-                                STATUS_LIST.find((s) => s.id === lead.status)?.color ||
-                                "bg-neutral-800 text-neutral-400"
-                              }`}
-                            >
-                              {STATUS_LIST.find((s) => s.id === lead.status)?.label || lead.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-xs text-[#737373] whitespace-nowrap">
-                            {new Date(lead.publicationDate).toLocaleDateString()}
-                          </td>
-                          <td className="p-4 text-right">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenLead(lead);
-                              }}
-                              className="p-1.5 hover:bg-[#262626] rounded text-[#a6a6a6] hover:text-[#f2f2f2] transition-colors"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            ) : viewMode === "kanban" ? (
+              /* KANBAN BOARD */
+              <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-3.5 items-start">
+                {KANBAN_COLUMNS.map((col) => {
+                  const colLeads = leads.filter((l) => l.status === col.id);
+                  const isOver = dragOverCol === col.id;
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="p-4 border-t border-[#262626] flex items-center justify-between text-xs text-[#a6a6a6]">
-                <span>
-                  Page {page} of {totalPages}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="px-3 py-1 bg-[#1a1a1a] rounded hover:bg-[#262626] disabled:opacity-40"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="px-3 py-1 bg-[#1a1a1a] rounded hover:bg-[#262626] disabled:opacity-40"
-                  >
-                    Next
-                  </button>
+                  return (
+                    <div
+                      key={col.id}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        setDragOverCol(col.id);
+                      }}
+                      onDragLeave={() => setDragOverCol(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const id = e.dataTransfer.getData("text/plain");
+                        if (id) handleStatusChange(id, col.id);
+                        setDragOverCol(null);
+                        setDraggedLeadId(null);
+                      }}
+                      className={`bg-[#141414] border rounded-xl p-3 flex flex-col min-h-[500px] transition-all ${
+                        isOver
+                          ? "border-[#d4af37] bg-[#1a1a1a] shadow-lg shadow-[#d4af37]/5"
+                          : "border-[#262626]"
+                      }`}
+                    >
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[#262626]">
+                        <span className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${col.color}`}>
+                          {col.label}
+                        </span>
+                        <span className="text-xs font-mono font-medium text-[#737373] bg-[#1a1a1a] px-2 py-0.5 rounded">
+                          {colLeads.length}
+                        </span>
+                      </div>
+
+                      {/* Column Cards */}
+                      <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[calc(100vh-320px)] pr-0.5">
+                        {colLeads.map((lead) => {
+                          const isSelected = selectedLead?.id === lead.id;
+                          const isDragging = draggedLeadId === lead.id;
+
+                          return (
+                            <div
+                              key={lead.id}
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/plain", lead.id);
+                                setDraggedLeadId(lead.id);
+                              }}
+                              onDragEnd={() => setDraggedLeadId(null)}
+                              onClick={() => handleOpenLead(lead)}
+                              className={`p-3 bg-[#1c1c1c] hover:bg-[#222222] border rounded-lg cursor-grab active:cursor-grabbing transition-all space-y-2 text-xs relative ${
+                                isSelected
+                                  ? "border-[#d4af37] shadow-sm shadow-[#d4af37]/10"
+                                  : "border-[#2b2b2b]"
+                              } ${isDragging ? "opacity-40 scale-95" : ""}`}
+                            >
+                              {/* Card Header: Score & Canton */}
+                              <div className="flex items-center justify-between">
+                                {getPriorityBadge(lead.priorityScore)}
+                                <span className="text-[10px] font-mono text-[#a6a6a6] bg-[#262626] px-1.5 py-0.5 rounded">
+                                  {lead.canton}
+                                </span>
+                              </div>
+
+                              {/* Company Name */}
+                              <div>
+                                <h4 className="font-semibold text-[#f2f2f2] leading-snug line-clamp-2">
+                                  {lead.companyName}
+                                </h4>
+                                <div className="text-[10px] text-[#737373] font-mono mt-0.5 truncate">
+                                  {lead.legalForm || "GmbH/AG"} • {lead.uid || "Pending"}
+                                </div>
+                              </div>
+
+                              {/* Relocation Diff Chip */}
+                              {lead.subRubric === "HR02" ? (
+                                <div className="p-1.5 bg-[#262626] rounded text-[10px] space-y-0.5">
+                                  <div className="text-amber-400 font-medium truncate">
+                                    🚚 Relocating: {lead.newSeat || lead.newAddress || "Office shift"}
+                                  </div>
+                                  {lead.oldAddress && (
+                                    <div className="text-[#888888] truncate">
+                                      Ex: {lead.oldAddress}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="p-1 bg-[#262626] rounded text-[10px] text-blue-400 font-medium truncate">
+                                  ✨ New Setup: {lead.newSeat || lead.newAddress || lead.canton}
+                                </div>
+                              )}
+
+                              {/* Direct Outreach Quick Action Buttons */}
+                              <div className="pt-1.5 border-t border-[#262626] flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                  {lead.contactPhone ? (
+                                    <a
+                                      href={`tel:${lead.contactPhone}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                                      title={`Call ${lead.contactPhone}`}
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={getSearchChUrl(lead)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-[10px] text-[#a6a6a6] hover:text-[#d4af37] flex items-center gap-0.5 underline"
+                                      title="Search Swiss Phonebook (search.ch)"
+                                    >
+                                      <Phone className="w-2.5 h-2.5" /> Find Phone
+                                    </a>
+                                  )}
+
+                                  {lead.contactEmail && (
+                                    <a
+                                      href={`mailto:${lead.contactEmail}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20"
+                                      title={`Email ${lead.contactEmail}`}
+                                    >
+                                      <Mail className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                </div>
+
+                                <span className="text-[10px] text-[#666666]">
+                                  {new Date(lead.publicationDate).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* TABLE VIEW */
+              <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-body text-xs">
+                    <thead className="bg-[#1a1a1a] border-b border-[#262626] text-[#a6a6a6]">
+                      <tr>
+                        <th className="p-3.5">Priority</th>
+                        <th className="p-3.5">Company & UID</th>
+                        <th className="p-3.5">Event Type</th>
+                        <th className="p-3.5">New Address</th>
+                        <th className="p-3.5">Direct Contact</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5">Date</th>
+                        <th className="p-3.5 text-right">Inspect</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#262626]">
+                      {leads.map((lead) => {
+                        const isSelected = selectedLead?.id === lead.id;
+                        return (
+                          <tr
+                            key={lead.id}
+                            onClick={() => handleOpenLead(lead)}
+                            className={`hover:bg-[#1a1a1a] transition-colors cursor-pointer ${
+                              isSelected ? "bg-[#1c1c1c] border-l-2 border-l-[#d4af37]" : ""
+                            }`}
+                          >
+                            <td className="p-3.5 whitespace-nowrap">
+                              {getPriorityBadge(lead.priorityScore)}
+                            </td>
+                            <td className="p-3.5">
+                              <div className="font-medium text-[#f2f2f2]">{lead.companyName}</div>
+                              <div className="text-[11px] font-mono text-[#737373]">
+                                {lead.uid || "Pending"} • {lead.legalForm || "GmbH/AG"}
+                              </div>
+                            </td>
+                            <td className="p-3.5 whitespace-nowrap">
+                              {lead.subRubric === "HR02" ? (
+                                <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                  Office Mover
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                  New Formation
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3.5 text-xs text-[#a6a6a6] max-w-[200px] truncate">
+                              <div className="flex items-center gap-1 font-medium text-[#f2f2f2]">
+                                <MapPin className="w-3 h-3 text-[#d4af37] shrink-0" />
+                                {lead.newSeat || lead.canton}
+                              </div>
+                              <div className="truncate">{lead.newAddress || "Address in extract"}</div>
+                            </td>
+                            <td className="p-3.5 whitespace-nowrap">
+                              {lead.contactPhone ? (
+                                <a
+                                  href={`tel:${lead.contactPhone}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-emerald-400 hover:underline flex items-center gap-1 text-[11px]"
+                                >
+                                  <Phone className="w-3 h-3" /> {lead.contactPhone}
+                                </a>
+                              ) : (
+                                <a
+                                  href={getSearchChUrl(lead)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[#a6a6a6] hover:text-[#d4af37] text-[11px] flex items-center gap-1"
+                                >
+                                  <Search className="w-2.5 h-2.5" /> search.ch
+                                </a>
+                              )}
+                            </td>
+                            <td className="p-3.5 whitespace-nowrap">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+                                  KANBAN_COLUMNS.find((s) => s.id === lead.status)?.color ||
+                                  "bg-neutral-800 text-neutral-400"
+                                }`}
+                              >
+                                {KANBAN_COLUMNS.find((s) => s.id === lead.status)?.label || lead.status}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-xs text-[#737373] whitespace-nowrap">
+                              {new Date(lead.publicationDate).toLocaleDateString()}
+                            </td>
+                            <td className="p-3.5 text-right">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenLead(lead);
+                                }}
+                                className="p-1.5 hover:bg-[#262626] rounded text-[#a6a6a6] hover:text-[#f2f2f2]"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
+
+                {totalPages > 1 && (
+                  <div className="p-4 border-t border-[#262626] flex items-center justify-between text-xs text-[#a6a6a6]">
+                    <span>
+                      Page {page} of {totalPages}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-3 py-1 bg-[#1a1a1a] rounded hover:bg-[#262626] disabled:opacity-40"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="px-3 py-1 bg-[#1a1a1a] rounded hover:bg-[#262626] disabled:opacity-40"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* Master-Detail Drawer (1 col) */}
-          <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 h-fit sticky top-8 space-y-6">
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-5 h-fit sticky top-8 space-y-5 text-xs">
             {selectedLead ? (
               <>
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#262626]">
+                <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#262626]">
                   <div>
                     <div className="flex items-center gap-2">
                       {getPriorityBadge(selectedLead.priorityScore)}
-                      <span className="text-xs text-[#737373]">
+                      <span className="text-[11px] text-[#737373]">
                         Pub: {new Date(selectedLead.publicationDate).toLocaleDateString()}
                       </span>
                     </div>
-                    <h2 className="text-xl font-display font-semibold mt-1 text-white">
+                    <h2 className="text-lg font-display font-semibold mt-1 text-white leading-tight">
                       {selectedLead.companyName}
                     </h2>
-                    <div className="text-xs font-mono text-[#a6a6a6] mt-0.5">
+                    <div className="text-[11px] font-mono text-[#a6a6a6] mt-0.5">
                       {selectedLead.uid || "No UID"} • {selectedLead.canton} • {selectedLead.legalForm}
                     </div>
                   </div>
@@ -605,118 +837,191 @@ export default function MarketingMiningPage() {
                     onClick={() => setSelectedLead(null)}
                     className="p-1 hover:bg-[#262626] rounded text-[#a6a6a6] hover:text-[#f2f2f2]"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Double Cleaning Hook: The Move Diff */}
+                {/* 1-Click Swiss Intelligence Search Shortcuts */}
+                <div className="p-3 bg-[#1a1a1a] border border-[#2b2b2b] rounded-lg space-y-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#d4af37] block">
+                    1-Click Directory & Web Lookups
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={getSearchChUrl(selectedLead)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 p-2 bg-[#222222] hover:bg-[#2c2c2c] rounded text-[#f2f2f2] font-medium transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>search.ch (Phone)</span>
+                    </a>
+                    <a
+                      href={getGoogleSearchUrl(selectedLead)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 p-2 bg-[#222222] hover:bg-[#2c2c2c] rounded text-[#f2f2f2] font-medium transition-colors"
+                    >
+                      <Globe className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Google Search</span>
+                    </a>
+                    <a
+                      href={getLinkedInSearchUrl(selectedLead)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 p-2 bg-[#222222] hover:bg-[#2c2c2c] rounded text-[#f2f2f2] font-medium transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-sky-400" />
+                      <span>LinkedIn People</span>
+                    </a>
+                    <a
+                      href={selectedLead.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 p-2 bg-[#222222] hover:bg-[#2c2c2c] rounded text-[#f2f2f2] font-medium transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-[#d4af37]" />
+                      <span>SHAB Extract</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* The Relocation Diff */}
                 {selectedLead.subRubric === "HR02" && (
-                  <div className="p-4 bg-[#1a1a1a] border border-[#333333] rounded-lg space-y-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#d4af37] block">
-                      Office Relocation Intelligence
+                  <div className="p-3 bg-[#181818] border border-[#2b2b2b] rounded-lg space-y-2.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400 block">
+                      Relocation Commercial Opportunity
                     </span>
 
-                    {/* Former Location */}
-                    <div className="text-xs">
-                      <span className="text-[#a6a6a6] block">Former Address / Seat:</span>
+                    <div>
+                      <span className="text-[#888888] block text-[10px]">Former Space (Move-out Cleaning):</span>
                       <span className="text-red-300 font-medium block mt-0.5">
-                        {selectedLead.oldAddress || "Listed in previous register extract"}
-                      </span>
-                      <span className="text-[11px] text-[#737373] italic">
-                        → Target: Move-out handover cleaning (*Abnahmegarantie*)
+                        {selectedLead.oldAddress || "Registered in former extract"}
                       </span>
                     </div>
 
-                    <div className="border-t border-[#262626] my-2" />
+                    <div className="border-t border-[#262626]" />
 
-                    {/* New Location */}
-                    <div className="text-xs">
-                      <span className="text-[#a6a6a6] block">New Office Address:</span>
+                    <div>
+                      <span className="text-[#888888] block text-[10px]">New Space (Deep Clean + Contract):</span>
                       <span className="text-emerald-300 font-medium block mt-0.5">
                         {selectedLead.newAddress || selectedLead.newSeat || "Zürich, Switzerland"}
                       </span>
-                      <span className="text-[11px] text-[#737373] italic">
-                        → Target: Pre-move-in deep clean & recurring commercial contract
-                      </span>
                     </div>
                   </div>
                 )}
 
-                {/* Company Purpose */}
-                {selectedLead.purpose && (
-                  <div className="space-y-1">
-                    <span className="text-xs font-medium text-[#a6a6a6] block">
-                      Registered Purpose (Zweck):
-                    </span>
-                    <p className="text-xs text-[#d1d1d1] bg-[#1a1a1a] p-3 rounded-md max-h-32 overflow-y-auto leading-relaxed border border-[#262626]">
-                      {selectedLead.purpose}
-                    </p>
-                  </div>
-                )}
+                {/* Direct Contact Details Form */}
+                <div className="space-y-3 pt-2 border-t border-[#262626]">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#f2f2f2] block">
+                    Direct Contact Details
+                  </span>
 
-                {/* Official SHAB Link */}
-                <div>
-                  <a
-                    href={selectedLead.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-[#d4af37] hover:underline"
+                  {/* Phone */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-[#a6a6a6] flex items-center justify-between">
+                      <span>Phone Number:</span>
+                      {phoneInput && (
+                        <a href={`tel:${phoneInput}`} className="text-emerald-400 hover:underline flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> Call Now
+                        </a>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="+41 44 123 45 67"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#262626] rounded p-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-[#a6a6a6] flex items-center justify-between">
+                      <span>Email Address:</span>
+                      {emailInput && (
+                        <a href={`mailto:${emailInput}`} className="text-purple-400 hover:underline flex items-center gap-1">
+                          <Mail className="w-3 h-3" /> Email Now
+                        </a>
+                      )}
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="info@company.ch or name@company.ch"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#262626] rounded p-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  {/* Contact Person */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-[#a6a6a6]">Decision Maker / Contact Person:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Dr. Thomas Keller (Managing Director)"
+                      value={personInput}
+                      onChange={(e) => setPersonInput(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#262626] rounded p-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-[#a6a6a6]">Outreach Log & Notes:</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Called switchboard, spoke to office manager, sending commercial quote..."
+                      value={notesInput}
+                      onChange={(e) => setNotesInput(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#262626] rounded p-2 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSaveContactDetails}
+                    disabled={savingContact}
+                    className="w-full bg-[#262626] hover:bg-[#333333] text-xs font-semibold py-2 rounded transition-colors text-[#f2f2f2]"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> View Official SHAB Publication
-                  </a>
+                    {savingContact ? "Saving Contact Details..." : "Save Contact & Notes"}
+                  </button>
                 </div>
 
-                {/* CRM Status Changer */}
-                <div className="space-y-2 pt-2 border-t border-[#262626]">
-                  <label className="text-xs font-medium text-[#a6a6a6] block">Pipeline Status:</label>
+                {/* Pipeline Stage Buttons */}
+                <div className="space-y-2 pt-3 border-t border-[#262626]">
+                  <label className="text-[11px] font-semibold text-[#a6a6a6] uppercase tracking-wider block">
+                    Move Pipeline Stage:
+                  </label>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {STATUS_LIST.filter((s) => s.id !== "all").map((s) => (
+                    {KANBAN_COLUMNS.map((col) => (
                       <button
-                        key={s.id}
-                        onClick={() => handleStatusChange(selectedLead.id, s.id)}
-                        className={`text-xs py-1.5 px-2 rounded font-medium transition-all ${
-                          selectedLead.status === s.id
+                        key={col.id}
+                        onClick={() => handleStatusChange(selectedLead.id, col.id)}
+                        className={`text-[11px] py-1.5 px-2 rounded font-medium transition-all ${
+                          selectedLead.status === col.id
                             ? "bg-[#d4af37] text-black font-semibold"
                             : "bg-[#1a1a1a] text-[#a6a6a6] hover:bg-[#262626] hover:text-[#f2f2f2]"
                         }`}
                       >
-                        {s.label}
+                        {col.label.split(" ")[0]}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Contact Notes */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-[#a6a6a6] block">Outreach Notes:</label>
-                  <textarea
-                    rows={3}
-                    value={notesInput}
-                    onChange={(e) => setNotesInput(e.target.value)}
-                    placeholder="Log calls, decision-maker email, or cleaning quotes sent..."
-                    className="w-full bg-[#1a1a1a] border border-[#262626] rounded-md p-2.5 text-xs text-[#f2f2f2] focus:outline-none focus:border-[#d4af37]"
-                  />
-                  <button
-                    onClick={handleSaveNotes}
-                    disabled={savingNotes}
-                    className="w-full bg-[#262626] hover:bg-[#333333] text-xs font-medium py-1.5 rounded transition-colors"
-                  >
-                    {savingNotes ? "Saving..." : "Save Notes"}
-                  </button>
-                </div>
-
-                {/* Convert to Quote Action */}
-                <div className="pt-4 border-t border-[#262626] space-y-2">
+                {/* 1-Click Quote Conversion */}
+                <div className="pt-3 border-t border-[#262626] space-y-2">
                   {selectedLead.convertedBookingId ? (
-                    <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-md text-xs text-green-400 flex items-center justify-between">
+                    <div className="p-2.5 bg-green-500/10 border border-green-500/20 rounded-md text-xs text-green-400 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4" /> Converted to Booking
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Quoted / Booking Created
                       </span>
                       <Link
                         href="/admin/bookings"
                         className="text-[#d4af37] underline font-medium hover:text-[#e6c45e]"
                       >
-                        View in Bookings
+                        Open Bookings
                       </Link>
                     </div>
                   ) : (
@@ -726,20 +1031,17 @@ export default function MarketingMiningPage() {
                       className="w-full flex items-center justify-center gap-2 bg-[#d4af37] hover:bg-[#b5952f] text-black font-semibold text-xs py-2.5 rounded-md transition-colors"
                     >
                       <Briefcase className="w-4 h-4" />
-                      {converting ? "Creating Draft Booking..." : "Create Commercial Quote Draft"}
+                      {converting ? "Creating Draft..." : "Create Commercial Quote Draft"}
                     </button>
                   )}
-                  <p className="text-[11px] text-[#737373] text-center">
-                    Pre-fills a quote with company details, relocation address & notes.
-                  </p>
                 </div>
               </>
             ) : (
-              <div className="p-12 text-center text-[#737373] space-y-3">
-                <Briefcase className="w-10 h-10 mx-auto text-[#333333]" />
-                <h3 className="text-sm font-medium text-[#a6a6a6]">No Lead Selected</h3>
-                <p className="text-xs text-[#666666]">
-                  Click on any row in the table to inspect the office relocation diff, official register extract, and initiate outreach.
+              <div className="p-8 text-center text-[#737373] space-y-3">
+                <Briefcase className="w-8 h-8 mx-auto text-[#333333]" />
+                <h3 className="text-xs font-medium text-[#a6a6a6]">No Lead Selected</h3>
+                <p className="text-[11px] text-[#666666]">
+                  Click on any card or row to access direct phone lookup, LinkedIn links, and log calls.
                 </p>
               </div>
             )}
@@ -766,7 +1068,6 @@ export default function MarketingMiningPage() {
                 Pull live commercial publications directly from the official Swiss Federal Gazette (shab.ch).
               </p>
 
-              {/* Cantons */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-[#f2f2f2]">Target Cantons:</label>
                 <div className="grid grid-cols-4 gap-2">
@@ -796,7 +1097,6 @@ export default function MarketingMiningPage() {
                 </div>
               </div>
 
-              {/* Days Back */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-[#f2f2f2]">Date Range:</label>
                 <select
