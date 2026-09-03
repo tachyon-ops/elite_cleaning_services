@@ -252,10 +252,13 @@ export async function captureBalance(bookingId: string) {
 }
 
 /**
- * Handles the cancellation of a booking and processes refunds and hold releases according to the timeline:
- * - > 7 days before job: 100% refund of deposit, release 70% hold.
- * - 7 days to 48h before job: 70% refund of total (forfeit 30% deposit, release 70% hold).
- * - < 48h before job: 0% refund of total (forfeit 100% total, capture 70% hold).
+ * Handles the cancellation of a booking and processes refunds according to the tiered policy:
+ * - ≥ 3 days (72h) before job: 100% refund of all payments collected
+ * - 2 days (48-72h) before job: 75% refund of all payments collected
+ * - 1 day (24-48h) before job: 50% refund of all payments collected
+ * - < 24h before job: 0% refund (no return)
+ *
+ * Also releases the CHF 50 pre-booking hold if still held (not yet captured).
  */
 export async function cancelBookingWithRefund(bookingId: string, cancelledBy: "customer" | "ops", reason: string) {
   try {
@@ -277,110 +280,106 @@ export async function cancelBookingWithRefund(bookingId: string, cancelledBy: "c
     const msUntilJob = scheduledAt.getTime() - now.getTime();
     const hoursUntilJob = msUntilJob / (1000 * 60 * 60);
 
-    const total = Number(booking.totalAmountChf);
-    const deposit = Number(booking.depositAmountChf);
-    const balance = total - deposit;
+    // Calculate total already collected from succeeded, non-refunded payments
+    const totalCollected = booking.payments
+      .filter(p => p.status === "succeeded")
+      .reduce((sum, p) => sum + Number(p.amountChf) - Number(p.refundedAmountChf), 0);
 
-    let refundAmountChf = 0;
-    let finalAuthStatus = booking.balanceAuthStatus;
+    // Determine refund percentage based on tiered policy
+    let refundPercent = 0;
+    let policyLabel = "";
+    if (hoursUntilJob >= 72) {
+      refundPercent = 1.00;   // 100% refund
+      policyLabel = "≥3 days before service: 100% refund";
+    } else if (hoursUntilJob >= 48) {
+      refundPercent = 0.75;   // 75% refund
+      policyLabel = "2 days before service: 75% refund";
+    } else if (hoursUntilJob >= 24) {
+      refundPercent = 0.50;   // 50% refund
+      policyLabel = "1 day before service: 50% refund";
+    } else {
+      refundPercent = 0;      // No refund
+      policyLabel = "<24h before service: no refund";
+    }
+
+    const refundAmountChf = Math.round(totalCollected * refundPercent * 100) / 100;
     const finalBookingStatus = `cancelled_by_${cancelledBy}`;
+    let prebookingHoldAction = "no_change";
 
     await db.$transaction(async (tx) => {
-      if (hoursUntilJob > 7 * 24) {
-        // CASE 1: > 7 days before job -> 100% refund of deposit, release hold
-        refundAmountChf = deposit;
+      // 1. Process refunds on existing payments
+      if (refundAmountChf > 0) {
+        let remainingRefund = refundAmountChf;
 
-        // Refund existing succeeded payments (which should represent the deposit)
         for (const p of booking.payments) {
-          if (p.status === "succeeded" && Number(p.refundedAmountChf) < Number(p.amountChf)) {
-            await tx.payment.update({
-              where: { id: p.id },
-              data: {
-                status: "refunded",
-                refundedAmountChf: p.amountChf
-              }
-            });
-          }
-        }
+          if (remainingRefund <= 0) break;
+          if (p.status !== "succeeded") continue;
 
-        // Release the 70% balance hold if authorized
-        if (booking.balanceAuthStatus === "authorized") {
-          finalAuthStatus = "released";
-        }
-      } 
-      else if (hoursUntilJob <= 7 * 24 && hoursUntilJob > 48) {
-        // CASE 2: Between 7 days and 48h before job -> 70% refund of total (keep deposit, release hold)
-        refundAmountChf = 0; // Deposit is kept
+          const available = Number(p.amountChf) - Number(p.refundedAmountChf);
+          if (available <= 0) continue;
 
-        // Release the 70% balance hold
-        if (booking.balanceAuthStatus === "authorized") {
-          finalAuthStatus = "released";
-        }
-      } 
-      else {
-        // CASE 3: Within 48h before job -> 0% refund of total (keep deposit, capture hold)
-        refundAmountChf = 0;
+          const refundForThisPayment = Math.min(available, remainingRefund);
+          const newRefundedTotal = Number(p.refundedAmountChf) + refundForThisPayment;
 
-        // Capture the 70% balance hold if authorized
-        if (booking.balanceAuthStatus === "authorized") {
-          if (balance > 0) {
-            await tx.payment.create({
-              data: {
-                bookingId: booking.id,
-                stripeChargeId: `ch_mock_balance_cancel_${Math.random().toString(36).substring(2, 11)}`,
-                amountChf: balance,
-                status: "succeeded",
-                refundedAmountChf: 0
-              }
-            });
-          }
-          finalAuthStatus = "captured";
-        } else if (booking.balanceAuthStatus === "not_attempted" || booking.balanceAuthStatus === "failed") {
-          // If not authorized yet, attempt to charge immediately
-          const customerEmail = booking.guestEmail || "";
-          const isDecline = customerEmail === "decline-balance@test.ch" || customerEmail.startsWith("decline");
+          await tx.payment.update({
+            where: { id: p.id },
+            data: {
+              status: refundForThisPayment >= available ? "refunded" : "partially_refunded",
+              refundedAmountChf: Math.round(newRefundedTotal * 100) / 100
+            }
+          });
 
-          if (!isDecline && balance > 0) {
-            await tx.payment.create({
-              data: {
-                bookingId: booking.id,
-                stripeChargeId: `ch_mock_balance_charge_${Math.random().toString(36).substring(2, 11)}`,
-                amountChf: balance,
-                status: "succeeded",
-                refundedAmountChf: 0
-              }
-            });
-            finalAuthStatus = "captured";
-          } else {
-            finalAuthStatus = "failed";
-          }
+          remainingRefund -= refundForThisPayment;
         }
       }
 
-      // Update Booking details
+      // 2. Release the CHF 50 pre-booking hold if still held (not yet captured)
+      if (booking.prebookingHoldStatus === "held") {
+        prebookingHoldAction = "released";
+      }
+
+      // 3. Update booking
       await tx.booking.update({
         where: { id: bookingId },
         data: {
           status: finalBookingStatus,
-          cancellationReason: reason,
-          balanceAuthStatus: finalAuthStatus
+          cancellationReason: `${reason} [${policyLabel}]`,
+          prebookingHoldStatus: booking.prebookingHoldStatus === "held" ? "released" : booking.prebookingHoldStatus,
+          balanceAuthStatus: "released"
         }
       });
 
-      // Audit Log
+      // 4. Audit log
       await tx.auditLog.create({
         data: {
           action: "cancel_booking_with_refund",
           targetTable: "Booking",
           targetId: bookingId,
-          before: JSON.stringify({ status: booking.status, balanceAuthStatus: booking.balanceAuthStatus }),
-          after: JSON.stringify({ status: finalBookingStatus, balanceAuthStatus: finalAuthStatus, refundAmountChf }),
+          before: JSON.stringify({
+            status: booking.status,
+            totalCollected,
+            prebookingHoldStatus: booking.prebookingHoldStatus
+          }),
+          after: JSON.stringify({
+            status: finalBookingStatus,
+            refundPercent: `${refundPercent * 100}%`,
+            refundAmountChf,
+            retainedAmountChf: Math.round((totalCollected - refundAmountChf) * 100) / 100,
+            prebookingHoldAction,
+            policy: policyLabel
+          }),
           actorUserId: null
         }
       });
     });
 
-    return { success: true, refundAmountChf, balanceAuthStatus: finalAuthStatus };
+    return {
+      success: true,
+      refundAmountChf,
+      retainedAmountChf: Math.round((totalCollected - refundAmountChf) * 100) / 100,
+      policy: policyLabel,
+      prebookingHoldAction
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
