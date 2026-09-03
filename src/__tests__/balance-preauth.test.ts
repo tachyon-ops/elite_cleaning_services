@@ -176,15 +176,15 @@ describe("70% Balance Pre-Authorization & Cancellation Policy Tests", () => {
     expect(Number(refundedPay?.refundedAmountChf)).toBe(30);
   });
 
-  it("Scenario 3: Cancellation 7 days to 48h prior -> 70% refund of total (forfeit deposit, release hold)", async () => {
-    // 1. Create a booking 4 days in the future
+  it("Scenario 3: Cancellation 2 days (48-72h) prior -> 75% refund of collected payments", async () => {
+    // 1. Create a booking 55 hours in the future (between 48h and 72h)
     const booking = await db.booking.create({
       data: {
         guestEmail: testEmail,
         vertical: "domestic",
         categorySlug: "domestic",
         intake: JSON.stringify({}),
-        scheduledAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // 4 days out
+        scheduledAt: new Date(Date.now() + 55 * 60 * 60 * 1000), // 55 hours out
         scheduledWindow: "morning",
         locationAddress: "Zürich",
         status: "confirmed",
@@ -197,19 +197,17 @@ describe("70% Balance Pre-Authorization & Cancellation Policy Tests", () => {
     await db.payment.create({
       data: {
         bookingId: booking.id,
-        stripeChargeId: "ch_mock_dep_forfeit",
-        amountChf: 30,
+        stripeChargeId: "ch_mock_dep_75pct",
+        amountChf: 40,
         status: "succeeded"
       }
     });
 
-    // 2. Preauthorize balance
-    await preAuthorizeBalance(booking.id);
-
-    // 3. Cancel booking
-    const cancelRes = await cancelBookingWithRefund(booking.id, "ops", "Client cancellation within 7d");
+    // 2. Cancel booking (55 hours out -> 75% refund of 40 CHF = 30 CHF refund)
+    const cancelRes = await cancelBookingWithRefund(booking.id, "ops", "Client cancellation 2 days prior");
     expect(cancelRes.success).toBe(true);
-    expect(Number(cancelRes.refundAmountChf)).toBe(0); // Deposit forfeited, no refund
+    expect(Number(cancelRes.refundAmountChf)).toBe(30); // 75% of 40 = 30
+    expect(Number(cancelRes.retainedAmountChf)).toBe(10); // 25% retained = 10
 
     const cancelledBooking = await db.booking.findUnique({
       where: { id: booking.id },
@@ -217,14 +215,10 @@ describe("70% Balance Pre-Authorization & Cancellation Policy Tests", () => {
     });
 
     expect(cancelledBooking?.status).toBe("cancelled_by_ops");
-    expect(cancelledBooking?.balanceAuthStatus).toBe("released"); // Hold is released
-
-    // Deposit payment is still succeeded (not refunded)
-    const depPayment = cancelledBooking?.payments.find(p => p.stripeChargeId === "ch_mock_dep_forfeit");
-    expect(depPayment?.status).toBe("succeeded");
+    expect(cancelledBooking?.balanceAuthStatus).toBe("released");
   });
 
-  it("Scenario 4: Cancellation < 48h prior -> 0% refund of total (forfeit deposit, capture hold)", async () => {
+  it("Scenario 4: Cancellation 1 day (24-48h) prior -> 50% refund of collected payments", async () => {
     // 1. Create a booking 30 hours in the future
     const booking = await db.booking.create({
       data: {
@@ -245,19 +239,17 @@ describe("70% Balance Pre-Authorization & Cancellation Policy Tests", () => {
     await db.payment.create({
       data: {
         bookingId: booking.id,
-        stripeChargeId: "ch_mock_dep_full_forfeit",
-        amountChf: 30,
+        stripeChargeId: "ch_mock_dep_50pct",
+        amountChf: 40,
         status: "succeeded"
       }
     });
 
-    // 2. Preauthorize balance
-    await preAuthorizeBalance(booking.id);
-
-    // 3. Cancel booking within 48h
-    const cancelRes = await cancelBookingWithRefund(booking.id, "ops", "Last minute cancel");
+    // 2. Cancel booking within 24-48h -> 50% refund
+    const cancelRes = await cancelBookingWithRefund(booking.id, "ops", "Cancellation 1 day prior");
     expect(cancelRes.success).toBe(true);
-    expect(Number(cancelRes.refundAmountChf)).toBe(0);
+    expect(Number(cancelRes.refundAmountChf)).toBe(20); // 50% of 40 = 20
+    expect(Number(cancelRes.retainedAmountChf)).toBe(20);
 
     const cancelledBooking = await db.booking.findUnique({
       where: { id: booking.id },
@@ -265,13 +257,47 @@ describe("70% Balance Pre-Authorization & Cancellation Policy Tests", () => {
     });
 
     expect(cancelledBooking?.status).toBe("cancelled_by_ops");
-    expect(cancelledBooking?.balanceAuthStatus).toBe("captured"); // Hold captured
+  });
 
-    // Check payment records: there should be a balance charge payment record for CHF 70
-    const balPayment = cancelledBooking?.payments.find(p => p.stripeChargeId.includes("cancel"));
-    expect(balPayment).toBeDefined();
-    expect(Number(balPayment?.amountChf)).toBe(70);
-    expect(balPayment?.status).toBe("succeeded");
+  it("Scenario 4b: Cancellation < 24h prior -> 0% refund (no return)", async () => {
+    // 1. Create a booking 10 hours in the future
+    const booking = await db.booking.create({
+      data: {
+        guestEmail: testEmail,
+        vertical: "domestic",
+        categorySlug: "domestic",
+        intake: JSON.stringify({}),
+        scheduledAt: new Date(Date.now() + 10 * 60 * 60 * 1000), // 10 hours out
+        scheduledWindow: "morning",
+        locationAddress: "Zürich",
+        status: "confirmed",
+        totalAmountChf: 100,
+        depositAmountChf: 30,
+        balanceAuthStatus: "not_attempted"
+      }
+    });
+
+    await db.payment.create({
+      data: {
+        bookingId: booking.id,
+        stripeChargeId: "ch_mock_dep_0pct",
+        amountChf: 40,
+        status: "succeeded"
+      }
+    });
+
+    // 2. Cancel booking within 24h -> 0% refund
+    const cancelRes = await cancelBookingWithRefund(booking.id, "ops", "Last minute cancel <24h");
+    expect(cancelRes.success).toBe(true);
+    expect(Number(cancelRes.refundAmountChf)).toBe(0);
+    expect(Number(cancelRes.retainedAmountChf)).toBe(40);
+
+    const cancelledBooking = await db.booking.findUnique({
+      where: { id: booking.id },
+      include: { payments: true }
+    });
+
+    expect(cancelledBooking?.status).toBe("cancelled_by_ops");
   });
 
   it("Scenario 5: Failed auth with grace period -> retry daily -> cancel after 4 days", async () => {

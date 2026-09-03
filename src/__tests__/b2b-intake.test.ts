@@ -75,7 +75,9 @@ describe("B2B Verticals Intake and Quote Routing (TDD)", () => {
 
     expect(booking).toBeDefined();
     expect(booking?.vertical).toBe("building-care");
-    expect(booking?.status).toBe("quote_pending"); // Should be a quote vertical
+    expect(booking?.status).toBe("prebooking_held"); // Quote verticals start with prebooking_held
+    expect(booking?.prebookingDepositChf.toNumber()).toBe(50);
+    expect(booking?.prebookingHoldStatus).toBe("held");
     expect(booking?.totalAmountChf.toNumber()).toBe(0); // Quote verticals start at 0
 
     const parsedIntake = JSON.parse(booking!.intake);
@@ -125,7 +127,9 @@ describe("B2B Verticals Intake and Quote Routing (TDD)", () => {
 
     expect(booking).toBeDefined();
     expect(booking?.vertical).toBe("restaurant");
-    expect(booking?.status).toBe("quote_pending");
+    expect(booking?.status).toBe("prebooking_held");
+    expect(booking?.prebookingDepositChf.toNumber()).toBe(50);
+    expect(booking?.prebookingHoldStatus).toBe("held");
 
     const parsedIntake = JSON.parse(booking!.intake);
     expect(parsedIntake.restaurantVenueType).toBe("commercial_kitchen");

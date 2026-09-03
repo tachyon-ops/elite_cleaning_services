@@ -15,8 +15,8 @@ export async function getAvailableSlots(categorySlug: string, dateStr: string, p
     // Supply chain protection settings check
     const weekendSetting = await db.systemSetting.findUnique({ where: { key: "allow_weekend_bookings" } });
     const afterHoursSetting = await db.systemSetting.findUnique({ where: { key: "allow_after_hours_bookings" } });
-    const allowWeekends = weekendSetting?.value === "true";
-    const allowAfterHours = afterHoursSetting?.value === "true";
+    const allowWeekends = weekendSetting ? weekendSetting.value === "true" : true; // default: enabled
+    const allowAfterHours = afterHoursSetting ? afterHoursSetting.value === "true" : true; // default: enabled
 
     const isWeekendDay = date.getDay() === 0 || date.getDay() === 6;
     if (isWeekendDay && !allowWeekends) {
@@ -356,8 +356,8 @@ export async function createBooking(payload: {
     // Supply chain protection settings check
     const weekendSetting = await db.systemSetting.findUnique({ where: { key: "allow_weekend_bookings" } });
     const afterHoursSetting = await db.systemSetting.findUnique({ where: { key: "allow_after_hours_bookings" } });
-    const allowWeekends = weekendSetting?.value === "true";
-    const allowAfterHours = afterHoursSetting?.value === "true";
+    const allowWeekends = weekendSetting ? weekendSetting.value === "true" : true; // default: enabled
+    const allowAfterHours = afterHoursSetting ? afterHoursSetting.value === "true" : true; // default: enabled
 
     // Supply chain protection: Block weekend bookings if not enabled
     const dayOfWeek = scheduledAt.getDay();
@@ -449,7 +449,7 @@ export async function createBooking(payload: {
     const autoCheckoutEnabled = autoCheckoutSetting ? autoCheckoutSetting.value === "true" : true;
 
     const initialStatus = isQuoteVertical 
-      ? "quote_pending" 
+      ? "prebooking_held" 
       : (!autoCheckoutEnabled 
           ? "draft" 
           : (hasMatchingProvider ? "offer_dispatched" : "confirmed"));
@@ -489,6 +489,10 @@ export async function createBooking(payload: {
       : null;
 
     // Create Booking
+    const prebookingPaymentIntentId = isQuoteVertical
+      ? `pi_mock_prebooking_${Math.random().toString(36).substring(2, 11)}`
+      : null;
+
     const booking = await db.booking.create({
       data: {
         customerId,
@@ -507,7 +511,11 @@ export async function createBooking(payload: {
         stripeSubscriptionId,
         promoCampaignId,
         promoDiscountChf,
-        commissionAmountChf: pricing.platformFee || (finalTotal ? Math.round(finalTotal * 0.10 * 100) / 100 : null)
+        commissionAmountChf: pricing.platformFee || (finalTotal ? Math.round(finalTotal * 0.10 * 100) / 100 : null),
+        // Pre-booking hold (CHF 50 for quote verticals)
+        prebookingDepositChf: isQuoteVertical ? 50.00 : 0,
+        prebookingHoldStatus: isQuoteVertical ? "held" : "none",
+        prebookingStripePaymentIntentId: prebookingPaymentIntentId
       }
     });
 
@@ -558,74 +566,182 @@ export async function createBooking(payload: {
           refundedAmountChf: 0
         }
       });
+    } else {
+      // For quote verticals: send ops notification about new quote request
+      try {
+        await sendEmail({
+          to: "ops@mondar.ch",
+          subject: `[Action Required] New Quote Request — ${vertical.charAt(0).toUpperCase() + vertical.slice(1)} (${booking.id.slice(0, 8).toUpperCase()})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Operations</span>
+                <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">New Quote Request</h2>
+              </div>
+              <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                A customer has submitted a bespoke cleaning request and a CHF 50 pre-booking hold has been placed on their card. Please review and prepare a quote.
+              </p>
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Booking ID:</td>
+                    <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Category:</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: 600;">${vertical.charAt(0).toUpperCase() + vertical.slice(1)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Customer:</td>
+                    <td style="padding: 6px 0; text-align: right;">${email}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Location:</td>
+                    <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Pre-booking Hold:</td>
+                    <td style="padding: 6px 0; text-align: right; color: #22c55e;">CHF 50.00 ✓</td>
+                  </tr>
+                </table>
+              </div>
+              <div style="text-align: center;">
+                <p style="font-size: 12px; color: #737373;">Review this request in the <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://mondar.ch'}/admin/bookings" style="color: #b59410; text-decoration: none;">Admin Dashboard</a>.</p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`[BOOKING SERVICE] Ops notification dispatched for quote request ${booking.id}`);
+      } catch (emailErr) {
+        console.error("[BOOKING SERVICE] Failed to dispatch ops notification:", emailErr);
+      }
     }
 
-    // Send Booking Confirmation Email
+    // Send Customer Email (contextual: confirmed vs quote request received)
     try {
       const formattedDate = scheduledAt ? scheduledAt.toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : scheduledAtStr;
       const verticalTitle = vertical.charAt(0).toUpperCase() + vertical.slice(1);
-      
-      await sendEmail({
-        to: email,
-        subject: `Mondar - Booking Confirmation (${booking.id.slice(0, 8).toUpperCase()})`,
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
-              <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Booking Confirmed</h2>
-            </div>
-            
-            <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
-              Congratulations! Your cleaning request has been securely placed with Mondar. A vetted, insured Swiss cleaning specialist is assigned to your service.
-            </p>
 
-            <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Booking ID:</td>
-                  <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${booking.id.slice(0, 8).toUpperCase()}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Service Category:</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600;">${verticalTitle} Cleaning</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Scheduled Date:</td>
-                  <td style="padding: 6px 0; text-align: right;">${formattedDate}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Time Window:</td>
-                  <td style="padding: 6px 0; text-align: right; text-transform: capitalize;">${scheduledWindow}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Service Location:</td>
-                  <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
-                </tr>
-                ${promoCode && promoDiscountChf ? `
-                <tr>
-                  <td style="padding: 6px 0; color: #22c55e;">Promo (${promoCode}):</td>
-                  <td style="padding: 6px 0; text-align: right; color: #22c55e;">-CHF ${promoDiscountChf.toFixed(2)}</td>
-                </tr>
-                ` : ""}
-                <tr style="border-top: 1px solid #262626;">
-                  <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Total Amount:</td>
-                  <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${finalTotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 4px 0; color: #b59410; font-weight: 600;">Deposit (30%):</td>
-                  <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #b59410;">CHF ${finalDeposit.toFixed(2)}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="text-align: center; padding-top: 8px;">
-              <p style="font-size: 12px; color: #737373; line-height: 1.5;">
-                Need to adjust your schedule or have special access instructions? Contact operations at <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.
+      if (isQuoteVertical) {
+        // Quote Request Received — NOT "Booking Confirmed"
+        await sendEmail({
+          to: email,
+          subject: `Mondar - Quote Request Received (${booking.id.slice(0, 8).toUpperCase()})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+                <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Quote Request Received</h2>
+              </div>
+              
+              <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                Thank you for your bespoke cleaning request. Our operations team will review your requirements, consult with our vetted specialists, and prepare a detailed quote for you.
               </p>
+
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Reference:</td>
+                    <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Service:</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: 600;">${verticalTitle} Cleaning</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Preferred Date:</td>
+                    <td style="padding: 6px 0; text-align: right;">${formattedDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Location:</td>
+                    <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
+                  </tr>
+                  <tr style="border-top: 1px solid #262626;">
+                    <td style="padding: 10px 0 4px 0; color: #737373;">Pre-booking Hold:</td>
+                    <td style="padding: 10px 0 4px 0; text-align: right; color: #b59410; font-weight: 600;">CHF 50.00</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
+                <p style="font-size: 12px; color: #a6a6a6; line-height: 1.5; margin: 0;">
+                  <strong style="color: #f2f2f2;">What happens next?</strong><br/>
+                  A refundable CHF 50 hold has been placed on your card. Once we prepare your quote, you'll receive an email with a link to review and accept or decline. If you decline, the hold is released immediately — no charge.
+                </p>
+              </div>
+
+              <div style="text-align: center; padding-top: 8px;">
+                <p style="font-size: 12px; color: #737373; line-height: 1.5;">
+                  Questions? Contact our team at <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.
+                </p>
+              </div>
             </div>
-          </div>
-        `
-      });
+          `
+        });
+      } else {
+        // Standard Booking Confirmed email (instant verticals)
+        await sendEmail({
+          to: email,
+          subject: `Mondar - Booking Confirmation (${booking.id.slice(0, 8).toUpperCase()})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+                <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Booking Confirmed</h2>
+              </div>
+              
+              <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                Congratulations! Your cleaning request has been securely placed with Mondar. A vetted, insured Swiss cleaning specialist is assigned to your service.
+              </p>
+
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Booking ID:</td>
+                    <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Service Category:</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: 600;">${verticalTitle} Cleaning</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Scheduled Date:</td>
+                    <td style="padding: 6px 0; text-align: right;">${formattedDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Time Window:</td>
+                    <td style="padding: 6px 0; text-align: right; text-transform: capitalize;">${scheduledWindow}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Service Location:</td>
+                    <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
+                  </tr>
+                  ${promoCode && promoDiscountChf ? `
+                  <tr>
+                    <td style="padding: 6px 0; color: #22c55e;">Promo (${promoCode}):</td>
+                    <td style="padding: 6px 0; text-align: right; color: #22c55e;">-CHF ${promoDiscountChf.toFixed(2)}</td>
+                  </tr>
+                  ` : ""}
+                  <tr style="border-top: 1px solid #262626;">
+                    <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Total Amount:</td>
+                    <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${finalTotal.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; color: #b59410; font-weight: 600;">Deposit (30%):</td>
+                    <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #b59410;">CHF ${finalDeposit.toFixed(2)}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; padding-top: 8px;">
+                <p style="font-size: 12px; color: #737373; line-height: 1.5;">
+                  Need to adjust your schedule or have special access instructions? Contact operations at <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.
+                </p>
+              </div>
+            </div>
+          `
+        });
+      }
       console.log(`[BOOKING SERVICE] Confirmation email successfully dispatched to ${email} for booking ${booking.id}`);
     } catch (emailErr) {
       console.error("[BOOKING SERVICE] Failed to dispatch confirmation email:", emailErr);
@@ -649,7 +765,7 @@ export async function getActiveCategories() {
   }
 }
 
-// 6. Accept booking quote and pay deposit
+// 6. Accept booking quote and pay 1/3 deposit
 export async function acceptQuoteAndPayDeposit(payload: {
   bookingId: string;
   paymentMethodId?: string;
@@ -684,6 +800,13 @@ export async function acceptQuoteAndPayDeposit(payload: {
       throw new Error("Quote has expired");
     }
 
+    // 1/3 deposit calculation
+    const totalAmount = Number(booking.totalAmountChf);
+    const oneThirdDeposit = Math.round((totalAmount / 3) * 100) / 100;
+    const prebookingHoldAmount = Number(booking.prebookingDepositChf);
+    // Charge = 1/3 deposit minus the already-held CHF 50
+    const additionalChargeAmount = Math.max(0, Math.round((oneThirdDeposit - prebookingHoldAmount) * 100) / 100);
+
     // Determine matching provider (matching engine)
     const matchingProviderListing = await db.providerListing.findFirst({
       where: {
@@ -701,13 +824,16 @@ export async function acceptQuoteAndPayDeposit(payload: {
 
     const nextStatus = hasMatchingProvider ? "offer_dispatched" : "confirmed";
 
-    // Start a transaction so that booking update, quote update, payment, commission, and payout are consistent
+    // Start a transaction
     await db.$transaction(async (tx) => {
-      // 1. Update Booking status
+      // 1. Update Booking status and deposit amount (1/3 of total)
       await tx.booking.update({
         where: { id: bookingId },
         data: {
-          status: nextStatus
+          status: nextStatus,
+          depositAmountChf: oneThirdDeposit,
+          // Capture the pre-booking hold
+          prebookingHoldStatus: "captured"
         }
       });
 
@@ -719,35 +845,49 @@ export async function acceptQuoteAndPayDeposit(payload: {
         }
       });
 
-      // 3. Create simulated Payment
-      await tx.payment.create({
-        data: {
-          bookingId: booking.id,
-          stripeChargeId: `ch_mock_${Math.random().toString(36).substring(2, 11)}`,
-          amountChf: booking.depositAmountChf,
-          status: "succeeded",
-          refundedAmountChf: 0
-        }
-      });
+      // 3. Record CHF 50 pre-booking hold capture as a Payment
+      if (prebookingHoldAmount > 0) {
+        await tx.payment.create({
+          data: {
+            bookingId: booking.id,
+            stripeChargeId: `ch_mock_prebooking_capture_${Math.random().toString(36).substring(2, 11)}`,
+            amountChf: prebookingHoldAmount,
+            status: "succeeded",
+            refundedAmountChf: 0
+          }
+        });
+      }
 
-      // 4. Create CommissionLedger
-      const gross = Number(booking.totalAmountChf);
+      // 4. Charge additional deposit (1/3 minus CHF 50)
+      if (additionalChargeAmount > 0) {
+        await tx.payment.create({
+          data: {
+            bookingId: booking.id,
+            stripeChargeId: `ch_mock_deposit_${Math.random().toString(36).substring(2, 11)}`,
+            amountChf: additionalChargeAmount,
+            status: "succeeded",
+            refundedAmountChf: 0
+          }
+        });
+      }
+
+      // 5. Create CommissionLedger
       const commissionRate = 0.15;
-      const commissionAmount = Math.round(gross * commissionRate * 100) / 100;
-      const providerPayout = Math.round((gross - commissionAmount) * 100) / 100;
+      const commissionAmount = Math.round(totalAmount * commissionRate * 100) / 100;
+      const providerPayout = Math.round((totalAmount - commissionAmount) * 100) / 100;
 
       await tx.commissionLedger.create({
         data: {
           bookingId: booking.id,
-          grossAmountChf: gross,
+          grossAmountChf: totalAmount,
           commissionRate,
           commissionAmountChf: commissionAmount,
           providerPayoutChf: providerPayout,
-          notes: `Bespoke dispatch commission for ${booking.categorySlug}`
+          notes: `Bespoke dispatch commission for ${booking.categorySlug}. Payment split: 1/3 at acceptance (CHF ${oneThirdDeposit}), 1/3 on day of service, 1/3 after supplier confirmation.`
         }
       });
 
-      // 5. Create Payout record if matching provider exists
+      // 6. Create Payout record if matching provider exists
       if (hasMatchingProvider && matchingProviderListing) {
         // Create matching ProviderOffer
         await tx.providerOffer.create({
@@ -760,18 +900,178 @@ export async function acceptQuoteAndPayDeposit(payload: {
           }
         });
 
-        // Create scheduled Payout record
+        // Create scheduled Payout record (after service completion)
         await tx.payout.create({
           data: {
             providerId: matchingProviderListing.providerId,
             bookingId: booking.id,
             amountChf: providerPayout,
             status: "scheduled",
-            scheduledFor: new Date(booking.scheduledAt.getTime() + 24 * 60 * 60 * 1000) // 24 hours after service scheduled date
+            scheduledFor: new Date(booking.scheduledAt.getTime() + 24 * 60 * 60 * 1000)
           }
         });
       }
     });
+
+    // Send ops notification about accepted quote
+    try {
+      await sendEmail({
+        to: "ops@mondar.ch",
+        subject: `Quote Accepted — ${booking.id.slice(0, 8).toUpperCase()}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Operations</span>
+              <h2 style="color: #22c55e; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">✓ Quote Accepted</h2>
+            </div>
+            <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Booking:</td>
+                  <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Customer:</td>
+                  <td style="padding: 6px 0; text-align: right;">${booking.guestEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Total:</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: bold;">CHF ${totalAmount.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">1/3 Deposit Collected:</td>
+                  <td style="padding: 6px 0; text-align: right; color: #22c55e;">CHF ${oneThirdDeposit.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">2nd 1/3 (Day of Cleaning):</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount / 3) * 100) / 100).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Final 1/3 (After Completion):</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount - oneThirdDeposit - Math.round((totalAmount / 3) * 100) / 100) * 100) / 100).toFixed(2)}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error("[BOOKING SERVICE] Failed to notify ops of quote acceptance:", emailErr);
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 6b. Reject/refuse a quote — releases CHF 50 pre-booking hold
+export async function rejectQuote(payload: {
+  bookingId: string;
+  reason?: string;
+}) {
+  try {
+    const { bookingId, reason } = payload;
+    if (!bookingId) {
+      throw new Error("Booking ID is required");
+    }
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        quote: true
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    if (booking.status !== "quote_sent") {
+      throw new Error("Quote can only be declined when in quote_sent status");
+    }
+
+    await db.$transaction(async (tx) => {
+      // 1. Release the CHF 50 pre-booking hold
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "cancelled_by_customer",
+          cancellationReason: reason || "Customer declined the quote",
+          prebookingHoldStatus: "released"
+        }
+      });
+
+      // 2. Set quote rejection timestamp
+      if (booking.quote) {
+        await tx.quote.update({
+          where: { bookingId },
+          data: {
+            rejectedAt: new Date()
+          }
+        });
+      }
+
+      // 3. Audit log
+      await tx.auditLog.create({
+        data: {
+          action: "reject_quote",
+          targetTable: "Booking",
+          targetId: bookingId,
+          before: JSON.stringify({ status: booking.status, prebookingHoldStatus: booking.prebookingHoldStatus }),
+          after: JSON.stringify({ status: "cancelled_by_customer", prebookingHoldStatus: "released", reason }),
+          actorUserId: booking.customerId
+        }
+      });
+    });
+
+    // Send ops notification about refused quote
+    try {
+      await sendEmail({
+        to: "ops@mondar.ch",
+        subject: `Quote Declined — ${booking.id.slice(0, 8).toUpperCase()}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Operations</span>
+              <h2 style="color: #ef4444; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">✗ Quote Declined</h2>
+            </div>
+            <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Booking:</td>
+                  <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Customer:</td>
+                  <td style="padding: 6px 0; text-align: right;">${booking.guestEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Category:</td>
+                  <td style="padding: 6px 0; text-align: right;">${booking.vertical}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Quote Amount:</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${Number(booking.totalAmountChf).toFixed(2)}</td>
+                </tr>
+                ${reason ? `
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Reason:</td>
+                  <td style="padding: 6px 0; text-align: right;">${reason}</td>
+                </tr>
+                ` : ""}
+                <tr style="border-top: 1px solid #262626;">
+                  <td style="padding: 10px 0 4px 0; color: #737373;">CHF 50 Hold:</td>
+                  <td style="padding: 10px 0 4px 0; text-align: right; color: #22c55e;">Released ✓</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error("[BOOKING SERVICE] Failed to notify ops of quote rejection:", emailErr);
+    }
 
     return { success: true };
   } catch (error: any) {
@@ -802,6 +1102,8 @@ export async function getBookingQuoteDetails(bookingId: string) {
       ...booking,
       totalAmountChf: Number(booking.totalAmountChf),
       depositAmountChf: Number(booking.depositAmountChf),
+      prebookingDepositChf: Number(booking.prebookingDepositChf),
+      prebookingHoldStatus: booking.prebookingHoldStatus,
       quote: booking.quote ? {
         ...booking.quote,
         amountChf: Number(booking.quote.amountChf)

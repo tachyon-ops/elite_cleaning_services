@@ -1119,7 +1119,8 @@ export async function createQuote(payload: {
     }
 
     const booking = await db.booking.findUnique({
-      where: { id: bookingId }
+      where: { id: bookingId },
+      include: { guest: true }
     });
 
     if (!booking) {
@@ -1127,6 +1128,9 @@ export async function createQuote(payload: {
     }
 
     const validUntil = new Date(Date.now() + validUntilDays * 24 * 60 * 60 * 1000);
+
+    // 1/3 deposit calculation
+    const depositChf = Math.round((amountChf / 3) * 100) / 100;
 
     // Create or update Quote record
     await db.quote.upsert({
@@ -1147,7 +1151,6 @@ export async function createQuote(payload: {
     });
 
     // Update Booking prices and status
-    const depositChf = Math.round(amountChf * 0.3 * 100) / 100;
     await db.booking.update({
       where: { id: bookingId },
       data: {
@@ -1168,6 +1171,88 @@ export async function createQuote(payload: {
         actorUserId: "admin_user"
       }
     });
+
+    // Send email notification to customer with quote review link
+    const customerEmail = booking.guestEmail;
+    if (customerEmail) {
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mondar.ch";
+        const quoteLink = `${appUrl}/book/quote/${bookingId}`;
+        const formattedDate = booking.scheduledAt ? booking.scheduledAt.toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "";
+        const verticalTitle = booking.vertical.charAt(0).toUpperCase() + booking.vertical.slice(1);
+        const validUntilFormatted = validUntil.toLocaleDateString("de-CH", { day: "numeric", month: "short", year: "numeric" });
+
+        await sendEmail({
+          to: customerEmail,
+          subject: `Mondar - Your Bespoke Quote Is Ready (${bookingId.slice(0, 8).toUpperCase()})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+                <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">Your Quote Is Ready</h2>
+              </div>
+              
+              <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                We've reviewed your ${verticalTitle.toLowerCase()} cleaning requirements and prepared a bespoke quote. Review it below and choose to accept or decline.
+              </p>
+
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Reference:</td>
+                    <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410; font-weight: bold;">${bookingId.slice(0, 8).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Service:</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: 600;">${verticalTitle} Cleaning</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Preferred Date:</td>
+                    <td style="padding: 6px 0; text-align: right;">${formattedDate}</td>
+                  </tr>
+                  ${notes ? `
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Notes:</td>
+                    <td style="padding: 6px 0; text-align: right;">${notes}</td>
+                  </tr>
+                  ` : ""}
+                  <tr style="border-top: 1px solid #262626;">
+                    <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Quoted Amount:</td>
+                    <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${amountChf.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; color: #b59410; font-weight: 600;">1/3 Deposit on Acceptance:</td>
+                    <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #b59410;">CHF ${depositChf.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; color: #737373;">Valid Until:</td>
+                    <td style="padding: 4px 0; text-align: right;">${validUntilFormatted}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; margin-bottom: 24px;">
+                <a href="${quoteLink}" style="display: inline-block; background-color: #b59410; color: #080808; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase;">Review & Respond</a>
+              </div>
+
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                <p style="font-size: 12px; color: #a6a6a6; line-height: 1.5; margin: 0;">
+                  <strong style="color: #f2f2f2;">Your CHF 50 pre-booking hold</strong><br/>
+                  If you accept, the hold is captured and applied toward your 1/3 deposit. If you decline, the hold is released immediately — no charge.
+                </p>
+              </div>
+
+              <div style="text-align: center;">
+                <p style="font-size: 11px; color: #595959;">Or paste this link in your browser: ${quoteLink}</p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`[ADMIN] Quote notification email sent to ${customerEmail} for booking ${bookingId}`);
+      } catch (emailErr) {
+        console.error("[ADMIN] Failed to send quote notification email:", emailErr);
+      }
+    }
 
     return { success: true };
   } catch (error: any) {

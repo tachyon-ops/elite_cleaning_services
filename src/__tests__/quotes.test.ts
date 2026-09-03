@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { createQuote } from "@/app/actions/admin";
-import { acceptQuoteAndPayDeposit, getBookingQuoteDetails } from "@/app/actions/booking";
+import { acceptQuoteAndPayDeposit, getBookingQuoteDetails, rejectQuote } from "@/app/actions/booking";
+import { chargeDayOfService, confirmServiceCompletion } from "@/app/actions/payments";
 
 describe("Quote-on-Request TDD", () => {
   const testEmail = "yacht-owner@test.ch";
@@ -117,7 +118,7 @@ describe("Quote-on-Request TDD", () => {
 
     expect(updatedBooking?.status).toBe("quote_sent");
     expect(Number(updatedBooking?.totalAmountChf)).toBe(1200);
-    expect(Number(updatedBooking?.depositAmountChf)).toBe(360); // 30% of 1200
+    expect(Number(updatedBooking?.depositAmountChf)).toBe(400); // 1/3 of 1200
   });
 
   it("should allow public access to quote details", async () => {
@@ -127,7 +128,7 @@ describe("Quote-on-Request TDD", () => {
     expect(detailsRes.booking?.quote).toBeDefined();
     expect(detailsRes.booking?.quote?.notes).toBe("Bespoke Yacht Polish and Hull cleaning");
     expect(detailsRes.booking?.totalAmountChf).toBe(1200);
-    expect(detailsRes.booking?.depositAmountChf).toBe(360);
+    expect(detailsRes.booking?.depositAmountChf).toBe(400);
   });
 
   it("should allow customer to accept quote and pay deposit", async () => {
@@ -146,14 +147,15 @@ describe("Quote-on-Request TDD", () => {
 
     expect(booking?.status).toBe("offer_dispatched");
     expect(booking?.quote?.acceptedAt).toBeDefined();
+    expect(booking?.prebookingHoldStatus).toBe("captured");
 
-    // Assert payment is created for deposit
-    const payment = await db.payment.findFirst({
+    // Assert payments are created for deposit (50 prebooking capture + 350 remainder = 400)
+    const payments = await db.payment.findMany({
       where: { bookingId }
     });
-    expect(payment).toBeDefined();
-    expect(Number(payment?.amountChf)).toBe(360);
-    expect(payment?.status).toBe("succeeded");
+    expect(payments.length).toBeGreaterThanOrEqual(1);
+    const totalDeposited = payments.reduce((sum, p) => sum + Number(p.amountChf), 0);
+    expect(totalDeposited).toBe(400);
 
     // Assert commission ledger is created
     const ledger = await db.commissionLedger.findFirst({
@@ -172,5 +174,84 @@ describe("Quote-on-Request TDD", () => {
     expect(payout).toBeDefined();
     expect(Number(payout?.amountChf)).toBe(1020);
     expect(payout?.status).toBe("scheduled");
+  });
+
+  it("should charge 2nd 1/3 on day of cleaning and set status to in_progress", async () => {
+    const dayOfServiceRes = await chargeDayOfService(bookingId);
+    expect(dayOfServiceRes.success).toBe(true);
+    expect(dayOfServiceRes.amountCharged).toBe(400); // 2nd 1/3 of 1200
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId }
+    });
+    expect(booking?.status).toBe("in_progress");
+  });
+
+  it("should charge final 1/3 upon supplier completion confirmation and mark completed", async () => {
+    const completeRes = await confirmServiceCompletion(bookingId);
+    expect(completeRes.success).toBe(true);
+    expect(completeRes.finalThirdCharged).toBe(400); // 3rd 1/3 of 1200
+
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId }
+    });
+    expect(booking?.status).toBe("completed");
+
+    // Verify all 3 parts sum to the total: 400 + 400 + 400 = 1200
+    const allPayments = await db.payment.findMany({
+      where: { bookingId }
+    });
+    const totalCollected = allPayments.reduce((sum, p) => sum + Number(p.amountChf), 0);
+    expect(totalCollected).toBe(1200);
+  });
+
+  it("should allow declining a quote and releasing the pre-booking hold", async () => {
+    // Create a new booking in quote_sent status
+    const declineBooking = await db.booking.create({
+      data: {
+        guestEmail: testEmail,
+        vertical: "yachting",
+        categorySlug: "yacht",
+        intake: JSON.stringify({}),
+        scheduledAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        scheduledWindow: "morning",
+        locationAddress: "Port of Zürich",
+        status: "quote_sent",
+        totalAmountChf: 900,
+        depositAmountChf: 300,
+        prebookingDepositChf: 50,
+        prebookingHoldStatus: "held"
+      }
+    });
+
+    await db.quote.create({
+      data: {
+        bookingId: declineBooking.id,
+        amountChf: 900,
+        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        sentAt: new Date()
+      }
+    });
+
+    const declineRes = await rejectQuote({
+      bookingId: declineBooking.id,
+      reason: "Budget exceeded"
+    });
+
+    expect(declineRes.success).toBe(true);
+
+    const updated = await db.booking.findUnique({
+      where: { id: declineBooking.id },
+      include: { quote: true }
+    });
+
+    expect(updated?.status).toBe("cancelled_by_customer");
+    expect(updated?.prebookingHoldStatus).toBe("released");
+    expect(updated?.quote?.rejectedAt).toBeDefined();
+
+    // Clean up decline booking
+    await db.auditLog.deleteMany({ where: { targetId: declineBooking.id } });
+    await db.quote.deleteMany({ where: { bookingId: declineBooking.id } });
+    await db.booking.delete({ where: { id: declineBooking.id } });
   });
 });
