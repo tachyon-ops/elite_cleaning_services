@@ -13,7 +13,7 @@ interface Message {
 const DEFAULT_WELCOME_MESSAGE: Message = {
   id: "welcome",
   role: "assistant",
-  content: "Grüezi! I am the Mondar AI Concierge (powered by Nuncio).\n\nI can calculate instant verified quotes for move-out cleans with 100% Handover Guarantee, regular housekeeping, commercial offices, or bespoke aviation/yacht detailing.\n\nHow can I help you today?",
+  content: "Grüezi! I am the Mondar AI Concierge (powered by Nuncio from ZPI).\n\nI can calculate instant verified quotes for move-out cleans with 100% Handover Guarantee, regular housekeeping, commercial offices, or bespoke aviation/yacht detailing.\n\nHow can I help you today?",
 };
 
 const CHAT_STORAGE_KEY = "nuncio_chat_history";
@@ -104,7 +104,16 @@ export function AIChatBubble({ hideBranding = false }: { hideBranding?: boolean 
       if (savedMessages) {
         const parsed = JSON.parse(savedMessages);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
+          const migrated = parsed.map((m: Message) => {
+            if (m.id === "welcome" || (m.content && m.content.includes("powered by Nuncio)"))) {
+              return {
+                ...m,
+                content: m.content.replace(/\(powered by Nuncio\)/g, "(powered by Nuncio from ZPI)"),
+              };
+            }
+            return m;
+          });
+          setMessages(migrated);
         }
       }
       const savedOpen = sessionStorage.getItem(CHAT_OPEN_KEY);
@@ -274,7 +283,7 @@ export function AIChatBubble({ hideBranding = false }: { hideBranding?: boolean 
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="bg-accent hover:bg-accent-hover text-ink-inverse h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] hover:scale-105 cursor-pointer relative group"
-          title="Mondar AI Concierge • Powered by Nuncio"
+          title="Mondar AI Concierge • Powered by Nuncio from ZPI"
         >
           {isOpen ? (
             <X className="w-5 h-5" />
@@ -309,15 +318,12 @@ export function AIChatBubble({ hideBranding = false }: { hideBranding?: boolean 
                 <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   {!hideBranding ? (
-                    <a
-                      href="https://nuncio.ch"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline text-emerald-400 font-medium cursor-pointer"
-                      title="Nuncio Conversational Commerce Engine"
+                    <span
+                      className="text-emerald-400 font-medium select-none"
+                      title="Nuncio from ZPI Conversational Commerce Engine"
                     >
-                      Powered by Nuncio
-                    </a>
+                      Powered by Nuncio from ZPI
+                    </span>
                   ) : (
                     <span className="text-[#a3a3a3]">Mondar Enterprise Concierge</span>
                   )}

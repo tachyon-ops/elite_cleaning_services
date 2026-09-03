@@ -49,7 +49,7 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; limi
   return { allowed, remaining, limit: DAILY_LIMIT };
 }
 
-const SYSTEM_PROMPT = `You are the Mondar AI Concierge, powered by Nuncio (the Swiss Conversational Commerce & Lead Capture Engine).
+const SYSTEM_PROMPT = `You are the Mondar AI Concierge, powered by Nuncio from ZPI (the Swiss Conversational Commerce & Lead Capture Engine).
 Your brand is "Mondar Specialty Cleaning" (https://mondar.ch).
 You provide ultra-reliable, grounded, zero-hallucination assistance for Swiss cleaning services in German, Swiss German, English, French, and Portuguese.
 
@@ -323,7 +323,7 @@ export function getOfflineReply(message: string): string {
     return "Unsere Yacht & Marine Care Division bietet Aussenwäsche, Teakholzpflege, Innenreinigung und Einwinterung auf dem Zürichsee und weiteren Schweizer Gewässern.\n\n" +
            "Offerte anfordern: [Yacht Care](/de/buchen/yacht)";
   }
-  return "Grüezi! Ich bin der Mondar AI Concierge (powered by Nuncio).\n\n" +
+  return "Grüezi! Ich bin der Mondar AI Concierge (powered by Nuncio from ZPI).\n\n" +
          "Ich berechne Ihnen sofort verbindliche Preise für Umzugsreinigungen mit 100% Abnahmegarantie, Unterhaltsreinigungen, Gewerbe oder Aviation/Yacht Detailing.\n\n" +
          "Wie viele Zimmer oder welche Dienstleistung benötigen Sie?";
 }
