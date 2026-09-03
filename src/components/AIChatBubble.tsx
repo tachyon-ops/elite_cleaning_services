@@ -318,12 +318,15 @@ export function AIChatBubble({ hideBranding = false }: { hideBranding?: boolean 
                 <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   {!hideBranding ? (
-                    <span
-                      className="text-emerald-400 font-medium select-none"
-                      title="Nuncio from ZPI Conversational Commerce Engine"
+                    <a
+                      href="https://www.zeropointintel.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline text-emerald-400 font-medium cursor-pointer"
+                      title="Nuncio by Zero Point Intelligence"
                     >
                       Powered by Nuncio from ZPI
-                    </span>
+                    </a>
                   ) : (
                     <span className="text-[#a3a3a3]">Mondar Enterprise Concierge</span>
                   )}
