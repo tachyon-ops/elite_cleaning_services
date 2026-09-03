@@ -69,10 +69,10 @@ describe("Move-Out Cleaning Pricing & Promo Discount Engine", () => {
     // 4.5 rooms base = CHF 960 (balcony is standardly included at CHF 0)
     // Carpet steam add-on = CHF 100
     // Provider subtotal = CHF 1'060
-    // 10% platform commission on top = +CHF 106
-    // Gross Total = CHF 1'166
-    // 20% discount = CHF 233.20
-    // Final Total = CHF 932.80
+    // 15% platform commission on top = +CHF 159
+    // Gross Total = CHF 1'219
+    // 20% discount = CHF 243.80
+    // Final Total = CHF 975.20
 
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
@@ -111,8 +111,8 @@ describe("Move-Out Cleaning Pricing & Promo Discount Engine", () => {
     expect(booking?.vertical).toBe("moveout");
     expect(booking?.promoCampaign?.code).toBe(testPromoCode);
     expect(booking?.promoCampaignId).toBe(promoCampaignId);
-    expect(Number(booking?.commissionAmountChf)).toBe(106);
-    expect(Number(booking?.promoDiscountChf)).toBe(233.2);
-    expect(Number(booking?.totalAmountChf)).toBe(932.8);
+    expect(Number(booking?.commissionAmountChf)).toBe(159);
+    expect(Number(booking?.promoDiscountChf)).toBe(243.8);
+    expect(Number(booking?.totalAmountChf)).toBe(975.2);
   });
 });

@@ -750,7 +750,7 @@ export default function BookingPage() {
       }
     }
 
-    const PLATFORM_COMMISSION_RATE = 0.10; // 10% platform & guarantee commission on top
+    const PLATFORM_COMMISSION_RATE = 0.15; // 15% platform & guarantee commission on top
 
     const singleSubtotal = basePrice + sizeAdjustment + addons;
     const prepayFactor = (vertical === "commercial" || vertical === "domestic") && intake.frequency === "monthly"
@@ -3348,7 +3348,7 @@ Please verify and confirm my dispatch request. Thank you!`;
                       <div className="flex justify-between text-body-sm text-accent font-medium pt-1 border-t border-border/40">
                         <span className="flex items-center gap-1.5">
                           <Shield className="w-3.5 h-3.5 shrink-0" />
-                          <span>{t("platformFee") || "Platform & Guarantee Fee (10%)"}</span>
+                          <span>{t("platformFee") || "Platform & Guarantee Fee (15%)"}</span>
                         </span>
                         <span>+CHF {pricing.platformFee.toFixed(2)}</span>
                       </div>

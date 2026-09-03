@@ -401,7 +401,7 @@ export default function HeroQuoteCalculator() {
     let frequencyDiscount = 0;
     let addons = 0;
 
-    const COMM_RATE = 1.10; // Option B: 10% platform commission on top
+    const COMM_RATE = 1.15; // Option B: 15% platform commission on top
 
     if (vertical === "moveout") {
       let rMin = 480;

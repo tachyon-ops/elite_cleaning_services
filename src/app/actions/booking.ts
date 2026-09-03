@@ -276,8 +276,8 @@ function calculatePrice(categorySlug: string, intake: any, scheduledAt?: Date) {
     }
   }
 
-  // Option B: 10% Platform & Guarantee commission on top
-  const PLATFORM_COMMISSION_RATE = 0.10;
+  // Option B: 15% Platform & Guarantee commission on top
+  const PLATFORM_COMMISSION_RATE = 0.15;
 
   const singleSubtotal = basePrice + sizeAdjustment + addons;
   const prepayFactor = (categorySlug === "commercial" || categorySlug === "domestic") && intake.frequency === "monthly"
