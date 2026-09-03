@@ -241,8 +241,8 @@ export async function triggerMiningSync(options: {
 
     const cantons = options.cantons && options.cantons.length > 0 ? options.cantons : ["ZH", "ZG", "BE", "LU"];
     const subRubrics = options.subRubrics || ["HR02", "HR01"];
-    const daysBack = Math.max(1, Math.min(30, options.daysBack || 3));
-    const maxPublications = options.maxPublications || 60;
+    const daysBack = Math.max(1, Math.min(30, options.daysBack || 14));
+    const maxPublications = options.maxPublications || 100;
 
     const endDate = new Date();
     const startDate = new Date();
