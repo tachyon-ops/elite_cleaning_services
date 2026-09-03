@@ -98,7 +98,7 @@ export default function MarketingMiningPage() {
   // Sync Modal state
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [syncCantons, setSyncCantons] = useState<string[]>(["ZH", "ZG", "BE", "LU"]);
-  const [syncDaysBack, setSyncDaysBack] = useState(3);
+  const [syncDaysBack, setSyncDaysBack] = useState(14);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -1105,9 +1105,10 @@ export default function MarketingMiningPage() {
                   className="w-full bg-[#1a1a1a] border border-[#262626] rounded-md p-2 text-xs text-[#f2f2f2]"
                 >
                   <option value={1}>Last 24 Hours</option>
-                  <option value={3}>Last 3 Days (Recommended)</option>
+                  <option value={3}>Last 3 Days</option>
                   <option value={7}>Last 7 Days</option>
-                  <option value={14}>Last 14 Days</option>
+                  <option value={14}>Last 14 Days (Recommended)</option>
+                  <option value={30}>Last 30 Days (Full Month Backfill)</option>
                 </select>
               </div>
 
