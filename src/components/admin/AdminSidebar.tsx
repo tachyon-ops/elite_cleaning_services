@@ -17,6 +17,7 @@ import {
   Building2,
   PanelLeftClose,
   PanelLeftOpen,
+  FileText,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
@@ -36,6 +37,7 @@ interface AdminSidebarProps {
     sales: string;
     settings: string;
     logout: string;
+    invoices?: string;
   };
 }
 
@@ -63,6 +65,7 @@ export function AdminSidebar({ isSuperAdmin, translations: t }: AdminSidebarProp
   const navItems = [
     { href: "/admin", label: t.dashboard, icon: LayoutDashboard },
     { href: "/admin/bookings", label: t.bookings, icon: BookOpen },
+    { href: "/admin/invoices", label: t.invoices || "Invoices", icon: FileText },
     { href: "/admin/recurring", label: t.recurring, icon: RefreshCw },
     { href: "/admin/provider-applications", label: t.applications, icon: Users },
     { href: "/admin/providers", label: t.providers, icon: Shield },

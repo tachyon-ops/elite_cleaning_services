@@ -943,8 +943,12 @@ export async function acceptQuoteAndPayDeposit(payload: {
                   <td style="padding: 6px 0; text-align: right; color: #22c55e;">CHF ${oneThirdDeposit.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #737373;">2/3 Balance Due After Service:</td>
-                  <td style="padding: 6px 0; text-align: right;">CHF ${(totalAmount - oneThirdDeposit).toFixed(2)}</td>
+                  <td style="padding: 6px 0; color: #737373;">2nd 1/3 (Day of Cleaning):</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount / 3) * 100) / 100).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #737373;">Final 1/3 (After Completion):</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount - oneThirdDeposit - Math.round((totalAmount / 3) * 100) / 100) * 100) / 100).toFixed(2)}</td>
                 </tr>
               </table>
             </div>

@@ -366,12 +366,12 @@ export default function QuoteAcceptancePage() {
                     </div>
                     <div className="flex justify-between pt-3 border-t border-[#262626] mt-3">
                       <span className="text-accent uppercase tracking-wider font-mono">Amount due now:</span>
-                      <span className="text-accent text-body-md font-bold">CHF {(booking.depositAmountChf - (booking.prebookingDepositChf || 50)).toFixed(2)}</span>
+                      <span className="text-accent text-body-md font-bold">CHF {Math.max(0, booking.depositAmountChf - (booking.prebookingDepositChf || 50)).toFixed(2)}</span>
                     </div>
                   </div>
 
                   <div className="text-caption text-[#a6a6a6] leading-relaxed">
-                    Note: A secure 30% deposit is required to assign your dispatch to our vetted teams. The remaining 70% is collected via invoicing post-service completion.
+                    Note: A 1/3 deposit is required upon acceptance (your CHF 50 pre-booking hold is applied towards this). The second 1/3 is charged on the day of cleaning, and the final 1/3 is charged after supplier service completion.
                   </div>
 
                   <div className="flex items-center gap-2 border-t border-[#262626] pt-4 font-mono text-caption text-[#a6a6a6]">

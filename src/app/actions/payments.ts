@@ -280,9 +280,9 @@ export async function cancelBookingWithRefund(bookingId: string, cancelledBy: "c
     const msUntilJob = scheduledAt.getTime() - now.getTime();
     const hoursUntilJob = msUntilJob / (1000 * 60 * 60);
 
-    // Calculate total already collected from succeeded, non-refunded payments
+    // Calculate total already collected from succeeded or partially refunded payments
     const totalCollected = booking.payments
-      .filter(p => p.status === "succeeded")
+      .filter(p => p.status === "succeeded" || p.status === "partially_refunded")
       .reduce((sum, p) => sum + Number(p.amountChf) - Number(p.refundedAmountChf), 0);
 
     // Determine refund percentage based on tiered policy
@@ -313,7 +313,7 @@ export async function cancelBookingWithRefund(bookingId: string, cancelledBy: "c
 
         for (const p of booking.payments) {
           if (remainingRefund <= 0) break;
-          if (p.status !== "succeeded") continue;
+          if (p.status !== "succeeded" && p.status !== "partially_refunded") continue;
 
           const available = Number(p.amountChf) - Number(p.refundedAmountChf);
           if (available <= 0) continue;

@@ -94,7 +94,7 @@ export async function getMaterialLineItems(args: {
   contractId?: string;
   billingPeriodMonth?: number;
   billingPeriodYear?: number;
-}) {
+} = {}) {
   try {
     const items = await db.materialLineItem.findMany({
       where: {
@@ -272,7 +272,7 @@ export async function getMonthlyInvoices(args: {
   organizationId?: string;
   status?: string;
   year?: number;
-}) {
+} = {}) {
   try {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
@@ -306,38 +306,45 @@ export async function getMonthlyInvoices(args: {
   }
 }
 
-export async function updateInvoiceStatus(args: {
-  invoiceId: string;
-  status: string;
-}) {
+export async function updateInvoiceStatus(
+  argsOrId: { invoiceId: string; status: string } | string,
+  statusParam?: string
+) {
   try {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
       return { success: false, error: "Unauthorized" };
     }
 
+    const invoiceId = typeof argsOrId === "string" ? argsOrId : argsOrId.invoiceId;
+    const status = typeof argsOrId === "string" ? statusParam! : argsOrId.status;
+
+    if (!invoiceId || !status) {
+      return { success: false, error: "Missing invoiceId or status" };
+    }
+
     const invoice = await db.monthlyInvoice.findUnique({
-      where: { id: args.invoiceId },
+      where: { id: invoiceId },
     });
 
     if (!invoice) {
       return { success: false, error: "Invoice not found" };
     }
 
-    let updateData: any = { status: args.status };
+    let updateData: any = { status };
 
-    if (args.status === "sent") {
+    if (status === "sent") {
       updateData.sentAt = new Date();
       const dueDays = invoice.paymentMethod === "invoice_net30" ? 30 : 7;
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + dueDays);
       updateData.dueAt = dueDate;
-    } else if (args.status === "paid") {
+    } else if (status === "paid") {
       updateData.paidAt = new Date();
     }
 
     const updatedInvoice = await db.monthlyInvoice.update({
-      where: { id: args.invoiceId },
+      where: { id: invoiceId },
       data: updateData,
     });
 
