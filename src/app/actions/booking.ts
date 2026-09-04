@@ -402,11 +402,13 @@ export async function createBooking(payload: {
             promoAmount = discountValue;
           }
 
+          // Always remember the campaign on the booking reservation (even for quote verticals)
+          promoCampaignId = campaign.id;
+
           // Apply promo discount (frequency discount is already baked into pricing.total)
           // We apply promo on top of the base subtotal, and use whichever results in a lower price
           promoAmount = Math.min(promoAmount, pricing.total); // can't discount more than total
           if (promoAmount > 0) {
-            promoCampaignId = campaign.id;
             promoDiscountChf = Math.round(promoAmount * 100) / 100;
             finalTotal = Math.max(0, Math.round((pricing.total - promoAmount) * 100) / 100);
             finalDeposit = Math.round(finalTotal * 0.30 * 100) / 100;
@@ -449,7 +451,7 @@ export async function createBooking(payload: {
     const autoCheckoutEnabled = autoCheckoutSetting ? autoCheckoutSetting.value === "true" : true;
 
     const initialStatus = isQuoteVertical 
-      ? "prebooking_held" 
+      ? "quote_pending" 
       : (!autoCheckoutEnabled 
           ? "draft" 
           : (hasMatchingProvider ? "offer_dispatched" : "confirmed"));
@@ -488,11 +490,7 @@ export async function createBooking(payload: {
       ? `sub_sim_${Math.random().toString(36).substring(2, 11)}`
       : null;
 
-    // Create Booking
-    const prebookingPaymentIntentId = isQuoteVertical
-      ? `pi_mock_prebooking_${Math.random().toString(36).substring(2, 11)}`
-      : null;
-
+    // Create Booking — Free intake for quote verticals (no card pre-auth)
     const booking = await db.booking.create({
       data: {
         customerId,
@@ -512,10 +510,9 @@ export async function createBooking(payload: {
         promoCampaignId,
         promoDiscountChf,
         commissionAmountChf: pricing.platformFee || (finalTotal ? Math.round(finalTotal * 0.10 * 100) / 100 : null),
-        // Pre-booking hold (CHF 50 for quote verticals)
-        prebookingDepositChf: isQuoteVertical ? 50.00 : 0,
-        prebookingHoldStatus: isQuoteVertical ? "held" : "none",
-        prebookingStripePaymentIntentId: prebookingPaymentIntentId
+        prebookingDepositChf: 0,
+        prebookingHoldStatus: "none",
+        prebookingStripePaymentIntentId: null
       }
     });
 
@@ -579,7 +576,7 @@ export async function createBooking(payload: {
                 <h2 style="color: #f2f2f2; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">New Quote Request</h2>
               </div>
               <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
-                A customer has submitted a bespoke cleaning request and a CHF 50 pre-booking hold has been placed on their card. Please review and prepare a quote.
+                A customer has submitted a free bespoke cleaning request. Please review requirements and coordinate with our verified suppliers.
               </p>
               <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
@@ -600,8 +597,8 @@ export async function createBooking(payload: {
                     <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
                   </tr>
                   <tr>
-                    <td style="padding: 6px 0; color: #737373;">Pre-booking Hold:</td>
-                    <td style="padding: 6px 0; text-align: right; color: #22c55e;">CHF 50.00 ✓</td>
+                    <td style="padding: 6px 0; color: #737373;">Request Type:</td>
+                    <td style="padding: 6px 0; text-align: right; color: #b59410; font-weight: 600;">Free Quote Request</td>
                   </tr>
                 </table>
               </div>
@@ -635,7 +632,7 @@ export async function createBooking(payload: {
               </div>
               
               <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
-                Thank you for your bespoke cleaning request. Our operations team will review your requirements, consult with our vetted specialists, and prepare a detailed quote for you.
+                Thank you for your bespoke cleaning request. Our operations team will review your requirements, consult with our vetted specialists, and prepare a personalized quote for you.
               </p>
 
               <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
@@ -656,17 +653,13 @@ export async function createBooking(payload: {
                     <td style="padding: 6px 0; color: #737373;">Location:</td>
                     <td style="padding: 6px 0; text-align: right;">${locationAddress}</td>
                   </tr>
-                  <tr style="border-top: 1px solid #262626;">
-                    <td style="padding: 10px 0 4px 0; color: #737373;">Pre-booking Hold:</td>
-                    <td style="padding: 10px 0 4px 0; text-align: right; color: #b59410; font-weight: 600;">CHF 50.00</td>
-                  </tr>
                 </table>
               </div>
 
               <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
                 <p style="font-size: 12px; color: #a6a6a6; line-height: 1.5; margin: 0;">
                   <strong style="color: #f2f2f2;">What happens next?</strong><br/>
-                  A refundable CHF 50 hold has been placed on your card. Once we prepare your quote, you'll receive an email with a link to review and accept or decline. If you decline, the hold is released immediately — no charge.
+                  Our team will coordinate with vetted specialists and prepare a personalized quote. You will receive an email with a secure link to review the proposal, pricing, and time slot. No charges are made until you choose to accept the quote.
                 </p>
               </div>
 
@@ -803,9 +796,11 @@ export async function acceptQuoteAndPayDeposit(payload: {
     // 1/3 deposit calculation
     const totalAmount = Number(booking.totalAmountChf);
     const oneThirdDeposit = Math.round((totalAmount / 3) * 100) / 100;
-    const prebookingHoldAmount = Number(booking.prebookingDepositChf);
-    // Charge = 1/3 deposit minus the already-held CHF 50
-    const additionalChargeAmount = Math.max(0, Math.round((oneThirdDeposit - prebookingHoldAmount) * 100) / 100);
+    const prebookingHoldAmount = Number(booking.prebookingDepositChf || 0);
+    const hasHeldPrebooking = booking.prebookingHoldStatus === "held" && prebookingHoldAmount > 0;
+    const additionalChargeAmount = hasHeldPrebooking
+      ? Math.max(0, Math.round((oneThirdDeposit - prebookingHoldAmount) * 100) / 100)
+      : oneThirdDeposit;
 
     // Determine matching provider (matching engine)
     const matchingProviderListing = await db.providerListing.findFirst({
@@ -832,8 +827,7 @@ export async function acceptQuoteAndPayDeposit(payload: {
         data: {
           status: nextStatus,
           depositAmountChf: oneThirdDeposit,
-          // Capture the pre-booking hold
-          prebookingHoldStatus: "captured"
+          prebookingHoldStatus: hasHeldPrebooking ? "captured" : "none"
         }
       });
 
@@ -845,8 +839,8 @@ export async function acceptQuoteAndPayDeposit(payload: {
         }
       });
 
-      // 3. Record CHF 50 pre-booking hold capture as a Payment
-      if (prebookingHoldAmount > 0) {
+      // 3. Record historical pre-booking hold capture if present
+      if (hasHeldPrebooking) {
         await tx.payment.create({
           data: {
             bookingId: booking.id,
@@ -858,7 +852,7 @@ export async function acceptQuoteAndPayDeposit(payload: {
         });
       }
 
-      // 4. Charge additional deposit (1/3 minus CHF 50)
+      // 4. Charge deposit (or remainder if prebooking was held)
       if (additionalChargeAmount > 0) {
         await tx.payment.create({
           data: {
@@ -883,7 +877,7 @@ export async function acceptQuoteAndPayDeposit(payload: {
           commissionRate,
           commissionAmountChf: commissionAmount,
           providerPayoutChf: providerPayout,
-          notes: `Bespoke dispatch commission for ${booking.categorySlug}. Payment split: 1/3 at acceptance (CHF ${oneThirdDeposit}), 1/3 on day of service, 1/3 after supplier confirmation.`
+          notes: `Bespoke dispatch commission for ${booking.categorySlug}. Payment split: 1/3 deposit at acceptance (CHF ${oneThirdDeposit}), 2/3 balance after service completion.`
         }
       });
 
@@ -943,12 +937,8 @@ export async function acceptQuoteAndPayDeposit(payload: {
                   <td style="padding: 6px 0; text-align: right; color: #22c55e;">CHF ${oneThirdDeposit.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #737373;">2nd 1/3 (Day of Cleaning):</td>
-                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount / 3) * 100) / 100).toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; color: #737373;">Final 1/3 (After Completion):</td>
-                  <td style="padding: 6px 0; text-align: right;">CHF ${(Math.round((totalAmount - oneThirdDeposit - Math.round((totalAmount / 3) * 100) / 100) * 100) / 100).toFixed(2)}</td>
+                  <td style="padding: 6px 0; color: #737373;">2/3 Balance Due on Service Day:</td>
+                  <td style="padding: 6px 0; text-align: right;">CHF ${(totalAmount - oneThirdDeposit).toFixed(2)}</td>
                 </tr>
               </table>
             </div>
@@ -965,7 +955,7 @@ export async function acceptQuoteAndPayDeposit(payload: {
   }
 }
 
-// 6b. Reject/refuse a quote — releases CHF 50 pre-booking hold
+// 6b. Reject/refuse a quote
 export async function rejectQuote(payload: {
   bookingId: string;
   reason?: string;
@@ -992,13 +982,13 @@ export async function rejectQuote(payload: {
     }
 
     await db.$transaction(async (tx) => {
-      // 1. Release the CHF 50 pre-booking hold
+      // 1. Update Booking status (and release hold if any historical hold existed)
       await tx.booking.update({
         where: { id: bookingId },
         data: {
           status: "cancelled_by_customer",
           cancellationReason: reason || "Customer declined the quote",
-          prebookingHoldStatus: "released"
+          prebookingHoldStatus: booking.prebookingHoldStatus === "held" ? "released" : "none"
         }
       });
 
@@ -1019,7 +1009,7 @@ export async function rejectQuote(payload: {
           targetTable: "Booking",
           targetId: bookingId,
           before: JSON.stringify({ status: booking.status, prebookingHoldStatus: booking.prebookingHoldStatus }),
-          after: JSON.stringify({ status: "cancelled_by_customer", prebookingHoldStatus: "released", reason }),
+          after: JSON.stringify({ status: "cancelled_by_customer", prebookingHoldStatus: booking.prebookingHoldStatus === "held" ? "released" : "none", reason }),
           actorUserId: booking.customerId
         }
       });
@@ -1061,8 +1051,8 @@ export async function rejectQuote(payload: {
                 </tr>
                 ` : ""}
                 <tr style="border-top: 1px solid #262626;">
-                  <td style="padding: 10px 0 4px 0; color: #737373;">CHF 50 Hold:</td>
-                  <td style="padding: 10px 0 4px 0; text-align: right; color: #22c55e;">Released ✓</td>
+                  <td style="padding: 10px 0 4px 0; color: #737373;">Status:</td>
+                  <td style="padding: 10px 0 4px 0; text-align: right; color: #22c55e;">Cancelled (No charges) ✓</td>
                 </tr>
               </table>
             </div>
@@ -1089,7 +1079,8 @@ export async function getBookingQuoteDetails(bookingId: string) {
     const booking = await db.booking.findUnique({
       where: { id: bookingId },
       include: {
-        quote: true
+        quote: true,
+        promoCampaign: true
       }
     });
 
@@ -1103,7 +1094,15 @@ export async function getBookingQuoteDetails(bookingId: string) {
       totalAmountChf: Number(booking.totalAmountChf),
       depositAmountChf: Number(booking.depositAmountChf),
       prebookingDepositChf: Number(booking.prebookingDepositChf),
+      promoDiscountChf: booking.promoDiscountChf ? Number(booking.promoDiscountChf) : 0,
       prebookingHoldStatus: booking.prebookingHoldStatus,
+      promoCampaign: booking.promoCampaign ? {
+        id: booking.promoCampaign.id,
+        code: booking.promoCampaign.code,
+        name: booking.promoCampaign.name,
+        discountType: booking.promoCampaign.discountType,
+        discountValue: Number(booking.promoCampaign.discountValue)
+      } : null,
       quote: booking.quote ? {
         ...booking.quote,
         amountChf: Number(booking.quote.amountChf)

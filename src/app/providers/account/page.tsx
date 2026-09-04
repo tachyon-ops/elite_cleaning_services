@@ -21,6 +21,10 @@ import {
   changeProviderPassword
 } from "@/app/actions/provider";
 import {
+  providerCheckInBooking,
+  providerCompleteBookingWithProof
+} from "@/app/actions/payments";
+import {
   ShieldAlert,
   CheckCircle2,
   AlertTriangle,
@@ -34,7 +38,11 @@ import {
   Plus,
   KeyRound,
   ShieldCheck,
-  X
+  X,
+  Camera,
+  Clock,
+  Sparkles,
+  Image as ImageIcon
 } from "lucide-react";
 
 export default function ProviderDashboardPage() {
@@ -83,6 +91,65 @@ export default function ProviderDashboardPage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  // Proof of presence / service completion states ("Veio / Não Veio")
+  const [checkingInId, setCheckingInId] = useState<string | null>(null);
+  const [completingBooking, setCompletingBooking] = useState<any | null>(null);
+  const [completionNotes, setCompletionNotes] = useState("");
+  const [completionPhotos, setCompletionPhotos] = useState<string[]>([]);
+  const [photoInput, setPhotoInput] = useState("");
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [viewingProofBooking, setViewingProofBooking] = useState<any | null>(null);
+
+  const handleCheckIn = async (bookingId: string) => {
+    setCheckingInId(bookingId);
+    setError("");
+    const res = await providerCheckInBooking(bookingId);
+    setCheckingInId(null);
+    if (res.success) {
+      if (companyId) loadData(companyId);
+    } else {
+      setError(res.error || "Failed to log arrival check-in");
+    }
+  };
+
+  const handleAddPhoto = () => {
+    if (!photoInput.trim()) return;
+    setCompletionPhotos(prev => [...prev, photoInput.trim()]);
+    setPhotoInput("");
+  };
+
+  const handleAddSamplePhotos = () => {
+    setCompletionPhotos([
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=800&q=80"
+    ]);
+  };
+
+  const handleRemovePhoto = (idx: number) => {
+    setCompletionPhotos(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleCompleteWithProof = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!completingBooking) return;
+    setSubmittingProof(true);
+    setError("");
+    const res = await providerCompleteBookingWithProof({
+      bookingId: completingBooking.id,
+      photos: completionPhotos,
+      notes: completionNotes
+    });
+    setSubmittingProof(false);
+    if (res.success) {
+      setCompletingBooking(null);
+      setCompletionNotes("");
+      setCompletionPhotos([]);
+      if (companyId) loadData(companyId);
+    } else {
+      setError(res.error || "Failed to submit completion");
+    }
+  };
 
   // Load provider details
   const loadData = async (targetId: string) => {
@@ -511,6 +578,7 @@ export default function ProviderDashboardPage() {
                       <th className="py-3 px-2">Address</th>
                       <th className="py-3 px-2">Amount</th>
                       <th className="py-3 px-2">Status</th>
+                      <th className="py-3 px-2 text-right">Actions / Proof</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -527,6 +595,43 @@ export default function ProviderDashboardPage() {
                           <span className="text-caption uppercase bg-green-500/10 text-green-400 px-2 py-0.5 rounded font-bold border border-green-500/20">
                             {booking.status}
                           </span>
+                        </td>
+                        <td className="py-4 px-2 text-right">
+                          {booking.status === "completed" ? (
+                            <button
+                              type="button"
+                              onClick={() => setViewingProofBooking(booking)}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded bg-[#262626] hover:bg-[#333333] text-[#f2f2f2] border border-[#404040] transition-colors cursor-pointer"
+                            >
+                              <Camera className="w-3.5 h-3.5 text-accent" />
+                              View Proof
+                            </button>
+                          ) : booking.status === "in_progress" ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCompletingBooking(booking);
+                                setCompletionPhotos([]);
+                                setCompletionNotes("");
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 transition-colors cursor-pointer"
+                            >
+                              <Camera className="w-3.5 h-3.5" />
+                              Complete & Proof
+                            </button>
+                          ) : (booking.status === "assigned" || booking.status === "confirmed") ? (
+                            <button
+                              type="button"
+                              onClick={() => handleCheckIn(booking.id)}
+                              disabled={checkingInId === booking.id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded bg-accent/20 hover:bg-accent/30 text-accent border border-accent/40 transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                              <Clock className="w-3.5 h-3.5" />
+                              {checkingInId === booking.id ? "Checking In..." : "Check In"}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-[#595959]">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -903,6 +1008,212 @@ export default function ProviderDashboardPage() {
         </div>
 
       </main>
+
+      {/* Proof of Presence & Completion Modal */}
+      {completingBooking && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg max-w-lg w-full p-6 space-y-5 text-[#f2f2f2] max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-caption text-accent uppercase font-mono block">Arrival & Departure Proof</span>
+                <h3 className="text-lg font-semibold text-[#f2f2f2]">Complete Job & Submit Proof</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCompletingBooking(null)}
+                className="text-[#737373] hover:text-[#f2f2f2] p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-[#a6a6a6] leading-relaxed">
+              Upload 1–3 photos verifying completed service at <strong className="text-[#f2f2f2]">{completingBooking.locationAddress}</strong>. Submitting proof records your completion timestamp and triggers the customer's remaining 2/3 balance charge.
+            </p>
+
+            <form onSubmit={handleCompleteWithProof} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-caption text-[#a6a6a6] block uppercase font-semibold">
+                  Photo URLs (Cleaned Spaces / Proof)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="https://... or photo URL"
+                    value={photoInput}
+                    onChange={(e) => setPhotoInput(e.target.value)}
+                    className="flex-1 border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2 rounded text-body-xs outline-none focus:border-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPhoto}
+                    disabled={!photoInput.trim()}
+                    className="bg-[#262626] hover:bg-[#333333] disabled:opacity-40 text-[#f2f2f2] text-xs font-semibold px-3 py-2 rounded transition-colors cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddSamplePhotos}
+                  className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline pt-1 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Use Sample Clean Photos
+                </button>
+              </div>
+
+              {completionPhotos.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-caption text-[#737373] block uppercase font-semibold">
+                    Photos to attach ({completionPhotos.length})
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {completionPhotos.map((url, idx) => (
+                      <div key={idx} className="relative group rounded overflow-hidden border border-[#262626] aspect-video bg-[#0a0a0a]">
+                        <img src={url} alt={`Proof ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(idx)}
+                          className="absolute top-1 right-1 bg-black/80 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-caption text-[#a6a6a6] block uppercase font-semibold">
+                  Completion Notes (Optional)
+                </label>
+                <textarea
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  placeholder="e.g. Deep sanitization complete. Key returned to safe box 4. Inspection passed."
+                  rows={3}
+                  className="w-full border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded text-body-xs outline-none focus:border-accent resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCompletingBooking(null)}
+                  className="flex-1 border border-[#262626] text-[#a6a6a6] hover:text-[#f2f2f2] px-4 py-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingProof}
+                  className="flex-1 bg-green-500/20 border border-green-500/40 text-green-400 hover:bg-green-500/30 px-4 py-2.5 rounded-md text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {submittingProof ? "Completing & Charging..." : "Confirm & Charge Remaining Balance"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Proof Modal */}
+      {viewingProofBooking && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg max-w-lg w-full p-6 space-y-5 text-[#f2f2f2] max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-caption text-green-400 uppercase font-mono block">Verified Service Proof</span>
+                <h3 className="text-lg font-semibold text-[#f2f2f2]">Proof of Presence & Work</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingProofBooking(null)}
+                className="text-[#737373] hover:text-[#f2f2f2] p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-[#0d0d0d] p-3.5 rounded border border-[#262626] space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#a6a6a6]">Job ID:</span>
+                <span className="font-mono text-[#f2f2f2]">{viewingProofBooking.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#a6a6a6]">Check-in Timestamp:</span>
+                <span className="text-accent font-mono">
+                  {viewingProofBooking.checkInAt ? new Date(viewingProofBooking.checkInAt).toLocaleString() : "Not recorded"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#a6a6a6]">Completed Timestamp:</span>
+                <span className="text-green-400 font-mono">
+                  {viewingProofBooking.completedAt ? new Date(viewingProofBooking.completedAt).toLocaleString() : "Not recorded"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#a6a6a6]">Address:</span>
+                <span className="text-[#f2f2f2] text-right truncate max-w-[240px]">{viewingProofBooking.locationAddress}</span>
+              </div>
+            </div>
+
+            {viewingProofBooking.completionNotes && (
+              <div className="space-y-1">
+                <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">Specialist Notes</span>
+                <p className="text-xs bg-[#0a0a0a] p-3 rounded border border-[#262626] text-[#d4d4d4] italic">
+                  "{viewingProofBooking.completionNotes}"
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <span className="text-caption text-[#a6a6a6] block uppercase font-semibold">Completion Photo Evidence</span>
+              {(() => {
+                let photos: string[] = [];
+                try {
+                  if (viewingProofBooking.completionPhotos) {
+                    photos = typeof viewingProofBooking.completionPhotos === "string"
+                      ? JSON.parse(viewingProofBooking.completionPhotos)
+                      : viewingProofBooking.completionPhotos;
+                  }
+                } catch {
+                  photos = [];
+                }
+
+                if (!Array.isArray(photos) || photos.length === 0) {
+                  return <p className="text-xs text-[#737373] italic">No photos recorded for this job.</p>;
+                }
+
+                return (
+                  <div className="grid grid-cols-2 gap-2">
+                    {photos.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded overflow-hidden border border-[#262626] aspect-video bg-[#0a0a0a] hover:border-accent transition-colors"
+                      >
+                        <img src={url} alt={`Proof ${idx + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setViewingProofBooking(null)}
+              className="w-full border border-[#262626] text-[#f2f2f2] hover:bg-[#1a1a1a] py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

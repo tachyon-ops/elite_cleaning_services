@@ -1120,7 +1120,7 @@ export async function createQuote(payload: {
 
     const booking = await db.booking.findUnique({
       where: { id: bookingId },
-      include: { guest: true }
+      include: { guest: true, promoCampaign: true }
     });
 
     if (!booking) {
@@ -1129,8 +1129,35 @@ export async function createQuote(payload: {
 
     const validUntil = new Date(Date.now() + validUntilDays * 24 * 60 * 60 * 1000);
 
-    // 1/3 deposit calculation
-    const depositChf = Math.round((amountChf / 3) * 100) / 100;
+    // Check if reservation has an active coupon/promo campaign attached
+    let promoDiscountChf = 0;
+    let netTotalChf = amountChf;
+    if (booking.promoCampaign && booking.promoCampaign.active) {
+      const camp = booking.promoCampaign;
+      const now = new Date();
+      const validFrom = new Date(camp.validFrom);
+      const validUntilPromo = camp.validUntil ? new Date(camp.validUntil) : null;
+      const withinDates = now >= validFrom && (!validUntilPromo || now <= validUntilPromo);
+      const withinRedemptions = !camp.maxRedemptions || camp.totalRedemptions < camp.maxRedemptions;
+
+      if (withinDates && withinRedemptions) {
+        const discountValue = Number(camp.discountValue);
+        if (camp.discountType === "percentage") {
+          promoDiscountChf = Math.round(amountChf * (discountValue / 100) * 100) / 100;
+        } else {
+          promoDiscountChf = Math.min(amountChf, discountValue);
+        }
+        netTotalChf = Math.max(0, Math.round((amountChf - promoDiscountChf) * 100) / 100);
+
+        await db.promoCampaign.update({
+          where: { id: camp.id },
+          data: { totalRedemptions: { increment: 1 } }
+        });
+      }
+    }
+
+    // 1/3 deposit calculation (based on net client total)
+    const depositChf = Math.round((netTotalChf / 3) * 100) / 100;
 
     // Create or update Quote record
     await db.quote.upsert({
@@ -1155,8 +1182,9 @@ export async function createQuote(payload: {
       where: { id: bookingId },
       data: {
         status: "quote_sent",
-        totalAmountChf: amountChf,
-        depositAmountChf: depositChf
+        totalAmountChf: netTotalChf,
+        depositAmountChf: depositChf,
+        promoDiscountChf: promoDiscountChf > 0 ? promoDiscountChf : null
       }
     });
 
@@ -1167,7 +1195,7 @@ export async function createQuote(payload: {
         targetTable: "Quote",
         targetId: bookingId,
         before: JSON.stringify({ status: booking.status, total: booking.totalAmountChf }),
-        after: JSON.stringify({ status: "quote_sent", total: amountChf, deposit: depositChf }),
+        after: JSON.stringify({ status: "quote_sent", total: netTotalChf, deposit: depositChf, promoDiscount: promoDiscountChf }),
         actorUserId: "admin_user"
       }
     });
@@ -1216,13 +1244,27 @@ export async function createQuote(payload: {
                     <td style="padding: 6px 0; text-align: right;">${notes}</td>
                   </tr>
                   ` : ""}
+                  ${promoDiscountChf > 0 ? `
                   <tr style="border-top: 1px solid #262626;">
-                    <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Quoted Amount:</td>
-                    <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${amountChf.toFixed(2)}</td>
+                    <td style="padding: 8px 0 2px 0; color: #a6a6a6;">Original Quoted Price:</td>
+                    <td style="padding: 8px 0 2px 0; text-align: right; color: #a6a6a6;">CHF ${amountChf.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 2px 0 8px 0; color: #22c55e;">Coupon Applied (${booking.promoCampaign?.code}):</td>
+                    <td style="padding: 2px 0 8px 0; text-align: right; color: #22c55e;">-CHF ${promoDiscountChf.toFixed(2)}</td>
+                  </tr>
+                  ` : ""}
+                  <tr style="border-top: 1px solid #262626;">
+                    <td style="padding: 10px 0 4px 0; font-weight: bold; color: #f2f2f2;">Total Quoted Amount:</td>
+                    <td style="padding: 10px 0 4px 0; text-align: right; font-weight: bold; font-size: 15px; color: #f2f2f2;">CHF ${netTotalChf.toFixed(2)}</td>
                   </tr>
                   <tr>
                     <td style="padding: 4px 0; color: #b59410; font-weight: 600;">1/3 Deposit on Acceptance:</td>
                     <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #b59410;">CHF ${depositChf.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; color: #737373;">2/3 Due on Service Day:</td>
+                    <td style="padding: 4px 0; text-align: right; color: #a6a6a6;">CHF ${(netTotalChf - depositChf).toFixed(2)}</td>
                   </tr>
                   <tr>
                     <td style="padding: 4px 0; color: #737373;">Valid Until:</td>
@@ -1237,8 +1279,8 @@ export async function createQuote(payload: {
 
               <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
                 <p style="font-size: 12px; color: #a6a6a6; line-height: 1.5; margin: 0;">
-                  <strong style="color: #f2f2f2;">Your CHF 50 pre-booking hold</strong><br/>
-                  If you accept, the hold is captured and applied toward your 1/3 deposit. If you decline, the hold is released immediately — no charge.
+                  <strong style="color: #f2f2f2;">Transparent Payment Terms</strong><br/>
+                  A 1/3 deposit secures your reserved date and specialist team. The remaining 2/3 is charged on the cleaning day only after service completion is confirmed.
                 </p>
               </div>
 

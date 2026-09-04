@@ -13,7 +13,7 @@ import {
 } from "@/app/actions/admin";
 import { 
   BookOpen, User, MapPin, Eye, Trash2, CheckCircle2, 
-  AlertTriangle, ShieldAlert, DollarSign, Calculator, Percent, Check 
+  AlertTriangle, ShieldAlert, DollarSign, Calculator, Percent, Check, Camera, Clock 
 } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -438,6 +438,70 @@ export default function AdminBookingsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Proof of Presence & Service Evidence */}
+                {(selectedBooking.checkInAt || selectedBooking.completedAt || selectedBooking.completionPhotos) && (
+                  <div className="border-t border-[#262626] pt-4 space-y-3">
+                    <span className="text-caption text-green-400 uppercase font-semibold flex items-center gap-1.5">
+                      <Camera className="w-4 h-4" /> Proof of Presence & Service Evidence
+                    </span>
+                    <div className="bg-[#0d0d0d] p-3.5 rounded-md border border-[#262626] space-y-2 text-body-xs">
+                      <div className="flex justify-between">
+                        <span className="text-[#a6a6a6] flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-accent" /> Arrival Check-in:
+                        </span>
+                        <span className="font-mono text-[#f2f2f2]">
+                          {selectedBooking.checkInAt ? new Date(selectedBooking.checkInAt).toLocaleString() : "Not recorded"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#a6a6a6] flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-green-400" /> Completion Timestamp:
+                        </span>
+                        <span className="font-mono text-[#f2f2f2]">
+                          {selectedBooking.completedAt ? new Date(selectedBooking.completedAt).toLocaleString() : "Not recorded"}
+                        </span>
+                      </div>
+                      {selectedBooking.completionNotes && (
+                        <div className="pt-2 border-t border-[#1f1f1f]">
+                          <span className="text-[#737373] text-[11px] block uppercase font-semibold mb-1">Supplier Notes</span>
+                          <p className="text-body-xs text-[#d4d4d4] italic bg-[#0a0a0a] p-2 rounded border border-[#1f1f1f]">
+                            "{selectedBooking.completionNotes}"
+                          </p>
+                        </div>
+                      )}
+                      {(() => {
+                        let photos: string[] = [];
+                        try {
+                          if (selectedBooking.completionPhotos) {
+                            photos = typeof selectedBooking.completionPhotos === "string"
+                              ? JSON.parse(selectedBooking.completionPhotos)
+                              : selectedBooking.completionPhotos;
+                          }
+                        } catch {}
+                        if (!Array.isArray(photos) || photos.length === 0) return null;
+                        return (
+                          <div className="pt-2 border-t border-[#1f1f1f] space-y-1.5">
+                            <span className="text-[#737373] text-[11px] block uppercase font-semibold">Service Photos ({photos.length})</span>
+                            <div className="grid grid-cols-3 gap-2">
+                              {photos.map((url, idx) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="block rounded overflow-hidden border border-[#262626] aspect-video bg-[#0a0a0a] hover:border-accent transition-colors"
+                                >
+                                  <img src={url} alt={`Proof ${idx + 1}`} className="w-full h-full object-cover" />
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
 
                 {/* 1. Supplier Assignment & Budget Setup (5-Day Matching Phase) */}
                 <form onSubmit={handleAssignWithBudget} className="border-t border-[#262626] pt-4 space-y-4">

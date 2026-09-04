@@ -1,4 +1,7 @@
+"use server";
+
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email-utils";
 
 /**
  * Simulates Stripe pre-authorization of the remaining 70% balance of a booking.
@@ -457,15 +460,74 @@ export async function chargeDayOfService(bookingId: string) {
 }
 
 /**
- * Confirms service completion and charges the final 1/3 balance.
- * Called by ops after the supplier confirms the service was performed.
+ * Provider checks in upon arrival at the cleaning location ("Veio" timestamp proof).
+ * Transitions booking to in_progress and records exact arrival timestamp.
  */
-export async function confirmServiceCompletion(bookingId: string) {
+export async function providerCheckInBooking(bookingId: string) {
   try {
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    const validStatuses = ["assigned", "confirmed", "offer_dispatched", "offer_accepted"];
+    if (!validStatuses.includes(booking.status) && booking.status !== "in_progress") {
+      throw new Error(`Booking status "${booking.status}" cannot be checked in`);
+    }
+
+    const now = new Date();
+
+    await db.$transaction(async (tx) => {
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "in_progress",
+          checkInAt: booking.checkInAt || now
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "provider_check_in",
+          targetTable: "Booking",
+          targetId: bookingId,
+          before: JSON.stringify({ status: booking.status, checkInAt: booking.checkInAt }),
+          after: JSON.stringify({ status: "in_progress", checkInAt: now }),
+          actorUserId: null
+        }
+      });
+    });
+
+    console.log(`[PROVIDER] Check-in logged for booking ${bookingId} at ${now.toISOString()}`);
+    return { success: true, checkInAt: now };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Provider submits completion with proof of presence (photos & notes).
+ * Charges remaining balance, updates payouts, and marks booking completed.
+ * Eliminates "veio / não veio" disputes.
+ */
+export async function providerCompleteBookingWithProof(payload: {
+  bookingId: string;
+  photos?: string[];
+  notes?: string;
+}) {
+  try {
+    const { bookingId, photos = [], notes } = payload;
+    if (!bookingId) {
+      throw new Error("Booking ID is required");
+    }
+
     const booking = await db.booking.findUnique({
       where: { id: bookingId },
       include: {
-        quote: true,
+        payments: true,
         commissionLedgers: true,
         payouts: true
       }
@@ -475,25 +537,167 @@ export async function confirmServiceCompletion(bookingId: string) {
       throw new Error("Booking not found");
     }
 
-    // Must be in_progress (day-of-service charge already done)
-    if (booking.status !== "in_progress") {
-      throw new Error(`Booking must be in "in_progress" status. Current: "${booking.status}"`);
-    }
-
     const totalAmount = Number(booking.totalAmountChf);
-    // Final 1/3 = total minus the two thirds already charged
-    const firstThird = Number(booking.depositAmountChf); // charged at acceptance
-    const secondThird = Math.round((totalAmount / 3) * 100) / 100; // charged on cleaning day
-    const finalThird = Math.round((totalAmount - firstThird - secondThird) * 100) / 100;
+    const totalCollected = booking.payments
+      .filter(p => p.status === "succeeded" || p.status === "partially_refunded")
+      .reduce((sum, p) => sum + Number(p.amountChf) - Number(p.refundedAmountChf), 0);
+
+    const balanceToCharge = Math.max(0, Math.round((totalAmount - totalCollected) * 100) / 100);
+    const now = new Date();
 
     await db.$transaction(async (tx) => {
-      // 1. Charge the final 1/3
-      if (finalThird > 0) {
+      // 1. Charge remaining balance if applicable
+      if (balanceToCharge > 0) {
         await tx.payment.create({
           data: {
             bookingId: booking.id,
-            stripeChargeId: `ch_mock_final_third_${Math.random().toString(36).substring(2, 11)}`,
-            amountChf: finalThird,
+            stripeChargeId: `ch_mock_final_balance_${Math.random().toString(36).substring(2, 11)}`,
+            amountChf: balanceToCharge,
+            status: "succeeded",
+            refundedAmountChf: 0
+          }
+        });
+      }
+
+      // 2. Mark booking completed with proof
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "completed",
+          balanceAuthStatus: "captured",
+          checkInAt: booking.checkInAt || now,
+          completedAt: now,
+          completionPhotos: JSON.stringify(photos),
+          completionNotes: notes || null
+        }
+      });
+
+      // 3. Move payouts to in_transit
+      const pendingPayouts = booking.payouts.filter(p => p.status === "scheduled");
+      for (const payout of pendingPayouts) {
+        await tx.payout.update({
+          where: { id: payout.id },
+          data: { status: "in_transit" }
+        });
+      }
+
+      // 4. Settle commission ledger
+      const unsettled = booking.commissionLedgers.filter(cl => !cl.settledAt);
+      for (const ledger of unsettled) {
+        await tx.commissionLedger.update({
+          where: { id: ledger.id },
+          data: { settledAt: now }
+        });
+      }
+
+      // 5. Audit log
+      await tx.auditLog.create({
+        data: {
+          action: "provider_complete_with_proof",
+          targetTable: "Booking",
+          targetId: bookingId,
+          before: JSON.stringify({ status: booking.status, totalCollected }),
+          after: JSON.stringify({
+            status: "completed",
+            balanceCharged: balanceToCharge,
+            photosCount: photos.length,
+            completedAt: now
+          }),
+          actorUserId: null
+        }
+      });
+    });
+
+    // Send customer completion confirmation & receipt email
+    if (booking.guestEmail) {
+      try {
+        await sendEmail({
+          to: booking.guestEmail,
+          subject: `Mondar - Service Completed & Receipt (${booking.id.slice(0, 8).toUpperCase()})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 540px; margin: auto;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 11px; letter-spacing: 0.2em; color: #b59410; font-weight: 700; text-transform: uppercase;">Mondar Specialty Cleaning</span>
+                <h2 style="color: #22c55e; letter-spacing: 0.05em; font-weight: 500; margin: 8px 0 0 0; font-size: 24px;">✓ Cleaning Completed</h2>
+              </div>
+              <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                Your cleaning service has been completed by our verified specialists. The remaining balance of CHF ${balanceToCharge.toFixed(2)} has been charged to your card.
+              </p>
+              <div style="background-color: #141414; border: 1px solid #262626; padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f2f2f2;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Booking ID:</td>
+                    <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #b59410;">${booking.id.slice(0, 8).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Total Paid:</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #22c55e;">CHF ${totalAmount.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Completed At:</td>
+                    <td style="padding: 6px 0; text-align: right;">${now.toLocaleDateString("de-CH")} ${now.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" })}</td>
+                  </tr>
+                  ${notes ? `
+                  <tr>
+                    <td style="padding: 6px 0; color: #737373;">Provider Note:</td>
+                    <td style="padding: 6px 0; text-align: right;">${notes}</td>
+                  </tr>
+                  ` : ""}
+                </table>
+              </div>
+              <div style="text-align: center;">
+                <p style="font-size: 12px; color: #737373;">Thank you for trusting Mondar. Questions? Contact <a href="mailto:ops@mondar.ch" style="color: #b59410; text-decoration: none;">ops@mondar.ch</a>.</p>
+              </div>
+            </div>
+          `
+        });
+      } catch (emailErr) {
+        console.error("[PAYMENTS] Failed to send customer completion email:", emailErr);
+      }
+    }
+
+    console.log(`[PAYMENTS] Booking ${bookingId} completed with proof. Balance CHF ${balanceToCharge.toFixed(2)} charged.`);
+    return { success: true, balanceCharged: balanceToCharge, remainingCharged: balanceToCharge };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Confirms service completion and charges the remaining balance.
+ * Called by ops or system after service is completed.
+ */
+export async function confirmServiceCompletion(bookingId: string) {
+  try {
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        payments: true,
+        commissionLedgers: true,
+        payouts: true
+      }
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    const totalAmount = Number(booking.totalAmountChf);
+    const totalCollected = booking.payments
+      .filter(p => p.status === "succeeded" || p.status === "partially_refunded")
+      .reduce((sum, p) => sum + Number(p.amountChf) - Number(p.refundedAmountChf), 0);
+
+    const balanceToCharge = Math.max(0, Math.round((totalAmount - totalCollected) * 100) / 100);
+    const now = new Date();
+
+    await db.$transaction(async (tx) => {
+      // 1. Charge remaining balance if any
+      if (balanceToCharge > 0) {
+        await tx.payment.create({
+          data: {
+            bookingId: booking.id,
+            stripeChargeId: `ch_mock_final_balance_${Math.random().toString(36).substring(2, 11)}`,
+            amountChf: balanceToCharge,
             status: "succeeded",
             refundedAmountChf: 0
           }
@@ -505,7 +709,8 @@ export async function confirmServiceCompletion(bookingId: string) {
         where: { id: bookingId },
         data: {
           status: "completed",
-          balanceAuthStatus: "captured"
+          balanceAuthStatus: "captured",
+          completedAt: booking.completedAt || now
         }
       });
 
@@ -526,7 +731,7 @@ export async function confirmServiceCompletion(bookingId: string) {
         await tx.commissionLedger.update({
           where: { id: ledger.id },
           data: {
-            settledAt: new Date()
+            settledAt: now
           }
         });
       }
@@ -537,16 +742,16 @@ export async function confirmServiceCompletion(bookingId: string) {
           action: "confirm_service_completion",
           targetTable: "Booking",
           targetId: bookingId,
-          before: JSON.stringify({ status: booking.status }),
-          after: JSON.stringify({ status: "completed", finalThirdCharged: finalThird }),
+          before: JSON.stringify({ status: booking.status, totalCollected }),
+          after: JSON.stringify({ status: "completed", finalBalanceCharged: balanceToCharge }),
           actorUserId: "admin_user"
         }
       });
     });
 
-    console.log(`[PAYMENTS] Service completed for booking ${bookingId}. Final 1/3 CHF ${finalThird.toFixed(2)} charged. Total: CHF ${totalAmount.toFixed(2)}.`);
+    console.log(`[PAYMENTS] Service completed for booking ${bookingId}. Balance CHF ${balanceToCharge.toFixed(2)} charged. Total: CHF ${totalAmount.toFixed(2)}.`);
 
-    return { success: true, finalThirdCharged: finalThird };
+    return { success: true, finalThirdCharged: balanceToCharge, balanceCharged: balanceToCharge };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

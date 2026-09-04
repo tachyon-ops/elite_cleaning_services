@@ -113,6 +113,37 @@ export default function BookingPage() {
   const [promoInputError, setPromoInputError] = useState("");
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
+  const persistCoupon = (code: string) => {
+    if (typeof window === "undefined") return;
+    const upper = code.trim().toUpperCase();
+    try {
+      localStorage.setItem("mondar_coupon", upper);
+      localStorage.setItem("mondar_promo_code", upper);
+      document.cookie = `mondar_coupon=${encodeURIComponent(upper)}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      const savedDraft = localStorage.getItem("mondar_booking_intake_draft");
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        parsed.promoCode = upper;
+        localStorage.setItem("mondar_booking_intake_draft", JSON.stringify(parsed));
+      }
+    } catch {}
+  };
+
+  const clearSavedCoupon = () => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.removeItem("mondar_coupon");
+      localStorage.removeItem("mondar_promo_code");
+      document.cookie = "mondar_coupon=; path=/; max-age=0; SameSite=Lax";
+      const savedDraft = localStorage.getItem("mondar_booking_intake_draft");
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        delete parsed.promoCode;
+        localStorage.setItem("mondar_booking_intake_draft", JSON.stringify(parsed));
+      }
+    } catch {}
+  };
+
   const handleApplyPromo = async (codeToApply?: string) => {
     const code = (codeToApply || promoInput).trim().toUpperCase();
     if (!code) {
@@ -127,6 +158,7 @@ export default function BookingPage() {
         setPromoCode(code);
         setPromoData(res);
         setPromoInput("");
+        persistCoupon(code);
         if (typeof window !== "undefined") {
           const url = new URL(window.location.href);
           url.searchParams.set("promo", code);
@@ -147,9 +179,12 @@ export default function BookingPage() {
     setPromoData(null);
     setPromoInput("");
     setPromoInputError("");
+    clearSavedCoupon();
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.delete("promo");
+      url.searchParams.delete("coupon");
+      url.searchParams.delete("code");
       window.history.replaceState({}, "", url.toString());
     }
   };
@@ -269,13 +304,38 @@ export default function BookingPage() {
         setStep(Number(stepParam));
       }
 
-      // Parse promo code from URL
-      const promo = searchParams.get("promo");
-      if (promo) {
-        setPromoCode(promo.toUpperCase());
+      // Restore and validate coupon/promo code from URL, localStorage, cookie, or intake draft
+      let initialCoupon: string | null = null;
+      const promoParam = searchParams.get("promo") || searchParams.get("coupon") || searchParams.get("code");
+      if (promoParam && promoParam.trim()) {
+        initialCoupon = promoParam.trim().toUpperCase();
+      } else {
+        try {
+          const lsCode = localStorage.getItem("mondar_coupon") || localStorage.getItem("mondar_promo_code");
+          if (lsCode && lsCode.trim()) {
+            initialCoupon = lsCode.trim().toUpperCase();
+          } else if (baseDraft?.promoCode && typeof baseDraft.promoCode === "string" && baseDraft.promoCode.trim()) {
+            initialCoupon = baseDraft.promoCode.trim().toUpperCase();
+          } else {
+            const cookieMatch = document.cookie.match(/(?:^|;\s*)mondar_coupon=([^;]+)/);
+            if (cookieMatch && cookieMatch[1]) {
+              initialCoupon = decodeURIComponent(cookieMatch[1]).trim().toUpperCase();
+            }
+          }
+        } catch {}
+      }
+
+      if (initialCoupon) {
+        setPromoCode(initialCoupon);
         setPromoLoading(true);
-        validatePromoCode(promo, vertical !== "general" ? vertical : undefined).then((res) => {
-          setPromoData(res);
+        validatePromoCode(initialCoupon, vertical !== "general" ? vertical : undefined).then((res) => {
+          if (res.valid) {
+            setPromoData(res);
+            persistCoupon(initialCoupon!);
+          } else {
+            setPromoData({ valid: false, error: res.error || "Promo code is no longer valid" });
+            clearSavedCoupon();
+          }
           setPromoLoading(false);
         }).catch(() => {
           setPromoData({ valid: false, error: "Failed to validate promo code" });
@@ -870,6 +930,7 @@ export default function BookingPage() {
   const handleIntakeChange = (field: string, val: any) => {
     setIntake((prev: any) => {
       const next = { ...prev, [field]: val };
+      if (promoCode) next.promoCode = promoCode;
       try {
         localStorage.setItem("mondar_booking_intake_draft", JSON.stringify(next));
       } catch (e) {}

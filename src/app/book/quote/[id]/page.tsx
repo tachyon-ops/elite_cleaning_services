@@ -7,7 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { localizeHref } from "@/lib/i18n";
 import { Logo } from "@/components/Logo";
 import { getBookingQuoteDetails, acceptQuoteAndPayDeposit, rejectQuote } from "@/app/actions/booking";
-import { Shield, Check, Lock, CreditCard, Calendar, Clock, MapPin, Mail, AlertTriangle, ArrowRight, Plane, Ship } from "lucide-react";
+import { Shield, Check, Lock, CreditCard, Calendar, Clock, MapPin, Mail, AlertTriangle, ArrowRight, Plane, Ship, Sparkles } from "lucide-react";
 
 export default function QuoteAcceptancePage() {
   const { locale } = useLanguage();
@@ -129,7 +129,7 @@ export default function QuoteAcceptancePage() {
           </div>
           <h2 className="text-xl font-semibold">Quote Declined</h2>
           <p className="text-sm text-[#a6a6a6] leading-relaxed">
-            Your CHF 50.00 pre-booking hold has been released. No charges will be applied to your card.
+            Your quote proposal has been declined. No charges have been made to your card.
           </p>
           <Link
             href={localizeHref("/", locale)}
@@ -352,26 +352,42 @@ export default function QuoteAcceptancePage() {
                 <div className="space-y-4">
                   {/* Prices */}
                   <div className="bg-[#0d0d0d] p-4 rounded-md border border-[#262626] divide-y divide-[#262626] text-body-sm font-semibold">
-                    <div className="flex justify-between pb-3">
-                      <span className="text-[#a6a6a6]">Bespoke Rate</span>
-                      <span className="text-[#f2f2f2]">CHF {booking.totalAmountChf}</span>
-                    </div>
+                    {booking.promoDiscountChf > 0 ? (
+                      <>
+                        <div className="flex justify-between pb-2">
+                          <span className="text-[#a6a6a6]">Quoted Service Price</span>
+                          <span className="text-[#f2f2f2]">CHF {(booking.totalAmountChf + booking.promoDiscountChf).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between py-2 text-green-400">
+                          <span className="flex items-center gap-1.5 font-mono">
+                            <Sparkles className="w-3.5 h-3.5 text-green-400" />
+                            Coupon Applied ({booking.promoCampaign?.code || "DISCOUNT"}):
+                          </span>
+                          <span className="font-mono">-CHF {booking.promoDiscountChf.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-t border-[#262626]">
+                          <span className="text-[#a6a6a6]">Net Total Amount</span>
+                          <span className="text-[#f2f2f2]">CHF {booking.totalAmountChf.toFixed(2)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex justify-between pb-3">
+                        <span className="text-[#a6a6a6]">Total Quoted Amount</span>
+                        <span className="text-[#f2f2f2]">CHF {booking.totalAmountChf.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between pt-3">
-                      <span className="text-accent uppercase tracking-wider font-mono">1/3 Deposit on acceptance:</span>
-                      <span className="text-[#f2f2f2]">CHF {booking.depositAmountChf.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between pt-3">
-                      <span className="text-accent uppercase tracking-wider font-mono">Pre-booking hold applied:</span>
-                      <span className="text-green-400">-CHF {booking.prebookingDepositChf?.toFixed(2) || '50.00'}</span>
+                      <span className="text-accent uppercase tracking-wider font-mono">1/3 Deposit Due Now:</span>
+                      <span className="text-accent text-body-md font-bold">CHF {booking.depositAmountChf.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between pt-3 border-t border-[#262626] mt-3">
-                      <span className="text-accent uppercase tracking-wider font-mono">Amount due now:</span>
-                      <span className="text-accent text-body-md font-bold">CHF {Math.max(0, booking.depositAmountChf - (booking.prebookingDepositChf || 50)).toFixed(2)}</span>
+                      <span className="text-[#737373] uppercase tracking-wider font-mono text-body-xs">2/3 Balance Due on Service Day:</span>
+                      <span className="text-[#a6a6a6] text-body-xs font-mono">CHF {(booking.totalAmountChf - booking.depositAmountChf).toFixed(2)}</span>
                     </div>
                   </div>
 
                   <div className="text-caption text-[#a6a6a6] leading-relaxed">
-                    Note: A 1/3 deposit is required upon acceptance (your CHF 50 pre-booking hold is applied towards this). The second 1/3 is charged on the day of cleaning, and the final 1/3 is charged after supplier service completion.
+                    Note: A 1/3 deposit is required upon acceptance to reserve your specialist team. The remaining 2/3 balance is charged on the cleaning day after service completion is confirmed.
                   </div>
 
                   <div className="flex items-center gap-2 border-t border-[#262626] pt-4 font-mono text-caption text-[#a6a6a6]">
@@ -502,7 +518,7 @@ export default function QuoteAcceptancePage() {
           <div className="bg-[#141414] border border-[#262626] rounded-lg max-w-md w-full p-6 space-y-4">
             <h3 className="text-lg font-semibold text-[#f2f2f2]">Decline Quote</h3>
             <p className="text-sm text-[#a6a6a6]">
-              Your CHF 50 pre-booking hold will be released immediately — no charge.
+              You are declining this quote proposal. No charges will be made to your card.
             </p>
             <textarea
               value={declineReason}

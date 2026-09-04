@@ -174,10 +174,16 @@ model Booking {
   promoCampaign         PromoCampaign?   @relation("PromoBookings", fields: [promoCampaignId], references: [id], onDelete: SetNull)
   promoDiscountChf      Decimal?
 
-  // Pre-booking hold (CHF 50 refundable Stripe pre-authorization)
-  prebookingDepositChf              Decimal   @default(50.00)
+  // Pre-booking hold (optional/historical, default 0 for free intake)
+  prebookingDepositChf              Decimal   @default(0.00)
   prebookingHoldStatus              String    @default("none") // none, held, captured, released, failed
   prebookingStripePaymentIntentId   String?
+
+  // Supplier Proof of Presence & Completion ("Veio / Não Veio" certainty)
+  checkInAt             DateTime?
+  completedAt           DateTime?
+  completionPhotos      String?          // JSON array of photo URLs
+  completionNotes       String?
 
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt

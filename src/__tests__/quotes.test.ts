@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { createQuote } from "@/app/actions/admin";
-import { acceptQuoteAndPayDeposit, getBookingQuoteDetails, rejectQuote } from "@/app/actions/booking";
-import { chargeDayOfService, confirmServiceCompletion } from "@/app/actions/payments";
+import { acceptQuoteAndPayDeposit, getBookingQuoteDetails, rejectQuote, createBooking } from "@/app/actions/booking";
+import { chargeDayOfService, confirmServiceCompletion, providerCheckInBooking, providerCompleteBookingWithProof } from "@/app/actions/payments";
 
 describe("Quote-on-Request TDD", () => {
   const testEmail = "yacht-owner@test.ch";
@@ -147,7 +147,7 @@ describe("Quote-on-Request TDD", () => {
 
     expect(booking?.status).toBe("offer_dispatched");
     expect(booking?.quote?.acceptedAt).toBeDefined();
-    expect(booking?.prebookingHoldStatus).toBe("captured");
+    expect(booking?.prebookingHoldStatus).toBe("none");
 
     // Assert payments are created for deposit (50 prebooking capture + 350 remainder = 400)
     const payments = await db.payment.findMany({
@@ -253,5 +253,156 @@ describe("Quote-on-Request TDD", () => {
     await db.auditLog.deleteMany({ where: { targetId: declineBooking.id } });
     await db.quote.deleteMany({ where: { bookingId: declineBooking.id } });
     await db.booking.delete({ where: { id: declineBooking.id } });
+  });
+
+  it("should support provider check-in and completion with photographic proof", async () => {
+    // 1. Create a booking in offer_dispatched status with 1/3 deposit paid
+    const proofBooking = await db.booking.create({
+      data: {
+        guestEmail: testEmail,
+        vertical: "yachting",
+        categorySlug: "yacht",
+        intake: JSON.stringify({}),
+        scheduledAt: new Date(),
+        scheduledWindow: "morning",
+        locationAddress: "Marina Zürich, Pier 3",
+        status: "offer_dispatched",
+        totalAmountChf: 900,
+        depositAmountChf: 300,
+        prebookingDepositChf: 0,
+        prebookingHoldStatus: "none"
+      }
+    });
+
+    // Record the initial 1/3 deposit payment
+    await db.payment.create({
+      data: {
+        bookingId: proofBooking.id,
+        stripeChargeId: `ch_mock_deposit_${Math.random().toString(36).substring(2, 9)}`,
+        amountChf: 300,
+        status: "succeeded",
+        refundedAmountChf: 0
+      }
+    });
+
+    // 2. Provider arrives and clicks Check In
+    const checkInRes = await providerCheckInBooking(proofBooking.id);
+    expect(checkInRes.success).toBe(true);
+
+    const checkedInBooking = await db.booking.findUnique({
+      where: { id: proofBooking.id }
+    });
+    expect(checkedInBooking?.status).toBe("in_progress");
+    expect(checkedInBooking?.checkInAt).toBeDefined();
+
+    // 3. Provider finishes service and submits photographic proof
+    const samplePhotos = [
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac"
+    ];
+    const notes = "Yacht deck and interior deep detailing completed. Inspection signed off.";
+
+    const completeRes = await providerCompleteBookingWithProof({
+      bookingId: proofBooking.id,
+      photos: samplePhotos,
+      notes
+    });
+
+    expect(completeRes.success).toBe(true);
+    expect(completeRes.remainingCharged).toBe(600); // Remaining 2/3 of 900 = 600
+
+    const completedBooking = await db.booking.findUnique({
+      where: { id: proofBooking.id }
+    });
+    expect(completedBooking?.status).toBe("completed");
+    expect(completedBooking?.completedAt).toBeDefined();
+    expect(completedBooking?.completionNotes).toBe(notes);
+    expect(JSON.parse(completedBooking!.completionPhotos!)).toEqual(samplePhotos);
+
+    // Verify all payments total 900
+    const payments = await db.payment.findMany({
+      where: { bookingId: proofBooking.id }
+    });
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amountChf), 0);
+    expect(totalPaid).toBe(900);
+
+    // Clean up
+    await db.auditLog.deleteMany({ where: { targetId: proofBooking.id } });
+    await db.payment.deleteMany({ where: { bookingId: proofBooking.id } });
+    await db.booking.delete({ where: { id: proofBooking.id } });
+  });
+
+  it("should preserve coupon on reservation and apply discount when admin generates quote", async () => {
+    // 1. Create a 25% discount test coupon campaign
+    const promoCode = "YACHT25";
+    await db.promoCampaign.deleteMany({ where: { code: promoCode } });
+    const campaign = await db.promoCampaign.create({
+      data: {
+        code: promoCode,
+        name: "Yacht 25% Promotion",
+        discountType: "percentage",
+        discountValue: 25,
+        active: true,
+        validFrom: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        totalRedemptions: 0
+      }
+    });
+
+    // 2. Customer books quote-on-request service with coupon code
+    const bookRes = await createBooking({
+      email: testEmail,
+      vertical: "yacht",
+      categorySlug: "yacht",
+      intake: { vesselLength: 50 },
+      scheduledAtStr: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledWindow: "morning",
+      locationAddress: "Port of Lausanne",
+      promoCode
+    });
+
+    expect(bookRes.success).toBe(true);
+    expect(bookRes.bookingId).toBeDefined();
+    const couponBookingId = bookRes.bookingId!;
+
+    // Assert booking starts at quote_pending AND remembers promoCampaignId
+    const couponBooking = await db.booking.findUnique({
+      where: { id: couponBookingId }
+    });
+    expect(couponBooking?.status).toBe("quote_pending");
+    expect(couponBooking?.promoCampaignId).toBe(campaign.id);
+
+    // 3. Admin reviews requirements and prepares quote of CHF 2000
+    const quoteRes = await createQuote({
+      bookingId: couponBookingId,
+      amountChf: 2000,
+      validUntilDays: 7,
+      notes: "Full luxury yacht detailing"
+    });
+    expect(quoteRes.success).toBe(true);
+
+    // Assert the quote applied the 25% coupon discount (2000 * 0.25 = 500 discount -> 1500 net total)
+    const quotedBooking = await db.booking.findUnique({
+      where: { id: couponBookingId },
+      include: { quote: true, promoCampaign: true }
+    });
+    expect(quotedBooking?.status).toBe("quote_sent");
+    expect(Number(quotedBooking?.promoDiscountChf)).toBe(500); // 25% of 2000
+    expect(Number(quotedBooking?.totalAmountChf)).toBe(1500); // 2000 - 500
+    expect(Number(quotedBooking?.depositAmountChf)).toBe(500); // 1/3 of 1500
+
+    // 4. Quote details API returns promoCampaign and discount
+    const detailsRes = await getBookingQuoteDetails(couponBookingId);
+    expect(detailsRes.success).toBe(true);
+    expect(detailsRes.booking?.promoDiscountChf).toBe(500);
+    expect(detailsRes.booking?.promoCampaign?.code).toBe(promoCode);
+    expect(detailsRes.booking?.totalAmountChf).toBe(1500);
+    expect(detailsRes.booking?.depositAmountChf).toBe(500);
+
+    // Clean up
+    await db.auditLog.deleteMany({ where: { targetId: couponBookingId } });
+    await db.quote.deleteMany({ where: { bookingId: couponBookingId } });
+    await db.booking.delete({ where: { id: couponBookingId } });
+    await db.promoCampaign.delete({ where: { id: campaign.id } });
   });
 });

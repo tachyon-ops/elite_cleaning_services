@@ -52,8 +52,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ code
       if (targetVertical === "office") targetVertical = "commercial";
       if (targetVertical === "gastronomy" || targetVertical === "dining") targetVertical = "restaurant";
 
-      // Redirect with promo code to target vertical booking flow
-      return NextResponse.redirect(new URL(`/book/${targetVertical}?promo=${upperCode}`, request.url));
+      // Redirect with promo code to target vertical booking flow and store coupon cookie
+      const redirectRes = NextResponse.redirect(new URL(`/book/${targetVertical}?promo=${upperCode}`, request.url));
+      redirectRes.cookies.set("mondar_coupon", upperCode, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        sameSite: "lax",
+      });
+      return redirectRes;
     }
   } catch (error) {
     console.error("Error in QR scan redirect route:", error);
