@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, ShieldCheck, X, ShieldAlert, ArrowRight } from "lucide-react";
+import { KeyRound, ShieldCheck, X, ShieldAlert, ArrowRight, Mail } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   getLoggedInAdmin,
@@ -10,6 +10,7 @@ import {
   sendRegistrationEmailOtp,
   enableAdmin2FA,
   disableAdmin2FA,
+  switchAdminToEmailMFA,
   getSystemSetting,
   updateSystemSetting,
   updateAdminProfile,
@@ -132,39 +133,29 @@ export default function AdminSettingsPage() {
     loadAdmin();
   }, []);
 
-  const handleStart2FA = async () => {
+  const handleStartTotpSetup = async () => {
     if (!admin?.email) return;
     setTotpError("");
     setTotpToken("");
     setLoading2FA(true);
+    setTwoFactorMethod("totp");
     
-    if (twoFactorMethod === "totp") {
-      const res = await getRegistration2FASecret(admin.email);
-      setLoading2FA(false);
-      if (res.success && res.secret && res.qrDataUrl) {
-        setTwoFactorSecret(res.secret);
-        setQrCodeUrl(res.qrDataUrl);
-        setSetup2FAOpen(true);
-      } else {
-        setTotpError(res.error || "Failed to initiate TOTP setup");
-      }
+    const res = await getRegistration2FASecret(admin.email);
+    setLoading2FA(false);
+    if (res.success && res.secret && res.qrDataUrl) {
+      setTwoFactorSecret(res.secret);
+      setQrCodeUrl(res.qrDataUrl);
+      setSetup2FAOpen(true);
     } else {
-      const res = await sendRegistrationEmailOtp(admin.email);
-      setLoading2FA(false);
-      if (res.success && res.otp) {
-        setTwoFactorSecret(res.otp);
-        setSetup2FAOpen(true);
-      } else {
-        setTotpError(res.error || "Failed to send email OTP code. Please check your SMTP settings.");
-      }
+      setTotpError(res.error || "Failed to initiate Authenticator setup");
     }
   };
 
-  const handleVerifyAndEnable2FA = async () => {
+  const handleVerifyAndEnableTotp = async () => {
     if (!admin?.email || totpToken.length !== 6) return;
     setTotpError("");
     setLoading2FA(true);
-    const res = await enableAdmin2FA(admin.email, twoFactorMethod, twoFactorSecret, totpToken);
+    const res = await enableAdmin2FA(admin.email, "totp", twoFactorSecret, totpToken);
     setLoading2FA(false);
 
     if (res.success) {
@@ -178,17 +169,18 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleDisable2FA = async () => {
-    if (!admin?.email || !confirm("Are you sure you want to disable Two-Factor Authentication? Your administrative account security will be significantly reduced.")) return;
+  const handleSwitchToEmail = async () => {
+    if (!admin?.email || !confirm("Switch back to Email OTP? Next time you log in, a 6-digit verification code will be sent to your email address.")) return;
     setTotpError("");
     setLoading2FA(true);
-    const res = await disableAdmin2FA(admin.email);
+    const res = await switchAdminToEmailMFA(admin.email);
     setLoading2FA(false);
 
     if (res.success) {
+      setSetup2FAOpen(false);
       loadAdmin();
     } else {
-      alert("Failed to disable 2FA: " + res.error);
+      alert("Failed to switch to Email OTP: " + res.error);
     }
   };
 
@@ -580,143 +572,139 @@ export default function AdminSettingsPage() {
         <div className="md:col-span-2 space-y-8">
           {/* 2FA Settings Card */}
           <div className="border border-[#262626] bg-[#141414] p-6 rounded-lg space-y-6">
-          <div className="flex items-center gap-3">
-            <KeyRound className="w-5 h-5 text-accent" />
-            <h3 className="text-body-md font-semibold text-[#f2f2f2]">{t("admin.settings.mfaTitle")}</h3>
-          </div>
-
-          {totpError && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded text-body-xs">
-              {totpError}
-            </div>
-          )}
-
-          {admin.twoFactorEnabled ? (
-            <div className="space-y-4 bg-[#0d0d0d] p-5 rounded-lg border border-green-500/20">
-              <div className="flex items-center gap-2 text-green-400 text-body-xs font-semibold uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4" /> Two-Factor Authentication Active
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <KeyRound className="w-5 h-5 text-accent" />
+                <h3 className="text-body-md font-semibold text-[#f2f2f2]">{t("admin.settings.mfaTitle")}</h3>
               </div>
-              <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
-                Your administrative backoffice account is guarded with **{admin.twoFactorMethod === "email" ? t("admin.settings.emailOtp") : t("admin.settings.totpApp")}**. A verification code will be requested on each log in session.
-              </p>
-              <button
-                onClick={handleDisable2FA}
-                disabled={loading2FA}
-                className="bg-red-600/10 hover:bg-red-650/15 border border-red-500/30 text-red-400 text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer"
-              >
-                {loading2FA ? "PROCESSING..." : t("admin.settings.disableMfa")}
-              </button>
+              <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold tracking-wider">
+                MANDATORY
+              </span>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {!setup2FAOpen ? (
-                <div className="space-y-4 bg-[#0d0d0d] p-5 rounded-lg border border-[#262626]">
-                  <div className="text-caption text-yellow-500 font-semibold uppercase tracking-wider">2FA Gated Security Disabled</div>
-                  <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
-                    Secure your administrator controls from credential leakage by enabling Multi-Factor Authentication.
-                  </p>
 
-                  <div className="flex flex-col gap-3 pt-2">
-                    <label className="text-[10px] text-[#a6a6a6] font-semibold uppercase">{t("admin.settings.mfaMethod")}</label>
-                    <div className="flex gap-6 pb-2">
-                      <label className="flex items-center gap-2 text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
-                        <input
-                          type="radio"
-                          name="settingsMfaMethod"
-                          value="totp"
-                          checked={twoFactorMethod === "totp"}
-                          onChange={() => setTwoFactorMethod("totp")}
-                          className="accent-accent"
-                        />
-                        {t("admin.settings.totpApp")}
-                      </label>
-                      <label className="flex items-center gap-2 text-body-xs font-semibold text-[#f2f2f2] cursor-pointer select-none">
-                        <input
-                          type="radio"
-                          name="settingsMfaMethod"
-                          value="email"
-                          checked={twoFactorMethod === "email"}
-                          onChange={() => setTwoFactorMethod("email")}
-                          className="accent-accent"
-                        />
-                        {t("admin.settings.emailOtp")}
-                      </label>
-                    </div>
-                  </div>
+            <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+              Two-Factor Authentication is strictly required for all administrative backoffice accounts to prevent unauthorized access.
+            </p>
 
+            {totpError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded text-body-xs">
+                {totpError}
+              </div>
+            )}
+
+            {admin?.twoFactorMethod === "totp" ? (
+              <div className="space-y-4 bg-[#0d0d0d] p-5 rounded-lg border border-green-500/20">
+                <div className="flex items-center gap-2 text-green-400 text-body-xs font-semibold uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4" /> Two-Factor Authentication Active (Authenticator App)
+                </div>
+                <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+                  Your administrative backoffice account is guarded with your mobile **Authenticator App (TOTP)** (Google Authenticator, 1Password, Authy). A 6-digit rolling code is requested on each login session.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-1">
                   <button
-                    onClick={handleStart2FA}
+                    onClick={handleSwitchToEmail}
                     disabled={loading2FA}
-                    className="bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    className="bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 text-amber-400 text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer"
                   >
-                    <span>{loading2FA ? "GENERATING SECURE KEY..." : t("admin.settings.enableMfa")}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {loading2FA ? "PROCESSING..." : "SWITCH BACK TO EMAIL OTP"}
+                  </button>
+                  <button
+                    onClick={handleStartTotpSetup}
+                    disabled={loading2FA}
+                    className="border border-[#333] hover:border-accent text-[#ccc] hover:text-[#fff] text-caption font-semibold px-4 py-2.5 rounded transition-colors cursor-pointer"
+                  >
+                    RE-SCAN QR CODE / RECONFIGURE
                   </button>
                 </div>
-              ) : (
-                <div className="space-y-5 bg-[#0d0d0d] p-5 rounded-lg border border-[#262626] animate-fade-in">
-                  <div className="flex justify-between items-center pb-2 border-b border-[#1f1f1f]">
-                    <span className="text-caption text-accent font-semibold uppercase font-mono tracking-wider">
-                      {twoFactorMethod === "totp" ? "Authenticator App Setup" : "Email Verification Setup"}
-                    </span>
-                    <button onClick={() => setSetup2FAOpen(false)} className="text-[#a6a6a6] hover:text-[#f2f2f2] cursor-pointer">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+              </div>
+            ) : (
+              <div className="space-y-4 bg-[#0d0d0d] p-5 rounded-lg border border-accent/20">
+                <div className="flex items-center gap-2 text-accent text-body-xs font-semibold uppercase tracking-wider">
+                  <Mail className="w-4 h-4" /> Two-Factor Authentication Active (Email OTP)
+                </div>
+                <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+                  Your administrative backoffice account is guarded with **Email One-Time Password (OTP)**. A 6-digit verification code is requested on each login session and sent to <code className="text-accent">{admin?.email}</code>.
+                </p>
+                {!setup2FAOpen && (
+                  <button
+                    onClick={handleStartTotpSetup}
+                    disabled={loading2FA}
+                    className="bg-accent hover:bg-accent-hover text-ink-inverse text-caption font-bold px-4 py-2.5 rounded transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>{loading2FA ? "GENERATING SECURE KEY..." : "OPT IN TO AUTHENTICATOR APP (QR CODE)"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
 
-                  {twoFactorMethod === "totp" ? (
-                    <div className="space-y-4">
-                      <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
-                        Scan the QR code below using your mobile authenticator app (Google Authenticator, Authy, or 1Password), or input the secret key manually.
-                      </p>
-                      
-                      <div className="flex flex-col sm:flex-row items-center gap-6 bg-[#141414] p-4 rounded border border-[#262626]">
-                        {qrCodeUrl && (
-                          <img src={qrCodeUrl} alt="2FA QR Code" className="w-32 h-32 border border-[#262626] p-1.5 bg-white rounded" />
-                        )}
-                        <div className="space-y-2 text-center sm:text-left flex-1">
-                          <span className="text-caption text-[#a6a6a6] uppercase font-bold block">Secret Key</span>
-                          <code className="text-body-xs text-accent font-mono block select-all p-1.5 bg-[#080808] border border-[#1f1f1f] rounded break-all">
-                            {twoFactorSecret}
-                          </code>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
-                        We sent a 6-digit verification code to <code className="text-accent">{admin.email}</code>. Please input the passcode to activate Email OTP.
-                      </p>
-                    </div>
-                  )}
+            {setup2FAOpen && (
+              <div className="space-y-5 bg-[#0d0d0d] p-5 rounded-lg border border-accent/40 animate-fade-in">
+                <div className="flex justify-between items-center pb-2 border-b border-[#1f1f1f]">
+                  <span className="text-caption text-accent font-semibold uppercase font-mono tracking-wider">
+                    Authenticator App Setup (TOTP)
+                  </span>
+                  <button onClick={() => setSetup2FAOpen(false)} className="text-[#a6a6a6] hover:text-[#f2f2f2] cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-                  <div className="flex flex-col gap-2 pt-2">
-                    <label className="text-caption text-[#a6a6a6] font-semibold uppercase">
-                      {twoFactorMethod === "totp" ? "Verify Authenticator Code" : "Verify Email OTP Code"}
-                    </label>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={totpToken}
-                        onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
-                        placeholder="e.g. 123456"
-                        className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded-md text-body-sm focus:border-accent outline-none w-32 tracking-[0.2em] font-mono text-center"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleVerifyAndEnable2FA}
-                        disabled={totpToken.length !== 6 || loading2FA}
-                        className="bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold px-5 py-2.5 rounded transition-colors cursor-pointer"
-                      >
-                        {loading2FA ? "VERIFYING..." : "CONFIRM & ACTIVATE"}
-                      </button>
+                <div className="space-y-4">
+                  <p className="text-body-xs text-[#a6a6a6] leading-relaxed">
+                    Scan the QR code below using your mobile authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, or Authy), or input the secret key manually:
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-center gap-6 bg-[#141414] p-4 rounded border border-[#262626]">
+                    {qrCodeUrl && (
+                      <img src={qrCodeUrl} alt="2FA QR Code" className="w-36 h-36 border border-[#262626] p-2 bg-white rounded" />
+                    )}
+                    <div className="space-y-2 text-center sm:text-left flex-1">
+                      <span className="text-caption text-[#a6a6a6] uppercase font-bold block">Secret Key</span>
+                      <code className="text-body-xs text-accent font-mono block select-all p-2 bg-[#080808] border border-[#1f1f1f] rounded break-all">
+                        {twoFactorSecret}
+                      </code>
+                      <span className="text-[11px] text-[#777] block">
+                        Compatible with standard RFC 6238 TOTP authenticator apps.
+                      </span>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
+
+                <div className="flex flex-col gap-2 pt-2 border-t border-[#1f1f1f]">
+                  <label className="text-caption text-[#a6a6a6] font-semibold uppercase">
+                    Verify Code to Complete Opt-In
+                  </label>
+                  <p className="text-[11px] text-[#888]">
+                    Enter the current 6-digit temporary number shown in your authenticator app to complete activation:
+                  </p>
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={totpToken}
+                      onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
+                      placeholder="e.g. 123456"
+                      className="border border-[#262626] bg-[#0d0d0d] text-[#f2f2f2] p-2.5 rounded-md text-body-sm focus:border-accent outline-none w-36 tracking-[0.2em] font-mono text-center"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyAndEnableTotp}
+                      disabled={totpToken.length !== 6 || loading2FA}
+                      className="bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse text-caption font-bold px-5 py-2.5 rounded transition-colors cursor-pointer"
+                    >
+                      {loading2FA ? "VERIFYING..." : "CONFIRM & ACTIVATE"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSetup2FAOpen(false)}
+                      className="border border-[#333] hover:bg-[#1a1a1a] text-[#888] hover:text-[#fff] text-caption font-medium px-4 py-2.5 rounded transition-colors cursor-pointer"
+                    >
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Profile Details Form */}

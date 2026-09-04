@@ -126,7 +126,18 @@ export async function loginAdmin(email: string, password?: string) {
       throw new Error("Invalid administrative credentials");
     }
 
-    // Generate and save Email OTP
+    // Two-Factor Authentication is ALWAYS MANDATORY for administrative accounts.
+    // If the administrator opted into Authenticator App (TOTP):
+    if (adminUser.twoFactorMethod === "totp" && adminUser.twoFactorSecret) {
+      return { 
+        success: true, 
+        requires2FA: true, 
+        userId: adminUser.id, 
+        method: "totp" 
+      };
+    }
+
+    // Baseline default: Generate and save Email OTP
     const otp = generateEmailOtp();
     await db.user.update({
       where: { id: adminUser.id },
@@ -227,6 +238,61 @@ export async function resendAdminOtp(userId: string) {
   }
 }
 
+// 1.26 Request fallback Email OTP if authenticator app is temporarily unavailable
+export async function requestEmailOtpFallback(userId: string) {
+  try {
+    const adminUser = await db.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!adminUser || !["super_admin", "editor"].includes(adminUser.role)) {
+      throw new Error("Invalid user or administrative configuration");
+    }
+
+    const otp = generateEmailOtp();
+    await db.user.update({
+      where: { id: adminUser.id },
+      data: {
+        emailOtpCode: otp,
+        emailOtpExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
+      }
+    });
+
+    console.log(`\n==================================================`);
+    console.log(`[FALLBACK EMAIL OTP] Sent to: ${adminUser.email}`);
+    console.log(`[FALLBACK EMAIL OTP] Code: ${otp}`);
+    console.log(`==================================================\n`);
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const emailResult = await sendEmail({
+      to: adminUser.email,
+      subject: "Mondar - Security OTP (Fallback)",
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">MONDAR GATEWAY</h2>
+          <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the fallback verification code below to authorize your backoffice session:</p>
+          <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
+            <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
+          </div>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 15 minutes.</p>
+        </div>
+      `
+    });
+
+    if (!emailResult.success && isProduction) {
+      throw new Error(emailResult.error || "Failed to dispatch fallback OTP code via SMTP.");
+    }
+
+    return {
+      success: true,
+      emailMasked: adminUser.email.replace(/(.{2})(.*)(@.*)/, "$1***$3"),
+      devOtp: isProduction ? undefined : otp
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 // 1.3 Admin login action (step 2: verify 2FA token)
 export async function loginAdmin2FA(userId: string, token: string) {
   try {
@@ -238,14 +304,32 @@ export async function loginAdmin2FA(userId: string, token: string) {
       throw new Error("Invalid user or security configuration");
     }
 
-    if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
-      throw new Error("OTP code has expired. Please request a new code.");
-    }
-
     const cleanToken = String(token || "").replace(/\D/g, "").trim();
-    const isValid = adminUser.emailOtpCode.trim() === cleanToken;
-    if (!isValid) {
-      throw new Error("Invalid verification code. Please check your numbers.");
+
+    let isValid = false;
+    if (adminUser.twoFactorMethod === "totp") {
+      if (!adminUser.twoFactorSecret) {
+        throw new Error("Authenticator app is not configured properly. Please request an email code or contact support.");
+      }
+      // 1. Validate rolling code from Authenticator App
+      isValid = verifyTOTPToken(cleanToken, adminUser.twoFactorSecret);
+      // 2. Allow fallback Email OTP if one was requested
+      if (!isValid && adminUser.emailOtpCode && adminUser.emailOtpExpiresAt && adminUser.emailOtpExpiresAt >= new Date()) {
+        isValid = adminUser.emailOtpCode.trim() === cleanToken;
+      }
+      if (!isValid) {
+        throw new Error("Invalid verification code. Please check your authenticator app.");
+      }
+    } else {
+      // Baseline Email OTP
+      if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
+        throw new Error("OTP code has expired. Please request a new code.");
+      }
+
+      isValid = adminUser.emailOtpCode.trim() === cleanToken;
+      if (!isValid) {
+        throw new Error("Invalid verification code. Please check your numbers.");
+      }
     }
 
     // Clear OTP code once used, and increment loginCount
@@ -1134,8 +1218,8 @@ export async function enableAdmin2FA(email: string, method: string, secret: stri
   }
 }
 
-// 14. Disable 2FA for administrative user from Settings
-export async function disableAdmin2FA(email: string) {
+// 14. Switch back to Email OTP (Mandatory baseline MFA)
+export async function switchAdminToEmailMFA(email: string) {
   try {
     if (!(await isAdminAuthenticated())) {
       throw new Error("Unauthorized");
@@ -1145,8 +1229,8 @@ export async function disableAdmin2FA(email: string) {
       where: { email },
       data: {
         twoFactorSecret: null,
-        twoFactorEnabled: false,
-        twoFactorMethod: "totp"
+        twoFactorEnabled: true,
+        twoFactorMethod: "email"
       }
     });
 
@@ -1154,6 +1238,11 @@ export async function disableAdmin2FA(email: string) {
   } catch (error: any) {
     return { success: false, error: error.message };
   }
+}
+
+export async function disableAdmin2FA(email: string) {
+  // Aliased to switchAdminToEmailMFA to guarantee MFA remains strictly mandatory
+  return switchAdminToEmailMFA(email);
 }
 
 // 15. Create quote for bespoke dispatches
