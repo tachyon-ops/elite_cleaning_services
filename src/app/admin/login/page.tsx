@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
-import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated, requestPasswordResetAdmin, resetPasswordAdmin, devQuickLoginAdmin } from "@/app/actions/admin";
+import { Shield, Mail, KeyRound, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, Smartphone } from "lucide-react";
+import { loginAdmin, loginAdmin2FA, checkAdminExists, isAdminAuthenticated, requestPasswordResetAdmin, resetPasswordAdmin, devQuickLoginAdmin, requestEmailOtpFallback } from "@/app/actions/admin";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -16,10 +16,12 @@ export default function AdminLoginPage() {
 
   // 2FA Verification Flow State
   const [requires2FA, setRequires2FA] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"email" | "totp">("email");
   const [maskedEmail, setMaskedEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [totpToken, setTotpToken] = useState("");
   const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [requestingFallback, setRequestingFallback] = useState(false);
 
   // Password Reset Flow State
   const [resetStep, setResetStep] = useState<"login" | "forgot" | "otp" | "success">("login");
@@ -70,6 +72,7 @@ export default function AdminLoginPage() {
           if (res.requires2FA && res.userId) {
             setRequires2FA(true);
             setUserId(res.userId);
+            setTwoFactorMethod(res.method === "totp" ? "totp" : "email");
             setMaskedEmail(res.emailMasked || "");
             if (res.devOtp) {
               setDevOtp(res.devOtp);
@@ -166,6 +169,28 @@ export default function AdminLoginPage() {
       setError(err?.message || "Failed to resend code.");
     } finally {
       setResendingOtp(false);
+    }
+  };
+
+  const handleRequestEmailFallback = async () => {
+    if (!userId) return;
+    setError("");
+    setSuccessMessage("");
+    setRequestingFallback(true);
+    try {
+      const res = await requestEmailOtpFallback(userId);
+      if (res?.success) {
+        setTwoFactorMethod("email");
+        setMaskedEmail(res.emailMasked || "");
+        if (res.devOtp) setDevOtp(res.devOtp);
+        setSuccessMessage("A fallback verification code has been dispatched to your email address.");
+      } else {
+        setError(res?.error || "Failed to dispatch email fallback code.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to request email fallback code.");
+    } finally {
+      setRequestingFallback(false);
     }
   };
 
@@ -344,13 +369,28 @@ export default function AdminLoginPage() {
             <form onSubmit={handleVerify2FA} className="space-y-6">
               <div className="flex flex-col gap-2">
                 <label className="text-caption text-[#a6a6a6] font-semibold uppercase flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5" /> 6-Digit Email OTP Code
+                  {twoFactorMethod === "totp" ? (
+                    <>
+                      <Smartphone className="w-3.5 h-3.5 text-accent" /> 6-Digit Authenticator Code
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5" /> 6-Digit Email OTP Code
+                    </>
+                  )}
                 </label>
-                <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
-                  A verification OTP code has been sent to your email <code className="text-accent">{maskedEmail}</code>.
-                </p>
 
-                {devOtp && (
+                {twoFactorMethod === "totp" ? (
+                  <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
+                    Enter the temporary 6-digit code from your mobile Authenticator app (e.g. Google Authenticator, 1Password, Authy).
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-[#a6a6a6] leading-relaxed">
+                    A verification OTP code has been sent to your email <code className="text-accent">{maskedEmail}</code>.
+                  </p>
+                )}
+
+                {twoFactorMethod === "email" && devOtp && (
                   <div className="bg-accent/10 border border-accent/30 text-accent p-2.5 rounded-md text-xs font-mono flex items-center justify-between">
                     <span>Dev OTP: <strong className="text-[#f2f2f2]">{devOtp}</strong></span>
                     <button
@@ -364,6 +404,7 @@ export default function AdminLoginPage() {
                 )}
 
                 <input
+                  autoFocus
                   type="text"
                   maxLength={6}
                   value={totpToken}
@@ -387,7 +428,7 @@ export default function AdminLoginPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || resendingOtp || totpToken.length !== 6}
+                  disabled={loading || resendingOtp || requestingFallback || totpToken.length !== 6}
                   className="flex-1 bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {loading ? "Verifying..." : "Verify Code"}
@@ -395,14 +436,25 @@ export default function AdminLoginPage() {
               </div>
 
               <div className="text-center pt-2">
-                <button
-                  type="button"
-                  disabled={loading || resendingOtp}
-                  onClick={handleResendOtp}
-                  className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {resendingOtp ? "Sending fresh code..." : "Didn't receive code? Resend OTP"}
-                </button>
+                {twoFactorMethod === "totp" ? (
+                  <button
+                    type="button"
+                    disabled={loading || requestingFallback}
+                    onClick={handleRequestEmailFallback}
+                    className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {requestingFallback ? "Sending email fallback code..." : "Lost access to Authenticator? Send code via email"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={loading || resendingOtp}
+                    onClick={handleResendOtp}
+                    className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {resendingOtp ? "Sending fresh code..." : "Didn't receive code? Resend OTP"}
+                  </button>
+                )}
               </div>
             </form>
           )

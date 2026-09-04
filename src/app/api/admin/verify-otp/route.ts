@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { verifyTOTPToken } from "@/lib/auth-utils";
 
 export async function POST(request: Request) {
   try {
@@ -18,14 +19,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invalid user or administrative configuration" }, { status: 403 });
     }
 
-    if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
-      return NextResponse.json({ success: false, error: "OTP code has expired. Please request a new code." }, { status: 400 });
-    }
-
     const cleanToken = String(token).replace(/\D/g, "").trim();
-    const isValid = adminUser.emailOtpCode.trim() === cleanToken;
-    if (!isValid) {
-      return NextResponse.json({ success: false, error: "Invalid verification code. Please check the 6-digit code sent to your email." }, { status: 400 });
+
+    let isValid = false;
+    if (adminUser.twoFactorMethod === "totp") {
+      if (!adminUser.twoFactorSecret) {
+        return NextResponse.json({ success: false, error: "Authenticator app is not configured properly. Please use email fallback." }, { status: 400 });
+      }
+      // 1. Verify rolling code from Authenticator app
+      isValid = verifyTOTPToken(cleanToken, adminUser.twoFactorSecret);
+      // 2. Allow fallback Email OTP if one was issued
+      if (!isValid && adminUser.emailOtpCode && adminUser.emailOtpExpiresAt && adminUser.emailOtpExpiresAt >= new Date()) {
+        isValid = adminUser.emailOtpCode.trim() === cleanToken;
+      }
+      if (!isValid) {
+        return NextResponse.json({ success: false, error: "Invalid verification code. Please check your authenticator app." }, { status: 400 });
+      }
+    } else {
+      // Baseline Email OTP
+      if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
+        return NextResponse.json({ success: false, error: "OTP code has expired. Please request a new code." }, { status: 400 });
+      }
+
+      isValid = adminUser.emailOtpCode.trim() === cleanToken;
+      if (!isValid) {
+        return NextResponse.json({ success: false, error: "Invalid verification code. Please check the 6-digit code sent to your email." }, { status: 400 });
+      }
     }
 
     // Clear OTP code once used, and increment loginCount
