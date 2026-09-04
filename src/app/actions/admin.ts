@@ -71,21 +71,21 @@ export async function registerAdmin(payload: {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 // 24 hours
     });
     cookieStore.set("admin_user_id", user.id, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24
     });
     cookieStore.set("admin_user_role", user.role, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24
     });
 
@@ -132,7 +132,7 @@ export async function loginAdmin(email: string, password?: string) {
       where: { id: adminUser.id },
       data: {
         emailOtpCode: otp,
-        emailOtpExpiresAt: new Date(Date.now() + 5 * 60 * 1000)
+        emailOtpExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
       }
     });
     console.log(`\n==================================================`);
@@ -151,7 +151,7 @@ export async function loginAdmin(email: string, password?: string) {
           <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
             <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
           </div>
-          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 5 minutes. If you did not request this code, please secure your account immediately.</p>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 15 minutes. If you did not request this code, please secure your account immediately.</p>
         </div>
       `
     });
@@ -173,9 +173,62 @@ export async function loginAdmin(email: string, password?: string) {
   }
 }
 
+// 1.25 Resend admin OTP action
+export async function resendAdminOtp(userId: string) {
+  try {
+    const adminUser = await db.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!adminUser || !["super_admin", "editor"].includes(adminUser.role)) {
+      throw new Error("Invalid user or administrative configuration");
+    }
+
+    const otp = generateEmailOtp();
+    await db.user.update({
+      where: { id: adminUser.id },
+      data: {
+        emailOtpCode: otp,
+        emailOtpExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
+      }
+    });
+
+    console.log(`\n==================================================`);
+    console.log(`[RESEND EMAIL OTP] Sent to: ${adminUser.email}`);
+    console.log(`[RESEND EMAIL OTP] Code: ${otp}`);
+    console.log(`==================================================\n`);
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const emailResult = await sendEmail({
+      to: adminUser.email,
+      subject: "Mondar - Security OTP",
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; background-color: #080808; color: #f2f2f2; border: 1px solid #262626; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #b59410; letter-spacing: 0.15em; font-weight: 500; text-align: center; margin-bottom: 24px;">MONDAR GATEWAY</h2>
+          <p style="font-size: 14px; color: #a6a6a6; line-height: 1.6; text-align: center;">Enter the new OTP code below to verify your identity and authorize your backoffice session:</p>
+          <div style="background-color: #141414; border: 1px solid #262626; padding: 16px; border-radius: 4px; text-align: center; margin: 24px 0;">
+            <span style="font-family: monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: bold; color: #b59410;">${otp}</span>
+          </div>
+          <p style="font-size: 11px; color: #595959; text-align: center; line-height: 1.4;">This code will expire in 15 minutes.</p>
+        </div>
+      `
+    });
+
+    if (!emailResult.success && isProduction) {
+      throw new Error(emailResult.error || "Failed to dispatch security OTP code via SMTP.");
+    }
+
+    return { 
+      success: true,
+      devOtp: isProduction ? undefined : otp
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 // 1.3 Admin login action (step 2: verify 2FA token)
 export async function loginAdmin2FA(userId: string, token: string) {
-  let shouldRedirect = false;
   try {
     const adminUser = await db.user.findUnique({
       where: { id: userId }
@@ -186,10 +239,11 @@ export async function loginAdmin2FA(userId: string, token: string) {
     }
 
     if (!adminUser.emailOtpCode || !adminUser.emailOtpExpiresAt || adminUser.emailOtpExpiresAt < new Date()) {
-      throw new Error("OTP has expired. Please try again.");
+      throw new Error("OTP code has expired. Please request a new code.");
     }
 
-    const isValid = adminUser.emailOtpCode === token.trim();
+    const cleanToken = String(token || "").replace(/\D/g, "").trim();
+    const isValid = adminUser.emailOtpCode.trim() === cleanToken;
     if (!isValid) {
       throw new Error("Invalid verification code. Please check your numbers.");
     }
@@ -204,8 +258,9 @@ export async function loginAdmin2FA(userId: string, token: string) {
       }
     });
 
+    const isProduction = process.env.NODE_ENV === "production";
     const cookieStore = await cookies();
-    cookieStore.set("NEXT_LOCALE", adminUser.locale || "de", {
+    cookieStore.set("NEXT_LOCALE", adminUser.locale || "en", {
       path: "/",
       httpOnly: false,
       secure: false,
@@ -215,32 +270,28 @@ export async function loginAdmin2FA(userId: string, token: string) {
     cookieStore.set("admin_session", "true", {
       path: "/",
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProduction,
+      sameSite: "lax",
       maxAge: 60 * 60 * 24
     });
     cookieStore.set("admin_user_id", adminUser.id, {
       path: "/",
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProduction,
+      sameSite: "lax",
       maxAge: 60 * 60 * 24
     });
     cookieStore.set("admin_user_role", adminUser.role, {
       path: "/",
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProduction,
+      sameSite: "lax",
       maxAge: 60 * 60 * 24
     });
 
-    shouldRedirect = true;
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
-  }
-
-  if (shouldRedirect) {
-    redirect("/admin");
   }
 }
 

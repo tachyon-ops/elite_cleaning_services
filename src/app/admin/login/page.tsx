@@ -29,24 +29,31 @@ export default function AdminLoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [resendingOtp, setResendingOtp] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     const checkExistsAndAuth = async () => {
-      const res = await checkAdminExists();
-      if (res.success && !res.exists) {
-        router.push("/admin/signup");
-        return;
-      }
+      try {
+        const res = await checkAdminExists();
+        if (res.success && !res.exists) {
+          router.push("/admin/signup");
+          return;
+        }
 
-      const authenticated = await isAdminAuthenticated();
-      if (authenticated) {
-        router.push("/admin");
-        return;
+        const authenticated = await isAdminAuthenticated();
+        if (authenticated) {
+          router.push("/admin");
+          return;
+        }
+      } catch (err) {
+        console.error("Admin check failed:", err);
+      } finally {
+        if (mounted) setChecking(false);
       }
-
-      setChecking(false);
     };
     checkExistsAndAuth();
+    return () => { mounted = false; };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,45 +61,111 @@ export default function AdminLoginPage() {
     if (!email || !password) return;
     
     setError("");
+    setSuccessMessage("");
     setLoading(true);
-    const res = await loginAdmin(email, password);
-    setLoading(false);
-
-    if (res) {
-      if (res.success) {
-        if (res.requires2FA && res.userId) {
-          setRequires2FA(true);
-          setUserId(res.userId);
-          setMaskedEmail(res.emailMasked || "");
-          if (res.devOtp) {
-            setDevOtp(res.devOtp);
+    try {
+      const res = await loginAdmin(email, password);
+      if (res) {
+        if (res.success) {
+          if (res.requires2FA && res.userId) {
+            setRequires2FA(true);
+            setUserId(res.userId);
+            setMaskedEmail(res.emailMasked || "");
+            if (res.devOtp) {
+              setDevOtp(res.devOtp);
+            }
+          } else {
+            window.location.href = "/admin";
           }
         } else {
-          router.push("/admin");
-          router.refresh();
+          setError(res.error || "Invalid administrative credentials");
         }
-      } else {
-        setError(res.error || "Invalid administrative credentials");
       }
+    } catch (err: any) {
+      if (err?.message?.includes("Server Action") || err?.message?.includes("deployment") || err?.message?.includes("Failed to find")) {
+        window.location.reload();
+      } else {
+        setError(err?.message || "An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (totpToken.length !== 6) return;
+    const cleanToken = totpToken.replace(/\D/g, "").trim();
+    if (cleanToken.length !== 6) {
+      setError("Please enter the 6-digit verification code.");
+      return;
+    }
 
     setError("");
+    setSuccessMessage("");
     setLoading(true);
-    const res = await loginAdmin2FA(userId, totpToken);
-    setLoading(false);
 
-    if (res) {
-      if (res.success) {
-        router.push("/admin");
-        router.refresh();
+    try {
+      // 1. Direct HTTP API endpoint - immune to build hash changes across deployments
+      const response = await fetch("/api/admin/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, token: cleanToken }),
+      });
+
+      const res = await response.json();
+      if (res?.success) {
+        window.location.href = "/admin";
+        return;
       } else {
-        setError(res.error || "Invalid verification code");
+        setError(res?.error || "Invalid verification code");
       }
+    } catch (apiErr) {
+      // 2. Fallback to server action
+      try {
+        const res = await loginAdmin2FA(userId, cleanToken);
+        if (res?.success) {
+          window.location.href = "/admin";
+          return;
+        } else {
+          setError(res?.error || "Invalid verification code");
+        }
+      } catch (err: any) {
+        if (err?.message?.includes("Server Action") || err?.message?.includes("deployment") || err?.message?.includes("Failed to find")) {
+          setError("Deployment updated in background. Refreshing page...");
+          setTimeout(() => {
+            window.location.reload();
+          }, 800);
+        } else {
+          setError(err?.message || "Verification failed. Please try again.");
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!userId || resendingOtp) return;
+    setError("");
+    setSuccessMessage("");
+    setResendingOtp(true);
+    try {
+      const response = await fetch("/api/admin/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const res = await response.json();
+      if (res?.success) {
+        setSuccessMessage("A fresh 6-digit code has been sent to your email.");
+        if (res.devOtp) setDevOtp(res.devOtp);
+      } else {
+        setError(res?.error || "Failed to resend OTP code.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to resend code.");
+    } finally {
+      setResendingOtp(false);
     }
   };
 
@@ -171,6 +244,12 @@ export default function AdminLoginPage() {
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-md text-body-sm">
             {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-md text-body-sm">
+            {successMessage}
           </div>
         )}
 
@@ -308,10 +387,21 @@ export default function AdminLoginPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || totpToken.length !== 6}
+                  disabled={loading || resendingOtp || totpToken.length !== 6}
                   className="flex-1 bg-accent hover:bg-accent-hover disabled:bg-accent/40 text-ink-inverse font-semibold py-3 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  Verify Code
+                  {loading ? "Verifying..." : "Verify Code"}
+                </button>
+              </div>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  disabled={loading || resendingOtp}
+                  onClick={handleResendOtp}
+                  className="text-body-xs text-[#a6a6a6] hover:text-accent transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {resendingOtp ? "Sending fresh code..." : "Didn't receive code? Resend OTP"}
                 </button>
               </div>
             </form>
